@@ -15,6 +15,7 @@ ErrorCode = Literal[
     "chain_not_configured",
     "invalid_address",
     "invalid_block",
+    "invalid_slot",
     "rpc_unreachable",
     "rpc_error",
     "state_unavailable",

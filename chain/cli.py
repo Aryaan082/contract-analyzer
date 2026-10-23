@@ -40,6 +40,8 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
     parser.add_argument("-v", "--verbose", action="store_true", help="log scrubbed RPC failures")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("list", help="list configured chains and check each node answers")
+    serve = commands.add_parser("serve", help="run the local inspector page (127.0.0.1 only)")
+    serve.add_argument("--port", type=int, default=8765, help="port to listen on (default 8765)")
     args = parser.parse_args(argv)
 
     # Only our own logger: web3's DEBUG lines include the RPC URL.
@@ -54,4 +56,8 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
 
     if args.command == "list":
         return cmd_list(env)
+    if args.command == "serve":
+        from chain.inspector import serve as run_inspector
+
+        return run_inspector(env, args.port)
     return 2

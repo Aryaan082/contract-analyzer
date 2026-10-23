@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chain tools inspector</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #fafaf9; --fg: #1c1917; --muted: #6b6a64; --card: #ffffff; --line: #e4e2dd;
+    --accent: #2f5d50; --ok: #1a7f4b; --bad: #b42318; --code: #f1efe9;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141412; --fg: #ecebe6; --muted: #9a9890; --card: #1d1d1a; --line: #2e2d29;
+      --accent: #7fc4a8; --ok: #4cc38a; --bad: #f97066; --code: #242320;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+       margin: 0 0 12px; font-weight: 600; }
+  h3 { font-size: 14px; margin: 20px 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+            padding: 16px; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; font-size: 13px; }
+  .mono { font-family: var(--mono); font-size: 13px; word-break: break-all; }
+  .chip { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px;
+          border: 1px solid currentColor; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); } .muted { color: var(--muted); }
+  form { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; }
+  label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+  label.wide, .wide { grid-column: 1 / -1; }
+  input, select, button { font: inherit; color: inherit; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+  input.mono { font-family: var(--mono); }
+  button { cursor: pointer; }
+  button.small { padding: 3px 10px; font-size: 13px; }
+  button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent);
+                   font-weight: 600; }
+  button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row > .label { color: var(--muted); font-size: 13px; min-width: 7.5rem; }
+  dl { display: grid; grid-template-columns: 13rem 1fr; gap: 6px 16px; margin: 0; }
+  dt { color: var(--muted); } dd { margin: 0; }
+  ul.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+  pre { background: var(--code); border-radius: 6px; padding: 12px; overflow: auto; margin: 8px 0 0;
+        font: 12.5px/1.45 var(--mono); max-height: 360px; white-space: pre-wrap; word-break: break-all; }
+  details { margin-top: 12px; } summary { cursor: pointer; font-weight: 600; }
+  .err { border-left: 4px solid var(--bad); padding: 8px 12px; background: var(--code);
+         border-radius: 4px; margin-bottom: 12px; }
+  .note { border-left: 4px solid var(--accent); padding: 8px 12px; background: var(--code);
+          border-radius: 4px; margin: 0 0 14px; }
+  a { color: var(--accent); }
+  [hidden] { display: none !important; }
+  @media (max-width: 600px) { form { grid-template-columns: 1fr; } dl { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Chain tools inspector</h1>
+  <p class="sub">Local and read-only. Shows exactly what the chain tools return, next to the raw bytes,
+    so you can check them against an independent source. Not the product UI.</p>
+
+  <section>
+    <h2>Configured chains</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Chain id</th><th>Status</th></tr></thead>
+      <tbody id="chainRows"></tbody>
+    </table>
+    <div class="row" style="margin: 12px 0 0"><button type="button" id="recheck">Re-check</button></div>
+  </section>
+
+  <section>
+    <h2>Inspect an address</h2>
+    <div id="examples"></div>
+    <form id="form" style="margin-top: 12px">
+      <label>Chain <select id="chain"></select></label>
+      <label>Address <input id="address" class="mono" autocomplete="off" spellcheck="false"
+        placeholder="0x…" required></label>
+      <label>Block (optional) <input id="block" class="mono" autocomplete="off"
+        placeholder="empty = latest, pinned once"></label>
+      <label>Storage slots (optional, comma separated)
+        <input id="slots" class="mono" autocomplete="off" spellcheck="false"
+        placeholder="0, 0x3608…, or a name such as eip1967-implementation"></label>
+      <div class="row wide">
+        <span class="label">Add slots:</span>
+        <button type="button" class="small" id="addEip1967">EIP-1967 (impl, admin, beacon)</button>
+        <button type="button" class="small" id="addLegacy">Legacy OpenZeppelin (impl, admin)</button>
+      </div>
+      <div class="wide"><button class="primary" type="submit" id="go">Inspect</button></div>
+    </form>
+  </section>
+
+  <section id="out" hidden>
+    <h2>Result</h2>
+    <p id="note" class="note" hidden></p>
+    <div id="error" class="err" hidden></div>
+    <dl id="facts"></dl>
+    <div id="checks" hidden>
+      <h3>Checked against values verified with Foundry's cast</h3>
+      <ul class="checks" id="checkList"></ul>
+    </div>
+    <div id="verify" hidden>
+      <h3>Check it yourself</h3>
+      <div id="links"></div>
+      <pre id="cast"></pre>
+    </div>
+    <details open><summary>Tool result: what the agent will see</summary><pre id="toolJson"></pre></details>
+    <details><summary>Raw: the bytes behind that result</summary><pre id="rawJson"></pre></details>
+  </section>
+</main>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const el = (tag, props = {}, ...kids) => {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(props)) {
+    if (key === "class") node.className = value;
+    else if (key === "text") node.textContent = value;
+    else node.setAttribute(key, value);
+  }
+  node.append(...kids);
+  return node;
+};
+
+const EIP1967 = "eip1967-implementation, eip1967-admin, eip1967-beacon";
+const LEGACY = "legacy-oz-implementation, legacy-oz-admin";
+
+// Expected values were read from the chain with Foundry's cast (a separate implementation from
+// the Python client) on 2026-10-22 and 2026-10-23.
+//  - Code size and hash are fixed for a given deployment, so they are checked exactly.
+//  - A proxy's pointer slots change when it is upgraded, so they are checked by kind only:
+//    "address" (holds an address), "empty" (all zero), or an exact value where the pointer cannot
+//    change.
+//  - Base's WETH is a predeploy: a network upgrade could change its code, which would show up as a
+//    failed check.
+const EXAMPLES = [
+  { group: "Plain contracts", label: "WETH9 · Ethereum", chain: "ethereum", slots: "0",
+    address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    note: "Not a proxy and cannot be upgraded or destroyed, so its code never changes. Slot 0 holds the token name as a Solidity short string.",
+    expect: { chain_id: 1, has_code: true, size: 3124,
+      keccak256: "0xd0a06b12ac47863b5c7be4185c2deaad1c61557033f56c7d4ea74429cbb25e23",
+      text0: "Wrapped Ether" } },
+  { group: "Plain contracts", label: "Zero address · no code", chain: "ethereum", slots: "",
+    address: "0x0000000000000000000000000000000000000000",
+    note: "An address with no code. The tool must say so, not fail.",
+    expect: { chain_id: 1, has_code: false, size: 0 } },
+  { group: "Plain contracts", label: "WETH · Base", chain: "base", slots: "0",
+    address: "0x4200000000000000000000000000000000000006",
+    note: "Base's own WETH, a predeploy at a fixed address.",
+    expect: { chain_id: 8453, has_code: true, size: 2041,
+      keccak256: "0x8a3a1f6a9f9dce633117adee5b458245835a8645a8c8726a26382a4622508b1c",
+      text0: "Wrapped Ether" } },
+  { group: "Plain contracts", label: "Ethereum's WETH address, on Base", chain: "base", slots: "",
+    address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    note: "The same address on a different chain has no code. An address means nothing without its chain.",
+    expect: { chain_id: 8453, has_code: false, size: 0 } },
+
+  { group: "Proxies", label: "EIP-1967 · Compound USDC", chain: "ethereum", slots: EIP1967,
+    address: "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
+    note: "A standard EIP-1967 transparent proxy: implementation and admin slots are both set, beacon is empty. On 2026-10-23 the implementation was 0x63e7…eb15 and the admin 0x1ec6…8779; both change when the proxy is upgraded, so the checks only require addresses.",
+    expect: { chain_id: 1, has_code: true, size: 1878,
+      keccak256: "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+      slots: { "eip1967-implementation": "address", "eip1967-admin": "address", "eip1967-beacon": "empty" } } },
+  { group: "Proxies", label: "EIP-1967 · Aave V3 Pool", chain: "ethereum", slots: EIP1967,
+    address: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+    note: "The implementation slot is set but the admin slot is empty. The code contains the address of Aave's PoolAddressesProvider, consistent with an admin fixed at deploy time rather than stored in the slot. An empty admin slot does not mean nobody can upgrade it.",
+    expect: { chain_id: 1, has_code: true, size: 2400,
+      keccak256: "0x96107dc4006b4c7fecd1827cfb275ffeef31e6194cd50466f85f8eb24ccf2679",
+      slots: { "eip1967-implementation": "address", "eip1967-admin": "empty", "eip1967-beacon": "empty" } } },
+  { group: "Proxies", label: "EIP-1167 · clone", chain: "ethereum", slots: EIP1967,
+    address: "0x30b044c3568F61d85289c7E44c455712ba3c5a89",
+    note: "A minimal proxy: 45 bytes of fixed template with the target (0xd5fE…ef79B on 2026-10-23) written inside the code, so every storage slot is empty. Reading slots alone would call this 'not a proxy'; it has to be recognised from its bytecode. The target is part of the code, so it can never change.",
+    expect: { chain_id: 1, has_code: true, size: 45,
+      keccak256: "0xd37d7cb1b00b1a35c54303484441c301235a1b48e7da36cf2df888ee40df1d1f",
+      slots: { "eip1967-implementation": "empty", "eip1967-admin": "empty", "eip1967-beacon": "empty" } } },
+  { group: "Proxies", label: "Beacon proxy", chain: "ethereum", slots: EIP1967,
+    address: "0x0d54D4279B9E8c54cD8547c2C75A8Ee81A0BcaE8",
+    note: "The implementation slot is empty. The beacon slot points at a beacon contract (0x9854…ED1598), and that beacon's implementation() decides which code runs (0xebBc…2250 on 2026-10-23, found with an eth_call, which this page does not make yet). Whoever controls the beacon can upgrade every proxy that points to it.",
+    expect: { chain_id: 1, has_code: true, size: 824,
+      keccak256: "0x9806c8207a455c012b2799be651ac0146d54866f92db90b502e5e2efa283bee9",
+      slots: { "eip1967-implementation": "empty", "eip1967-admin": "empty",
+        "eip1967-beacon": "0x000000000000000000000000985462c9aa4d6c3ad59ae6e1e9c0c11347ed1598" } } },
+  { group: "Proxies", label: "Legacy OpenZeppelin · USDC", chain: "ethereum", slots: EIP1967 + ", " + LEGACY,
+    address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    note: "An older OpenZeppelin proxy: all the EIP-1967 slots are empty and the implementation and admin sit in the legacy slots. v1 of resolve_proxy deliberately does not recognise this pattern, so it must answer 'unknown-proxy-like' here, never 'not a proxy'.",
+    expect: { chain_id: 1, has_code: true, size: 2186,
+      keccak256: "0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505",
+      slots: { "eip1967-implementation": "empty", "eip1967-admin": "empty", "eip1967-beacon": "empty",
+        "legacy-oz-implementation": "address", "legacy-oz-admin": "address" } } },
+  { group: "Proxies", label: "Aragon-style · stETH", chain: "ethereum", slots: EIP1967 + ", " + LEGACY,
+    address: "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+    note: "No standard or legacy slot is set, yet the code contains a DELEGATECALL. This is what 'unknown-proxy-like' is for: it looks like a proxy and matches no pattern we know.",
+    expect: { chain_id: 1, has_code: true, size: 1035,
+      keccak256: "0xb9c1c929064cd21734c102a698e68bf617feefcfa5a9f62407c45401546736bf",
+      slots: { "eip1967-implementation": "empty", "eip1967-admin": "empty", "eip1967-beacon": "empty",
+        "legacy-oz-implementation": "empty", "legacy-oz-admin": "empty" } } },
+];
+const EXPLORERS = { 1: "https://etherscan.io/address/", 8453: "https://basescan.org/address/" };
+
+const isEmpty = (v) => /^0x0+$/.test(v);
+const isAddress = (v) => !isEmpty(v) && /^0x0{24}[0-9a-f]{40}$/.test(v);
+
+async function loadChains() {
+  const rows = $("chainRows");
+  rows.replaceChildren(el("tr", {}, el("td", { colspan: "3", class: "muted", text: "Checking…" })));
+  try {
+    const { chains } = await (await fetch("/api/chains")).json();
+    rows.replaceChildren();
+    const select = $("chain");
+    const previous = select.value;
+    select.replaceChildren();
+    if (!chains.length) {
+      rows.append(el("tr", {}, el("td", { colspan: "3", class: "muted",
+        text: "No chains configured. Add RPC_URL_<NAME> lines to .env and restart." })));
+    }
+    for (const c of chains) {
+      const tone = c.status === "ok" ? "ok" : "bad";
+      const row = el("tr", {}, el("td", { class: "mono", text: c.name }),
+        el("td", { class: "mono", text: c.chain_id ?? "–" }),
+        el("td", {}, el("span", { class: "chip " + tone, text: c.status })));
+      if (c.message) row.lastChild.append(" ", el("span", { class: "muted", text: c.message }));
+      rows.append(row);
+      select.append(el("option", { value: c.name, text: c.name }));
+    }
+    if (previous) select.value = previous;
+    else if (chains.some((c) => c.name === "ethereum")) select.value = "ethereum";
+  } catch {
+    rows.replaceChildren(el("tr", {}, el("td", { colspan: "3", class: "bad",
+      text: "Could not reach the inspector server." })));
+  }
+}
+
+function fact(label, value, mono = true) {
+  return [el("dt", { text: label }), el("dd", { class: mono ? "mono" : "", text: value ?? "–" })];
+}
+
+function check(ok, label, expected, actual) {
+  const mark = el("span", { class: ok ? "ok" : "bad", text: ok ? "✓" : "✗" });
+  const detail = ok ? String(actual) : `expected ${expected}, got ${actual}`;
+  return el("li", {}, mark, " ", label + ": ", el("span", { class: "mono", text: detail }));
+}
+
+function slotCheck(name, want, value) {
+  const shown = isEmpty(value) ? "all zero" : value;
+  if (want === "address") return check(isAddress(value), `${name} is an address`, "an address", shown);
+  if (want === "empty") return check(isEmpty(value), `${name} is empty`, "empty", shown);
+  return check(value === want, name, want, shown);
+}
+
+function render(payload, inputs) {
+  const { tool_result: result, raw } = payload;
+  const prov = result.provenance;
+  const failure = result.data && result.data.error;
+  $("out").hidden = false;
+
+  const example = EXAMPLES.find((e) => e.chain === inputs.chain && prov.address &&
+    e.address.toLowerCase() === prov.address.toLowerCase());
+  $("note").hidden = !example;
+  if (example) $("note").textContent = example.note;
+
+  const error = $("error");
+  error.hidden = !failure;
+  if (failure) {
+    error.replaceChildren(el("strong", { text: failure.code }), el("div", { text: failure.message }));
+  }
+
+  const facts = [
+    ...fact("Chain", prov.chain_id == null ? prov.chain : `${prov.chain} (id ${prov.chain_id})`, false),
+    ...fact("Pinned block", prov.block),
+    ...fact("Address", prov.address),
+  ];
+  if (!failure) {
+    const { code, storage } = result.data;
+    facts.push(...fact("Has code", String(code.has_code)), ...fact("Code size", `${code.size} bytes`),
+      ...fact("keccak256(code)", code.keccak256));
+    storage.forEach((s, i) => {
+      const guess = raw.storage[i];
+      const label = s.name ? `Slot ${s.name}` : `Slot ${s.slot}`;
+      facts.push(...fact(label, s.value + (isEmpty(s.value) ? "  (empty)" : "")));
+      if (guess.as_short_string) facts.push(...fact("   as short string?", guess.as_short_string, false));
+      if (guess.as_address) facts.push(...fact("   as address?", guess.as_address));
+    });
+  }
+  $("facts").replaceChildren(...facts);
+
+  const list = $("checkList");
+  list.replaceChildren();
+  if (example && !failure) {
+    const want = example.expect, { code, storage } = result.data;
+    list.append(check(prov.chain_id === want.chain_id, "chain id", want.chain_id, prov.chain_id),
+      check(code.has_code === want.has_code, "has code", want.has_code, code.has_code),
+      check(code.size === want.size, "code size", want.size, code.size));
+    if (want.keccak256) {
+      list.append(check(code.keccak256 === want.keccak256, "keccak256", want.keccak256, code.keccak256));
+    }
+    if (want.text0) {
+      const text = raw.storage.find((s) => s.slot === "0x0")?.as_short_string;
+      list.append(check(text === want.text0, "slot 0 as text", want.text0, text));
+    }
+    for (const [name, kind] of Object.entries(want.slots || {})) {
+      const read = storage.find((s) => s.name === name);
+      list.append(read ? slotCheck(name, kind, read.value)
+        : check(false, name, "a read of this slot", "not requested"));
+    }
+  }
+  $("checks").hidden = !list.children.length;
+
+  const addressOk = /^0x[0-9a-fA-F]{40}$/.test(prov.address || "");
+  $("verify").hidden = !addressOk;
+  if (addressOk) {
+    const links = $("links");
+    links.replaceChildren();
+    const base = EXPLORERS[prov.chain_id];
+    if (base) links.append(el("a", { href: base + prov.address, target: "_blank", rel: "noopener noreferrer",
+      text: "Open on the block explorer" }), " (compare the contract's code and name)");
+    const blockPart = prov.block == null ? "" : ` --block ${prov.block}`;
+    $("cast").textContent = `cast keccak $(cast code ${prov.address}${blockPart} --rpc-url <your RPC URL>)\n` +
+      `cast storage ${prov.address} <slot>${blockPart} --rpc-url <your RPC URL>`;
+  }
+
+  $("toolJson").textContent = JSON.stringify(result, null, 2);
+  $("rawJson").textContent = raw ? JSON.stringify(raw, null, 2) : "No raw data: the call failed.";
+}
+
+async function run() {
+  const inputs = { chain: $("chain").value, address: $("address").value.trim(),
+    block: $("block").value.trim(), slots: $("slots").value.trim() };
+  const query = new URLSearchParams({ chain: inputs.chain, address: inputs.address });
+  if (inputs.block) query.set("block", inputs.block);
+  if (inputs.slots) query.set("slots", inputs.slots);
+  $("go").disabled = true;
+  try {
+    render(await (await fetch("/api/inspect?" + query)).json(), inputs);
+  } catch {
+    $("out").hidden = false;
+    $("error").hidden = false;
+    $("error").replaceChildren(el("strong", { text: "inspector_unreachable" }),
+      el("div", { text: "Could not reach the inspector server." }));
+  } finally {
+    $("go").disabled = false;
+  }
+}
+
+for (const group of [...new Set(EXAMPLES.map((e) => e.group))]) {
+  const row = el("div", { class: "row" }, el("span", { class: "label", text: group }));
+  for (const example of EXAMPLES.filter((e) => e.group === group)) {
+    const button = el("button", { type: "button", class: "small", text: example.label });
+    button.addEventListener("click", () => {
+      $("chain").value = example.chain;
+      $("address").value = example.address;
+      $("slots").value = example.slots;
+      $("block").value = "";
+      run();
+    });
+    row.append(button);
+  }
+  $("examples").append(row);
+}
+const addSlots = (names) => {
+  const have = $("slots").value.split(",").map((s) => s.trim()).filter(Boolean);
+  for (const name of names.split(", ")) if (!have.includes(name)) have.push(name);
+  $("slots").value = have.join(", ");
+};
+$("addEip1967").addEventListener("click", () => addSlots(EIP1967));
+$("addLegacy").addEventListener("click", () => addSlots(LEGACY));
+$("form").addEventListener("submit", (event) => { event.preventDefault(); run(); });
+$("recheck").addEventListener("click", loadChains);
+loadChains();
+</script>
+</body>
+</html>
