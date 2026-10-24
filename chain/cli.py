@@ -5,9 +5,15 @@ import logging
 import os
 import sys
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 
-from chain.config import load_env
-from chain.rpc import probe_chains
+from web3 import Web3
+
+from chain.config import DEFAULT_CHAIN, load_env
+from chain.errors import ChainError, ToolError
+from chain.models import Provenance, ToolResult, normalize_address
+from chain.rpc import RpcClient, probe_chains
+from chain.selectors import SelectorsData, run_extract_selectors
 
 
 def cmd_list(env: Mapping[str, str]) -> int:
@@ -35,6 +41,34 @@ def cmd_list(env: Mapping[str, str]) -> int:
     return 1 if failures else 0
 
 
+def cmd_selectors(args: argparse.Namespace, env: Mapping[str, str]) -> int:
+    """Print the `{provenance, data}` result. With --address the code is read from the chain
+    first (pinned to one block); with --code there is no chain, so provenance says so."""
+    if args.code is not None:
+        try:
+            text = Path(args.code[1:]).read_text() if args.code.startswith("@") else args.code
+        except OSError as err:
+            print(f"Cannot read {args.code[1:]}: {err.strerror}", file=sys.stderr)
+            return 2
+        provenance = Provenance(chain="unknown", chain_id=None, address=None, block=None, source="")
+    else:
+        try:
+            address = normalize_address(args.address)
+            client = RpcClient.connect(args.chain, env, args.block)
+            text = Web3.to_hex(client.get_code(address))
+            provenance = client.provenance(address)
+        except ChainError as err:
+            failed = Provenance(
+                chain=args.chain, chain_id=None, address=None, block=None, source=""
+            )
+            result = ToolResult[SelectorsData](provenance=failed, data=err.to_tool_error())
+            print(result.model_dump_json(indent=2))
+            return 1
+    result = run_extract_selectors(text, provenance)
+    print(result.model_dump_json(indent=2))
+    return 1 if isinstance(result.data, ToolError) else 0
+
+
 def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m chain", description=__doc__)
     parser.add_argument("-v", "--verbose", action="store_true", help="log scrubbed RPC failures")
@@ -42,6 +76,16 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
     commands.add_parser("list", help="list configured chains and check each node answers")
     serve = commands.add_parser("serve", help="run the local inspector page (127.0.0.1 only)")
     serve.add_argument("--port", type=int, default=8765, help="port to listen on (default 8765)")
+    selectors = commands.add_parser(
+        "selectors", help="list the function selectors in a contract's code"
+    )
+    source = selectors.add_mutually_exclusive_group(required=True)
+    source.add_argument("--code", help="runtime bytecode as hex, or @file")
+    source.add_argument("--address", help="read the code from this address")
+    selectors.add_argument(
+        "--chain", default=DEFAULT_CHAIN, help="with --address (default ethereum)"
+    )
+    selectors.add_argument("--block", type=int, help="with --address: pin to this block")
     args = parser.parse_args(argv)
 
     # Only our own logger: web3's DEBUG lines include the RPC URL.
@@ -60,4 +104,6 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         from chain.inspector import serve as run_inspector
 
         return run_inspector(env, args.port)
+    if args.command == "selectors":
+        return cmd_selectors(args, env)
     return 2

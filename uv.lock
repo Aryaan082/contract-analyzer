@@ -185,6 +185,7 @@ name = "contract-analyzer"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "evmole" },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "web3" },
@@ -198,6 +199,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "evmole", specifier = ">=0.9.4" },
     { name = "pydantic", specifier = ">=2" },
     { name = "python-dotenv" },
     { name = "web3", specifier = ">=8,<9" },
@@ -363,6 +365,17 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e9/1b/0b8548da7b31eba87ed58bca1d0de5dcb13a6c113e02c09019ec5a6716ed/eth_utils-6.0.0.tar.gz", hash = "sha256:eb54b2f82dd300d3142c49a89da195e823f5e5284d43203593f87c67bad92a96", size = 123457, upload-time = "2026-03-25T17:11:51.433Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/53/45/a20b907227b9d1aea2e36f7b12818d055629ca9bc65fc282b45738f28ca3/eth_utils-6.0.0-py3-none-any.whl", hash = "sha256:63cf48ee32c45541cb5748751909a8345c470432fb6f0fed4bd7c53fd6400469", size = 102473, upload-time = "2026-03-25T17:11:49.953Z" },
+]
+
+[[package]]
+name = "evmole"
+version = "0.9.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fc/db/c43b3bacc361e158b003c6f79e4ba4ae4c4cf9e5cc15907e9a947523eb65/evmole-0.9.4.tar.gz", hash = "sha256:fdbbfd826de22305b4f1f30b1ba95c4305ddae74567a4d793ef31693ad7431ba", size = 125172, upload-time = "2026-10-13T10:40:03.285Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9b/97/d99a9b6f12fb174aaab64a8c5cfa30a2597a150c7bf211344e2cb1f04d9c/evmole-0.9.4-cp312-cp312-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:c2252b04e4c1c1389548be88042813518627a67ba8aeb088b3a325e115a7b1e1", size = 914579, upload-time = "2026-10-13T10:39:43.157Z" },
+    { url = "https://files.pythonhosted.org/packages/06/cf/f5e893f03a387e4a4c66cd3eda30e8cf1cabc1ebe5bbcef46d80e019687d/evmole-0.9.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:56ed889e97de2310224e982cb5f0df798be00d072cdae8667430401413b5a3a8", size = 510026, upload-time = "2026-10-13T10:39:45.088Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/d7/3bfedcbd8a1a108a47cb952f02e285702b077fd0768dbab1973df3ab5a8c/evmole-0.9.4-cp312-cp312-win_amd64.whl", hash = "sha256:9db6a6c015c7a300e2bdd0e179978649e5d5958967cfd42dab2ecbc9bf34dbd5", size = 439916, upload-time = "2026-10-13T10:39:46.901Z" },
 ]
 
 [[package]]
