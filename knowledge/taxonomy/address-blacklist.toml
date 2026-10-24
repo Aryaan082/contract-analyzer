@@ -1,0 +1,19 @@
+title = "Address blacklist or freeze"
+group = "token_tricks"
+summary = "A privileged account can block chosen addresses from sending or receiving the token."
+applies_to = ["erc20", "erc721", "erc1155"]
+visible_in = ["tools", "bytecode", "source"]
+signals = ["risk.kind=blacklist"]
+description = '''
+A blacklist (also called a blocklist or freeze) lets someone stop an address from moving the token. Regulated stablecoins use it on purpose to comply with law, and holders accept that. In an ordinary token it is a way to trap a single holder, or every holder who is not on a favoured list. Whether it is acceptable depends on who holds the power and why.
+'''
+what_to_check = '''
+Note the signal's strength and whether the matched known contract has the same function (in_reference true means it is part of that design, as with major stablecoins). A blacklist next to a blocked sell in the rehearsal is a strong combination. The tools cannot tell who can call it or whether it has ever been used.
+'''
+look_for_in_code = '''
+Pattern: a mapping from address to bool (blacklisted, blocked, isBot, frozen), set by an owner-only function and read inside the transfer path or a transfer hook.
+Vulnerable when: a listed address cannot transfer, or cannot sell to the pool, and the list can be edited by one account with no delay, process or appeal; or when the pool address itself can be listed.
+Safe form: no list at all, or a list that only a governance process or timelock can change, with the reason documented (for example sanctions compliance).
+False alarms: a list that only affects a specific optional feature, a launch anti-bot list that is cleared and the setter removed, a well-known compliance stablecoin where the power is disclosed.
+'''
+source_keywords = ["blacklist", "blocklist", "isBlacklisted", "isBot", "frozen"]

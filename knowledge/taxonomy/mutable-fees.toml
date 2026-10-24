@@ -1,0 +1,19 @@
+title = "Fees the owner can change"
+group = "token_tricks"
+summary = "A function lets the owner set transfer or trading fees after launch, with no limit in the code."
+applies_to = ["erc20"]
+visible_in = ["tools", "bytecode", "source"]
+signals = ["risk.kind=fee_setter"]
+description = '''
+A fee-setting function means today's fee is not tomorrow's. A token can launch with a small fee, attract buyers, then have the owner raise the fee until selling is pointless. The risk is the missing ceiling: a setter that accepts any value is the same as a honeypot that can be switched on later.
+'''
+what_to_check = '''
+Check the signal's strength (a reference name or selector match is firmer than a name suggested by an outside database) and whether the matched reference token has it too. The sell rehearsal shows only the fee in force now. The tools cannot see who may call the setter or whether a cap exists, so read the code if it is available.
+'''
+look_for_in_code = '''
+Pattern: setters such as setFee, setTax, setBuyFee, setSellFee or updateFees that write to a fee variable read in the transfer path.
+Vulnerable when: the caller check is just the owner, and the function has no require(newFee <= MAX_FEE) against a constant, or the cap is itself changeable or very high.
+Safe form: a hard-coded maximum (for example 5%) enforced in the setter, changes behind a timelock, and ideally fees that are fixed at deployment.
+False alarms: a setter bounded by a sensible constant, a fee that applies to a separate optional feature and not to ordinary transfers, a setter that only a governance contract can call.
+'''
+source_keywords = ["setFee", "setTax", "setBuyFee", "setSellFee", "MAX_FEE", "_taxFee"]

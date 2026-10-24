@@ -1,0 +1,20 @@
+title = "Price oracle manipulation or stale price"
+group = "defi"
+summary = "A price read from a pool or feed can be moved within one transaction, or is outdated, so loans and swaps are priced wrongly."
+applies_to = ["any"]
+visible_in = ["source", "external"]
+signals = ["identify.kind=aave_pool", "identify.kind=compound_v2_ctoken", "identify.kind=compound_v3_comet", "identify.kind=uniswap_v2_pair"]
+description = '''
+Lending markets, vaults and derivatives need a price for the assets they hold. If the price comes from a pool's current balances, a trader can distort it within one transaction (often with a flash loan), borrow against the distorted value and leave the protocol with the loss. A feed can also be stale, report a stopped market, or sit on a sequencer that is down. Protocols mitigate this with time-weighted averages, independent feeds and sanity bounds.
+'''
+what_to_check = '''
+The identify kind (a lending market, a pair) is why this entry is raised. The tools do not read oracle settings. For a known protocol, rely on its documentation and its own registry; for an unrecognised contract, find where it gets prices and whether that source can be moved or goes stale.
+'''
+look_for_in_code = '''
+Pattern: price taken from getReserves, balanceOf(pool) ratios, slot0, or a feed's latestRoundData, and used to value collateral, shares or swaps.
+Vulnerable when: it reads a pool's instantaneous spot price, ignores the update time or the returned round data (stale answer), has no bounds on the value, uses a single source, or ignores that a layer-2 sequencer may be down.
+Safe form: time-weighted prices or a decentralised feed with checks on freshness and valid range, a fallback source, and circuit breakers on large moves.
+False alarms: a spot price used only for display, and a pool price used together with a trusted bound.
+'''
+source_keywords = ["latestRoundData", "getReserves", "slot0", "observe", "price", "oracle"]
+references = [{ title = "Chainlink Data Feeds", url = "https://docs.chain.link/data-feeds" }]

@@ -1,0 +1,18 @@
+title = "Depends on another contract that can change"
+group = "upgradeability"
+summary = "The contract relies on an oracle, token or module owned by someone else, which can be upgraded or replaced."
+applies_to = ["any"]
+visible_in = ["source", "external"]
+description = '''
+A contract that calls another contract takes on that contract's risks. If the other contract is upgradeable, owned by a single key, or can be swapped out by an admin setter, its behaviour can change after you have approved or deposited. Audit reports often flag this for price oracles, reward tokens, strategy modules and cross-contract settings. Reviewing only the contract in front of you leaves out half of what protects your funds.
+'''
+what_to_check = '''
+List the addresses the contract calls (constants and settable addresses). For each, run identify to see whether it is a proxy, has upgrade functions or is an official deployment. The tools do this per address; they do not discover dependencies automatically, so say which ones you checked.
+'''
+look_for_in_code = '''
+Pattern: an interface-typed state variable or constant address called from a core function (an oracle, a token, a strategy, a hook).
+Vulnerable when: the address can be changed by an admin function, points to an upgradeable proxy owned by a third party, or the code trusts the return value without bounds checks.
+Safe form: dependencies fixed at deployment where possible, changes behind a timelock, return values validated, and a fallback if the dependency fails.
+False alarms: a dependency on an immutable, widely used contract such as a canonical wrapped token.
+'''
+source_keywords = ["setOracle", "setStrategy", "setHook", "interface", "immutable"]

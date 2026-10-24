@@ -1,0 +1,18 @@
+title = "Impersonating an official contract"
+group = "token_tricks"
+summary = "A contract copies a real protocol's interface or claims its factory, but is not the deployment that protocol lists."
+applies_to = ["any"]
+visible_in = ["tools"]
+signals = ["identify.summary=lookalike", "registry.status=claims_official_but_not_listed"]
+description = '''
+Scammers deploy copies of a real protocol's pool, router or token: same functions, same names, sometimes the same bytecode, but changed in a way that takes funds. A user who finds the address through a search result or a message cannot tell it from the real one by reading its interface. The only reliable answer comes from the protocol's own records of which contracts are official.
+'''
+what_to_check = '''
+Use identify: registry status official means the protocol's own factory, provider or comptroller lists the address. claims_official_but_not_listed means the contract names a real factory or provider as its own, yet that registry does not list it, which is impersonation. unlisted means only that these registries do not know it, not that it is bad. Check the chain too: the same address can be real on one chain and absent on another.
+'''
+look_for_in_code = '''
+Pattern: a contract whose functions match a well-known interface (a Uniswap pair, an Aave pool, a Compound market) and which stores the real factory, provider or comptroller address as if it were its own parent.
+Vulnerable when: the code behind the familiar interface differs from the official implementation, for example a swap, transfer or mint function with an added condition or recipient, or an owner-only function the original lacks.
+Safe form: use only addresses published by the protocol itself and confirmed by its registry; compare any unknown copy with the official source or bytecode.
+False alarms: a legitimate fork that says it is a fork, and test deployments that are not marketed as the real protocol.
+'''

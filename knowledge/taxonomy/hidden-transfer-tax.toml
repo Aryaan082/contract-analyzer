@@ -1,0 +1,19 @@
+title = "Hidden transfer tax"
+group = "token_tricks"
+summary = "Buying or selling loses a large share of the amount to a fee that is not obvious from the interface."
+applies_to = ["erc20"]
+visible_in = ["tools", "source"]
+signals = ["sell.buy_tax_bps", "sell.sell_tax_bps", "sell.round_trip_loss_bps"]
+description = '''
+A token can take a fee on every transfer and send it to a wallet or burn it. A small, documented fee is a design choice. A large one, or one that differs between buying and selling, quietly drains buyers: a 20% tax on the way out means a position that looks profitable is not. Nothing in the standard ERC20 interface reveals it; the amount received is simply less than the amount sent.
+'''
+what_to_check = '''
+The sell rehearsal measures buy_tax_bps, sell_tax_bps and round_trip_loss_bps on one small trade; round-trip loss includes the pool's own fee, so judge taxes against that baseline. A tax measured now can be raised later: check for fee-setter signals. Measurements are for one trade size and one pool.
+'''
+look_for_in_code = '''
+Pattern: the transfer function computes a fee (amount * rate / denominator) and moves part of the amount to a fee wallet, to the contract itself, or to the zero address before crediting the recipient.
+Vulnerable when: the rate is large, differs between buys (sender is the pool) and sells (recipient is the pool), is stored in a variable the owner can change, or has no upper bound in the code. A fee swapped into ETH inside the transfer can also make sells revert.
+Safe form: a fixed rate or a rate capped by a constant in the code, the same for every transfer, and documented.
+False alarms: a small fixed fee that is clearly part of the design, a burn that shrinks supply by a stated amount, and fee-on-transfer behaviour that integrators are warned about.
+'''
+source_keywords = ["buyFee", "sellFee", "taxFee", "feeWallet", "marketingWallet", "swapAndLiquify"]

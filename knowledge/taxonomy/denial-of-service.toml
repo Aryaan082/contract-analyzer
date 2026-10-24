@@ -1,0 +1,31 @@
+title = "Denial of service"
+group = "code_bugs"
+summary = "One failing call, an unbounded loop or a blocked recipient can stop a function that everyone relies on."
+applies_to = ["any"]
+visible_in = ["source"]
+description = '''
+A contract is denied service when something makes an important function revert or run out of gas for everyone. Common causes are a loop over an array that grows without limit, a payment to many recipients where one refusing the payment blocks all, and a function that depends on a call to an external contract that can start failing. The effect ranges from a stuck withdrawal to permanently locked funds.
+'''
+what_to_check = '''
+Not visible to the current tools. In verified source, find loops over user-controlled or growing collections, payments inside loops, and functions that cannot proceed if one external call fails.
+'''
+look_for_in_code = '''
+Pattern: a for or while loop whose bound is the length of a storage array, or a loop that makes external calls or sends ETH.
+Vulnerable when: anyone can append to the array, one failed call in the loop reverts the whole function, a withdrawal or liquidation requires a transfer to an address that can refuse, or a required state can be held in a bad value by one account.
+Safe form: pull payments (each recipient withdraws their own), bounded batches with a cursor, try/catch around optional calls, and no function that all users need depending on one account's cooperation.
+False alarms: loops over small, fixed-size or admin-controlled lists, and loops in view functions called off-chain.
+'''
+example_vulnerable = '''
+for (uint256 i = 0; i < investors.length; i++) {
+    investors[i].transfer(payout[i]);
+}
+'''
+example_safe = '''
+function claim() external {
+    uint256 amount = payout[msg.sender];
+    payout[msg.sender] = 0;
+    payable(msg.sender).transfer(amount);
+}
+'''
+source_keywords = ["for (", "while (", ".length", "push(", "try ", "catch"]
+references = [{ title = "SWC-113 DoS with Failed Call", url = "https://swcregistry.io/docs/SWC-113" }, { title = "SWC-128 DoS With Block Gas Limit", url = "https://swcregistry.io/docs/SWC-128" }]

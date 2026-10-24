@@ -1,0 +1,19 @@
+title = "Trading controlled by the owner"
+group = "token_tricks"
+summary = "The owner can switch trading on or off, or exempt addresses, so who may buy or sell is not fixed."
+applies_to = ["erc20"]
+visible_in = ["tools", "source"]
+signals = ["sell.verdict=buy_blocked", "risk.kind=pause"]
+description = '''
+Some tokens keep a switch that lets the owner open or close trading, or a list of addresses that are exempt from limits. Used for a fair launch it is harmless, but left in place it lets the owner stop buyers from buying (or sellers from selling) at a moment of their choosing, or let insiders trade while everyone else waits. The token's price history then says little about whether you can exit.
+'''
+what_to_check = '''
+The sell rehearsal reports buy_blocked when the first purchase fails; read the reason, because a closed trading window, a liquidity problem and a real block look alike. Check whether a pause or similar risky function exists and whether it is in the matched reference token too. The tools cannot tell who may flip the switch or whether it can ever be closed again.
+'''
+look_for_in_code = '''
+Pattern: a boolean such as tradingOpen, tradingEnabled or paused, plus a setter, checked inside the transfer path.
+Vulnerable when: the setter is callable by the owner after launch (not only once), the check applies to ordinary buyers or sellers but not to the owner or to addresses the owner can add to an exempt list, or limits such as maxWallet and maxTx can be changed to near zero.
+Safe form: trading is opened once and cannot be closed again, any limit is lifted at a fixed block or time and cannot be raised, and no exemption list can be edited after launch.
+False alarms: a one-time enableTrading call that renounces the ability, a pause controlled by a timelock and documented for emergencies, a limit that only protects launch liquidity and expires on its own.
+'''
+source_keywords = ["tradingOpen", "tradingEnabled", "enableTrading", "maxWallet", "maxTxAmount", "isExcluded"]

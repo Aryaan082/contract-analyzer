@@ -1,0 +1,20 @@
+title = "Upgradeable contract (proxy)"
+group = "upgradeability"
+summary = "The code that runs can be replaced by whoever controls the proxy, so today's behaviour is not a promise."
+applies_to = ["any"]
+visible_in = ["tools", "bytecode", "source", "external"]
+signals = ["risk.kind=upgrade", "identify.proxy=eip1967_slot", "identify.proxy=legacy_oz_slot", "identify.proxy=eip1167_clone"]
+description = '''
+A proxy holds the user's funds and state but forwards each call to a separate implementation contract. The controller can point the proxy at new code, and the new code can do anything with the stored balances. An audit of the implementation therefore says nothing about tomorrow's code unless the upgrade path is locked down. A minimal proxy (EIP-1167 clone) is different: it cannot change, but it depends entirely on the fixed implementation it points to.
+'''
+what_to_check = '''
+identify reports the proxy kind and implementation address. Analyse the implementation, not the proxy. For upgradeable proxies, find the admin (the EIP-1967 admin slot) and whether it is a timelock or multisig. The tools do not read the admin slot today. State that the implementation can change and what you could not confirm.
+'''
+look_for_in_code = '''
+Pattern: a proxy contract using delegatecall to an implementation address stored in a standard slot, with an upgrade function either in the proxy (transparent) or in the implementation (UUPS).
+Vulnerable when: the upgrade function is callable by a single externally owned account, the admin can be changed without delay, the implementation can be left uninitialised, or an upgrade can run arbitrary code (upgradeToAndCall) with no review.
+Safe form: upgrades by a timelocked multisig, a public upgrade process, implementations that disable their initialiser, and storage layouts checked for compatibility.
+False alarms: a proxy whose admin is renounced, or a clone that points to a verified, immutable implementation.
+'''
+source_keywords = ["delegatecall", "upgradeTo", "upgradeToAndCall", "_implementation", "ERC1967"]
+references = [{ title = "EIP-1967: Proxy Storage Slots", url = "https://eips.ethereum.org/EIPS/eip-1967" }, { title = "EIP-1167: Minimal Proxy Contract", url = "https://eips.ethereum.org/EIPS/eip-1167" }, { title = "OpenZeppelin proxy upgrade pattern", url = "https://docs.openzeppelin.com/upgrades-plugins/proxies" }]

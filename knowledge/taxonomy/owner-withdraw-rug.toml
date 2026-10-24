@@ -1,0 +1,19 @@
+title = "Owner can withdraw user funds"
+group = "token_tricks"
+summary = "A privileged function can move tokens or ETH out of the contract, so deposited funds are not safe from its controller."
+applies_to = ["any"]
+visible_in = ["tools", "bytecode", "source"]
+signals = ["risk.kind=owner_withdraw"]
+description = '''
+A rug pull is an exit where the people who control a project take the money users have put in. The simplest form is a function that lets an owner withdraw, sweep or "rescue" whatever the contract holds. Rescue functions have honest uses (recovering tokens sent by mistake), but if they can reach the very assets users deposited, the contract's safety rests entirely on the owner's honesty and key security.
+'''
+what_to_check = '''
+Check the signal strength and the function name the tools matched. A plain withdraw on a wrapped-token contract is how it is meant to work and is not flagged; the flagged names (sweep, drain, rescue, owner withdraw) are not. The tools cannot tell which assets the function can reach or who may call it, so read the code if it is available and check who the owner is.
+'''
+look_for_in_code = '''
+Pattern: an external function that sends tokens or ETH held by the contract to an address chosen by the caller or stored by the owner.
+Vulnerable when: it can reach the assets that users deposited or the liquidity the contract holds (not only stray tokens), it is callable by one owner key with no delay, or it accepts any token address including the main deposit token.
+Safe form: a rescue function that explicitly refuses the contract's own asset and deposit tokens, is restricted to a multisig behind a timelock, and emits an event.
+False alarms: recovery limited to tokens the protocol does not hold on behalf of users, fee collection of protocol-owned revenue only, and withdrawals by each user of their own balance.
+'''
+source_keywords = ["rescueTokens", "recoverERC20", "sweep", "emergencyWithdraw", "withdrawStuck", "drain"]

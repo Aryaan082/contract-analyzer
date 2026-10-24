@@ -1,0 +1,21 @@
+title = "Contract can be destroyed"
+group = "upgradeability"
+summary = "A selfdestruct instruction or kill function can wipe the contract, or let it be replaced with different code."
+applies_to = ["any"]
+visible_in = ["tools", "bytecode", "source"]
+signals = ["risk.kind=destroy", "risk.kind=selfdestruct_opcode"]
+opcodes = ["SELFDESTRUCT", "CREATE2"]
+description = '''
+selfdestruct removes a contract and sends its ETH to a chosen address. Since the Cancun upgrade it no longer deletes code except in the transaction that created the contract, but older contracts and other chains may still behave the old way, and a contract that can be destroyed and recreated at the same address through CREATE2 can show different code later. A contract users trust today may not be the one at that address tomorrow.
+'''
+what_to_check = '''
+Check the destroy and selfdestruct_opcode signals and their strength. The opcode scan is a linear sweep of the code, so a hit shows the instruction may be reachable, not that it is. Look for CREATE2 deployment by a factory that can redeploy. Behaviour depends on the chain and its hard-fork level.
+'''
+look_for_in_code = '''
+Pattern: selfdestruct, a function named kill or destroy, or a factory that deploys with CREATE2 and also has a way to remove contracts.
+Vulnerable when: an owner can call it with no delay, it sends the contract's ETH to an owner-chosen address, or the same address can be redeployed with new code.
+Safe form: no selfdestruct at all, or only in a design where destruction is part of the documented lifecycle and guarded by governance.
+False alarms: selfdestruct in a library or test helper that is never deployed, and a contract that only destroys itself in its creation transaction.
+'''
+source_keywords = ["selfdestruct", "suicide", "kill", "destroy", "create2"]
+references = [{ title = "SWC-106 Unprotected SELFDESTRUCT", url = "https://swcregistry.io/docs/SWC-106" }]

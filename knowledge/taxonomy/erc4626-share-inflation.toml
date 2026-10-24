@@ -1,0 +1,20 @@
+title = "ERC-4626 share price inflation"
+group = "defi"
+summary = "The first depositor can distort the share price so that later depositors get too few shares, or none."
+applies_to = ["erc4626"]
+visible_in = ["tools", "source"]
+signals = ["identify.kind=erc4626"]
+description = '''
+An ERC-4626 vault gives depositors shares in proportion to what the vault holds. When the vault is empty or nearly so, the first depositor can mint a single share and then send assets directly to the vault ("donate"), inflating the price of a share. A later deposit then rounds down to zero shares and the earlier depositor keeps the deposit. Vaults defend with virtual shares and assets, a minimum first deposit, or a dead share.
+'''
+what_to_check = '''
+identify reports the erc4626 kind, which is why this entry is raised. The tools do not run a deposit and redeem rehearsal for vaults yet. Check the vault's total supply and assets (a fresh vault is the risky moment), and read how the conversion rounds in source.
+'''
+look_for_in_code = '''
+Pattern: convertToShares and previewDeposit built from totalAssets() and totalSupply().
+Vulnerable when: totalAssets() reads the raw token balance (so a donation changes it), there are no virtual shares or minimum liquidity, deposits round shares down with no check for zero, or the vault can be empty at launch.
+Safe form: an offset of virtual shares and assets in the conversion (as in the OpenZeppelin implementation), a revert when a deposit would mint zero shares, and a minimum initial deposit locked forever.
+False alarms: vaults that track assets with internal accounting rather than raw balance, and vaults seeded at deployment.
+'''
+source_keywords = ["convertToShares", "previewDeposit", "totalAssets", "_decimalsOffset", "totalSupply"]
+references = [{ title = "EIP-4626: Tokenized Vaults", url = "https://eips.ethereum.org/EIPS/eip-4626" }, { title = "OpenZeppelin ERC-4626 (inflation attack)", url = "https://docs.openzeppelin.com/contracts/5.x/erc4626" }]

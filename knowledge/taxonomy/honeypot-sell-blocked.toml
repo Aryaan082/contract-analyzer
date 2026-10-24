@@ -1,0 +1,19 @@
+title = "Honeypot: selling is blocked"
+group = "token_tricks"
+summary = "Buying works but selling reverts or returns almost nothing, so buyers cannot get their money out."
+applies_to = ["erc20"]
+visible_in = ["tools", "source"]
+signals = ["sell.verdict=sell_blocked", "sell.round_trip_loss_bps", "identify.near_misses"]
+description = '''
+A honeypot token lets anyone buy but stops most holders from selling. The transfer logic refuses a sale (a revert), allows it only for an insider list, or takes nearly everything as a tax. Buyers see a rising price and a healthy-looking pool while only insiders can cash out. It matters because the loss is usually total and cannot be seen from the token's interface: a honeypot has the same function list as an ordinary ERC20.
+'''
+what_to_check = '''
+Run the sell rehearsal (a buy then a sell on a fork). A verdict of sell_blocked is a measured result: read its reason and failure kind. A pass only shows what happens now, because an owner can change rules later, so also check the blacklist, fee-setter and pause signals. On Uniswap V3 pools a token that taxes transfers also shows as a failed sell. Cooldowns and trading windows can look like a block. An identify result listing the ERC-20 interface under near_misses (most but not all of its functions) is a hint that the token was modified, which is how many honeypots are made.
+'''
+look_for_in_code = '''
+Pattern: the transfer logic (an internal _transfer, or a hook such as _beforeTokenTransfer or _update) branches on who is sending or receiving, and a sale is a transfer to the pool address.
+Vulnerable when: a sale can revert or be taxed heavily unless the sender is on an allow list, is the owner, or a flag the owner controls is set (trading enabled, a per-address "bot" or blacklist mapping, a maximum sell amount that can be set near zero, a cooldown the owner can stretch). Also when a sell fee can be set close to 100% by a function the owner can call.
+Safe form: transfers to the pool follow the same rules as any transfer, rules are fixed at deployment or bounded by a cap written in the code, and no changeable list of addresses can block sellers.
+False alarms: a short, bounded anti-bot window at launch, a small fixed sell tax, a reasonable max-transaction limit that cannot be lowered, a documented pause held by a multisig or timelock.
+'''
+source_keywords = ["_transfer", "_beforeTokenTransfer", "_update", "tradingEnabled", "isBot", "maxSellAmount"]

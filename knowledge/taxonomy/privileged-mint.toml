@@ -1,0 +1,19 @@
+title = "Privileged minting"
+group = "token_tricks"
+summary = "A privileged account can create new tokens at will, diluting every other holder."
+applies_to = ["erc20", "erc721", "erc1155"]
+visible_in = ["tools", "bytecode", "source"]
+signals = ["risk.kind=mint"]
+description = '''
+If an account can mint without limit, the supply is whatever that account decides. Newly minted tokens can be sold into the pool, taking the pool's other asset and leaving holders with a worthless balance. Minting is normal for stablecoins and reward tokens, where it is the point of the design, so the questions are who controls it and what limits it.
+'''
+what_to_check = '''
+Check the signal's strength and whether the matched reference has a mint function too (in_reference). An extra mint function on a copy of a standard token is the classic warning. The tools cannot tell who can call it, whether a supply cap exists, or whether minting is gated by a timelock.
+'''
+look_for_in_code = '''
+Pattern: a function that increases total supply and a balance (mint, issue, _mint called from an external function) and a rule for who may call it.
+Vulnerable when: the caller check is one owner address, there is no cap (require(totalSupply() + amount <= MAX_SUPPLY)), the cap itself can be changed, or minting is reachable through another function (a "reward" or "airdrop" function that calls _mint).
+Safe form: a fixed supply minted once at deployment, or a mint restricted to a governed contract with a hard cap and a timelock.
+False alarms: a mint role held by a documented staking or bridge contract with its own limits, and a constructor-only mint.
+'''
+source_keywords = ["mint", "_mint", "MAX_SUPPLY", "maxSupply", "totalSupply"]

@@ -1,0 +1,18 @@
+title = "Cross-chain message validation"
+group = "defi"
+summary = "A bridge or messaging contract accepts a message it should have rejected, such as a forged, replayed or wrongly routed one."
+applies_to = ["any"]
+visible_in = ["source", "external"]
+description = '''
+Bridges move value between chains by relaying messages. If the receiving side does not fully verify who sent a message, which chain it came from, and whether it was already processed, a forged or replayed message can release funds that were never locked on the other side. Bridges hold large pooled balances, so a single validation gap is costly, and trust in the set of off-chain validators or guardians is itself a risk.
+'''
+what_to_check = '''
+Not visible to the current tools. Identify who can sign or relay messages (a validator set, a light client, a guardian), how many are needed, and whether they can be changed by a single key. State that trust assumption in the report.
+'''
+look_for_in_code = '''
+Pattern: a function that receives a message from another chain (a relay, a receive or handle callback) and then mints, unlocks or calls.
+Vulnerable when: the sender or source-chain check is missing or compares the wrong field, a message identifier is not recorded after use (replay), signatures are verified without a threshold or with duplicates allowed, the destination can be set by the message, or an admin can change the verifier or pause everything without delay.
+Safe form: the source chain and sender are checked against stored values, each message is processed once, the signature threshold counts distinct trusted signers, and admin changes go through a timelock.
+False alarms: a bridge whose message format is validated by a canonical, audited light client.
+'''
+source_keywords = ["handle", "receiveMessage", "processed", "verifySignatures", "sourceChain", "guardian"]

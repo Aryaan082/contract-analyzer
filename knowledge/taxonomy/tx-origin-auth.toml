@@ -1,0 +1,32 @@
+title = "Authorization with tx.origin"
+group = "admin_power"
+summary = "The contract checks who started the transaction instead of who called it, so a phishing call can use the owner's rights."
+applies_to = ["any"]
+visible_in = ["bytecode", "source"]
+opcodes = ["ORIGIN"]
+description = '''
+tx.origin is the account that started the whole transaction, even through several contracts. If a contract uses it to decide who is allowed, then when the owner interacts with any malicious contract, that contract can call the owner-only functions and pass the check. The safe check is msg.sender, the direct caller. The bug is old and well known, and its presence suggests weak review.
+'''
+what_to_check = '''
+The ORIGIN opcode in bytecode is the trace of tx.origin. Some contracts use it harmlessly (for example to refund gas to the sender or to block calls from contracts), so a hit means "read how it is used". Opcode scanning for ORIGIN is not built into the tools yet; report it as not checked until it is.
+'''
+look_for_in_code = '''
+Pattern: tx.origin appearing in a require, modifier or if that guards a privileged action.
+Vulnerable when: the comparison decides authorization (require(tx.origin == owner)).
+Safe form: authorization with msg.sender, or an access-control library.
+False alarms: tx.origin used only to attribute an event, send a refund to the transaction sender, or require that the caller is an externally owned account (tx.origin == msg.sender) as a rough anti-contract rule.
+'''
+example_vulnerable = '''
+function withdrawAll() external {
+    require(tx.origin == owner);
+    payable(owner).transfer(address(this).balance);
+}
+'''
+example_safe = '''
+function withdrawAll() external {
+    require(msg.sender == owner);
+    payable(owner).transfer(address(this).balance);
+}
+'''
+source_keywords = ["tx.origin"]
+references = [{ title = "SWC-115 Authorization through tx.origin", url = "https://swcregistry.io/docs/SWC-115" }]

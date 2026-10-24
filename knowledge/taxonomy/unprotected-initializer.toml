@@ -1,0 +1,29 @@
+title = "Initializer that anyone can call"
+group = "upgradeability"
+summary = "An initialize function can be called by an outsider, or called again, and sets the owner or other critical state."
+applies_to = ["any"]
+visible_in = ["source", "bytecode"]
+description = '''
+Contracts behind proxies cannot use constructors, so they set their owner and settings in an initialize function. If that function can be called by anyone before the team calls it, or called a second time, an outsider can take ownership. An implementation contract that is left uninitialised can also be taken over directly, and in some designs that lets the attacker destroy or replace it for every proxy that uses it.
+'''
+what_to_check = '''
+Look for an initialize or init function selector in the contract's function list. Whether it is guarded is visible only in source or by calling it on a fork from an unrelated address (an access probe). If neither is possible, report it as not checked. A proxy deployed in one transaction with its initialisation data is much safer than one initialised later.
+'''
+look_for_in_code = '''
+Pattern: a function named initialize, init or setUp that writes the owner or other privileged state.
+Vulnerable when: it has no initializer guard, or the guard can be reset; it is public and can be called by anyone after deployment; the implementation contract itself is never initialised or locked; or a re-initializer can be called with attacker-chosen data.
+Safe form: the library initializer modifier (runs once), the constructor of the implementation calls the disable-initializers function, and the proxy is created with the initialisation call included.
+False alarms: an initializer that only the deployer can call in the same transaction that creates the contract, and view functions with similar names.
+'''
+example_vulnerable = '''
+function initialize(address _owner) external {
+    owner = _owner;
+}
+'''
+example_safe = '''
+function initialize(address _owner) external initializer {
+    owner = _owner;
+}
+'''
+source_keywords = ["initialize", "initializer", "reinitializer", "_disableInitializers"]
+references = [{ title = "OpenZeppelin: writing upgradeable contracts", url = "https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable" }]

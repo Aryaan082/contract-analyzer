@@ -1,0 +1,31 @@
+title = "Unchecked result of an external call"
+group = "code_bugs"
+summary = "A failed call or token transfer is ignored, so the contract carries on as if it succeeded."
+applies_to = ["any"]
+visible_in = ["source"]
+description = '''
+Low-level calls (call, send, delegatecall) and some token transfers return false instead of reverting when they fail. If the contract ignores that result, it can record a payment that never happened, or skip a step it believed it completed. Tokens that return nothing, or return false on failure, make the same mistake easy when the code assumes every transfer works.
+'''
+what_to_check = '''
+Not visible to the current tools. In verified source, find each low-level call and token transfer and see whether the return value is tested. A safe-transfer library wrapper handles the token cases.
+'''
+look_for_in_code = '''
+Pattern: call, send, delegatecall, or an ERC20 transfer or transferFrom whose returned boolean is not read.
+Vulnerable when: a state change or event assumes the call succeeded, or the result is captured in a variable that is never checked.
+Safe form: require the success flag, or use a library that reverts on failure (SafeERC20, Address.sendValue), and prefer transfer-then-check-balance for unusual tokens.
+False alarms: a deliberate best-effort call whose failure is acceptable and documented, such as a notification to a hook.
+'''
+example_vulnerable = '''
+function pay(address to, uint256 amount) external {
+    token.transfer(to, amount);
+    paid[to] += amount;
+}
+'''
+example_safe = '''
+function pay(address to, uint256 amount) external {
+    token.safeTransfer(to, amount);
+    paid[to] += amount;
+}
+'''
+source_keywords = [".call(", ".send(", ".transfer(", "transferFrom(", "SafeERC20"]
+references = [{ title = "SWC-104 Unchecked Call Return Value", url = "https://swcregistry.io/docs/SWC-104" }]

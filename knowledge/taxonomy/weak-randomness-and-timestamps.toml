@@ -1,0 +1,31 @@
+title = "Weak randomness and timestamp dependence"
+group = "code_bugs"
+summary = "Block data used as a random number or an exact clock can be predicted or nudged by the party who benefits."
+applies_to = ["any"]
+visible_in = ["bytecode", "source"]
+opcodes = ["TIMESTAMP", "NUMBER", "PREVRANDAO", "BLOCKHASH"]
+description = '''
+Values such as block.timestamp, block.number, blockhash and prevrandao are visible to everyone and can be influenced by whoever builds the block. A lottery or reward that uses them as randomness can be predicted or gamed, and logic that depends on an exact time can be shifted by the block producer by a few seconds. Plain time windows measured in hours or days are fine; it is the use as a random source or for tight tie-breaks that is risky.
+'''
+what_to_check = '''
+The opcodes appear in bytecode wherever such values are read, and TIMESTAMP is common and mostly innocent, so a hit only means "read how it is used". The current tools do not scan for these opcodes; report as not checked until they do.
+'''
+look_for_in_code = '''
+Pattern: keccak256 over block.timestamp, block.number, blockhash or prevrandao to choose a winner, a trait or a payout, or a comparison against block.timestamp with a very small tolerance.
+Vulnerable when: money or rare items depend on the result, and the caller can see the inputs before deciding to submit the transaction, or a block producer can choose to include it.
+Safe form: a verifiable randomness service or a commit-reveal scheme for anything of value, and timing rules that tolerate a minute or more of drift.
+False alarms: timestamps used for vesting schedules, cooldowns and expiry measured in hours or longer.
+'''
+example_vulnerable = '''
+uint256 winner = uint256(
+    keccak256(abi.encodePacked(block.timestamp, block.prevrandao))
+) % players.length;
+'''
+example_safe = '''
+// request randomness from a verifiable source and pick the winner in its callback
+function fulfill(uint256 requestId, uint256 random) internal {
+    winner = players[random % players.length];
+}
+'''
+source_keywords = ["block.timestamp", "block.number", "blockhash", "prevrandao", "now"]
+references = [{ title = "SWC-120 Weak Sources of Randomness from Chain Attributes", url = "https://swcregistry.io/docs/SWC-120" }, { title = "SWC-116 Block values as a proxy for time", url = "https://swcregistry.io/docs/SWC-116" }]

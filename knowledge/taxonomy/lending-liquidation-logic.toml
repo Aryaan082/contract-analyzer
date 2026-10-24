@@ -1,0 +1,19 @@
+title = "Lending and liquidation logic errors"
+group = "defi"
+summary = "Collateral, interest or liquidation rules are computed wrongly, leaving bad debt or letting borrowers escape liquidation."
+applies_to = ["aave_pool", "compound_v2_ctoken", "compound_v3_comet"]
+visible_in = ["tools", "source"]
+signals = ["identify.kind=aave_pool", "identify.kind=compound_v2_ctoken", "identify.kind=compound_v3_comet"]
+description = '''
+A lending market must always be able to liquidate unhealthy loans at a profit for the liquidator, or the debt becomes a loss for depositors. Bugs show up as collateral that is counted twice, a special mode (isolated collateral, category limits) that can be bypassed, interest indexes that stop updating, or a liquidation that reverts for certain positions. The audit findings collected here include several of these in lending code.
+'''
+what_to_check = '''
+identify reports whether the market is an official deployment of its protocol (registry status). An official deployment has been through the protocol's own audits and governance; an unlisted or lookalike one has not. The tools do not test liquidation. For anything not official, read the collateral, borrow and liquidation paths in source.
+'''
+look_for_in_code = '''
+Pattern: functions that update a user's collateral, debt and interest indexes, and the liquidation entry point.
+Vulnerable when: a state change in one function skips a check that another function has (an isolation-mode or borrow-cap check), health is computed before interest accrues, a liquidation can be blocked by a revert in a transfer or hook, collateral flags can be set without validating the asset, or rounding favours the borrower.
+Safe form: one shared validation path for every function that changes positions, interest accrued before every calculation, caps checked on all entry points, and fuzz tests for the invariant that every position is either healthy or liquidatable.
+False alarms: differences between functions that are intentional and documented.
+'''
+source_keywords = ["liquidationCall", "healthFactor", "borrowIndex", "collateral", "isolation", "accrueInterest"]

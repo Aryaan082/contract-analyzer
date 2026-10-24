@@ -1,0 +1,36 @@
+title = "Reentrancy"
+group = "code_bugs"
+summary = "The contract sends value or calls out before updating its own state, so the callee can call back in and repeat the action."
+applies_to = ["any"]
+visible_in = ["source", "bytecode"]
+opcodes = ["CALL", "SSTORE"]
+description = '''
+Reentrancy happens when a function makes an external call, such as sending ETH or calling a token or hook, before it has finished updating its own records. The callee can call back into the contract while its state is still out of date and repeat the step, for example withdrawing the same balance more than once. It appears directly in one function, across several functions that share state, and through token hooks (ERC777, ERC721 safe transfers) and view functions read during a callback.
+'''
+what_to_check = '''
+From bytecode only a CALL followed by an SSTORE in the same path is a rough hint that needs control-flow analysis; the current tools do not do it, so report it as not checked. In verified source, read every function that makes an external call and look at what happens to storage afterwards. Look for a reentrancy guard on those functions.
+'''
+look_for_in_code = '''
+Pattern: an external call (call, transfer, send, a token transfer, a hook, a callback) followed later in the same function by a write to storage that the call's outcome depends on.
+Vulnerable when: the state the callee could exploit (a balance, a flag, a share count, an approval) is updated after the call; or a guard protects one function but not another that shares the same state; or a read-only function used by other contracts returns stale values during a call.
+Safe form: checks-effects-interactions (check, then update state, then make the external call), a nonReentrant modifier on every function that shares state, pull payments instead of push.
+False alarms: calls to a fixed, trusted contract that cannot call back, and calls that come last after all state updates.
+'''
+example_vulnerable = '''
+function withdraw() external {
+    uint256 amount = balances[msg.sender];
+    (bool ok, ) = msg.sender.call{value: amount}("");
+    require(ok);
+    balances[msg.sender] = 0;
+}
+'''
+example_safe = '''
+function withdraw() external nonReentrant {
+    uint256 amount = balances[msg.sender];
+    balances[msg.sender] = 0;
+    (bool ok, ) = msg.sender.call{value: amount}("");
+    require(ok);
+}
+'''
+source_keywords = ["call{value", ".call(", "nonReentrant", "ReentrancyGuard", "safeTransfer", "onERC721Received"]
+references = [{ title = "SWC-107 Reentrancy", url = "https://swcregistry.io/docs/SWC-107" }, { title = "OpenZeppelin ReentrancyGuard", url = "https://docs.openzeppelin.com/contracts/5.x/api/utils#ReentrancyGuard" }]

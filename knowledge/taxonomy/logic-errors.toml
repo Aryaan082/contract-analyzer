@@ -1,0 +1,25 @@
+title = "Logic errors"
+group = "code_bugs"
+summary = "The contract runs, but one of its own rules is implemented wrongly or only on some paths, and the gap can be used."
+applies_to = ["any"]
+visible_in = ["source"]
+description = '''
+A logic error is a flaw in the rules a contract enforces, not a coding slip a compiler or a checker would catch. Rewards are computed from the wrong account, a limit is checked in one function but forgotten in a sibling that changes the same state, fees are collected without reducing the books, an interest index is read before it is updated. The code does exactly what it says; what it says is wrong. These are the hardest class to find with tools and the one behind many of the high-severity audit findings in lending and exchange code.
+'''
+what_to_check = '''
+Not visible to the current tools. For a known protocol, identify's registry status tells you whether this is the official deployment that its own audits covered. For anything else, write down the invariants the contract should keep (total debt equals the sum of positions, shares follow deposits, every path respects the same limit) and check each against the code, or against the matching audit findings.
+'''
+look_for_in_code = '''
+Pattern: state that is changed in more than one function, a rule or limit that guards it, and a function that acts on behalf of another account.
+Vulnerable when: a check exists in one path but not in another that changes the same state; the wrong account's data is read (the caller instead of the account acted for); a value is used before it has been brought up to date (interest, rewards, reserves); a side effect is missing after a step (fees collected but reserves not reduced); or two features interact in a way neither expected.
+Safe form: each rule enforced in one shared function that every path calls, the invariants written down and tested with fuzzing, and per-account data always read for the right account.
+False alarms: differences between functions that are intentional and documented.
+'''
+example_vulnerable = '''
+// borrowing on behalf of another account, but reading the caller's settings
+uint8 mode = userEMode[msg.sender];
+'''
+example_safe = '''
+uint8 mode = userEMode[onBehalfOf];
+'''
+source_keywords = ["onBehalfOf", "msg.sender", "accrue", "updateState", "invariant"]

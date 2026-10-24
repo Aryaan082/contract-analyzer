@@ -1,0 +1,20 @@
+title = "Transfers can be paused"
+group = "token_tricks"
+summary = "A privileged account can pause the token so that no one can transfer it until it chooses to resume."
+applies_to = ["erc20", "erc721", "erc1155"]
+visible_in = ["tools", "bytecode", "source"]
+signals = ["risk.kind=pause"]
+description = '''
+A pause switch is an emergency brake: when something goes wrong, the controller halts transfers. It protects holders if used well. It also lets the controller freeze everyone, including the ability to sell, for as long as it likes. Major stablecoins have one; in an anonymous project the same switch means holders can be trapped.
+'''
+what_to_check = '''
+Check the signal's strength and whether the matched reference contract has it as well (in_reference). A pause in an OpenZeppelin-style token is common and usually guarded by a role. The tools cannot say who can call it or whether it is used. Compare with the sell rehearsal: a token paused right now will show a blocked trade.
+'''
+look_for_in_code = '''
+Pattern: a paused flag set by pause/unpause, tested by a whenNotPaused modifier on transfer, transferFrom or the transfer hook.
+Vulnerable when: one account can pause at any time with no delay or limit, the pause also covers selling or redemption but not the owner's own transfers, or it can be re-triggered right after being lifted.
+Safe form: a pause held by a multisig or governance with a timelock, a documented purpose, and exits (such as withdrawals) that still work while paused.
+False alarms: a pause that affects only new minting or a specific module, and a pause on a bridge or vault that is part of a documented incident process.
+'''
+source_keywords = ["whenNotPaused", "paused", "_pause", "Pausable"]
+references = [{ title = "OpenZeppelin Pausable", url = "https://docs.openzeppelin.com/contracts/5.x/api/utils#Pausable" }]

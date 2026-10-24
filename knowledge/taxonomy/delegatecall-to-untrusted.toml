@@ -1,0 +1,33 @@
+title = "delegatecall to an address someone else can choose"
+group = "upgradeability"
+summary = "The contract runs another contract's code with its own storage and funds, and the target can be influenced by outsiders."
+applies_to = ["any"]
+visible_in = ["tools", "bytecode", "source"]
+signals = ["risk.kind=delegatecall_opcode"]
+opcodes = ["DELEGATECALL", "CALLCODE"]
+description = '''
+delegatecall runs the code of another contract inside the caller's own context: it can read and write the caller's storage and spend its balance. That is how proxies work, and it is safe only when the target is fixed or tightly controlled. If the target address, or the data sent to it, can be chosen by an outsider, they can run any code against the contract's funds and state.
+'''
+what_to_check = '''
+The opcode scan reports whether DELEGATECALL or SELFDESTRUCT instructions exist, which is only evidence they may be reachable, not proof. Many proxies legitimately have one. Combine with the proxy information from identify: a DELEGATECALL in a known proxy pattern is expected; one in an unrecognised contract deserves a close read.
+'''
+look_for_in_code = '''
+Pattern: delegatecall, callcode or assembly that performs them, and where the target address and the call data come from.
+Vulnerable when: the target is a function parameter, read from storage that outsiders or a low-privilege role can set, or computed from untrusted data; or the target can be a contract that was destroyed or never had code.
+Safe form: the target is an immutable or governance-controlled implementation, the call is only reachable through a trusted path, and the target is checked to have code.
+False alarms: library calls to a fixed library address, and standard proxy forwarding to the stored implementation.
+'''
+example_vulnerable = '''
+function execute(address target, bytes calldata data) external {
+    target.delegatecall(data);
+}
+'''
+example_safe = '''
+function execute(bytes calldata data) external onlyOwner {
+    require(implementation.code.length > 0, "no code");
+    (bool ok, ) = implementation.delegatecall(data);
+    require(ok, "failed");
+}
+'''
+source_keywords = ["delegatecall", "callcode", "Address.functionDelegateCall"]
+references = [{ title = "SWC-112 Delegatecall to Untrusted Callee", url = "https://swcregistry.io/docs/SWC-112" }]

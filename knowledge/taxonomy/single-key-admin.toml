@@ -1,0 +1,20 @@
+title = "One key controls the contract"
+group = "admin_power"
+summary = "A single account holds the powers to mint, pause, upgrade or withdraw, so its key is the real security of the system."
+applies_to = ["any"]
+visible_in = ["tools", "external"]
+signals = ["risk.kind=upgrade", "risk.kind=mint", "risk.kind=owner_withdraw", "risk.kind=pause"]
+description = '''
+When one externally owned account holds the admin role, the contract is exactly as safe as that person's key and honesty. A stolen or sold key, a mistaken transaction or an exit by the team can change fees, mint tokens or replace the code. Audit reports call this a centralization risk. A multisig, a timelock or a governance vote spreads that trust.
+'''
+what_to_check = '''
+The risk signals show which powers exist. Read the owner or admin address (and the proxy admin slot if the contract is a proxy) and check whether it is a plain account or a contract such as a multisig or timelock. The tools do not do that lookup today, so report it as not checked when you cannot do it.
+'''
+look_for_in_code = '''
+Pattern: an owner or admin variable set in the constructor or initializer, and the functions it alone can call.
+Vulnerable when: the owner is a single address, ownership can be transferred in one step to any address, powers are broad (several of mint, pause, upgrade, withdraw, fee change in one role), and nothing delays or limits their use.
+Safe form: roles split by purpose, held by a multisig with a delay on sensitive actions, two-step ownership transfer, and renounced or removed powers where they are no longer needed.
+False alarms: an admin that is a well-known multisig and timelock with public signers, and powers limited to narrow, bounded actions.
+'''
+source_keywords = ["owner", "admin", "transferOwnership", "Ownable2Step", "renounceOwnership"]
+references = [{ title = "OpenZeppelin Ownable", url = "https://docs.openzeppelin.com/contracts/5.x/api/access#Ownable" }]

@@ -1,0 +1,25 @@
+title = "Front-running and missing slippage protection"
+group = "code_bugs"
+summary = "A trade or action can be sandwiched or pre-empted because it accepts any price or can be seen before it lands."
+applies_to = ["any"]
+visible_in = ["source"]
+description = '''
+Pending transactions are public. Someone can see a swap, place their own trade just before and after it (a sandwich), and keep the difference. A contract that swaps with no minimum output, or an auction or reveal that can be pre-empted, hands that value away. Aggregators and vaults that swap on the user's behalf are especially exposed when they accept any price.
+'''
+what_to_check = '''
+Not visible to the current tools. In verified source, find each swap, deposit or price-sensitive action and see whether the caller sets a minimum output or a deadline, or whether the contract hard-codes zero.
+'''
+look_for_in_code = '''
+Pattern: calls to a router or pool to swap, add liquidity or exchange with an amount-out minimum, a deadline, or neither.
+Vulnerable when: the minimum is zero or computed from the same pool's current spot price, the deadline is block.timestamp itself, a harvest or rebalance can be triggered by anyone and swaps on the spot price, or the outcome depends on transaction order in a way a visible transaction reveals.
+Safe form: a caller-supplied minimum output and deadline, prices checked against an independent oracle, private submission for sensitive actions, and commit-reveal for auctions.
+False alarms: swaps of trivial value, and operations where order does not change the result.
+'''
+example_vulnerable = '''
+router.swapExactTokensForTokens(amountIn, 0, path, address(this), block.timestamp);
+'''
+example_safe = '''
+router.swapExactTokensForTokens(amountIn, minOut, path, address(this), deadline);
+'''
+source_keywords = ["swapExactTokensForTokens", "amountOutMin", "minAmountOut", "deadline", "slippage"]
+references = [{ title = "SWC-114 Transaction Order Dependence", url = "https://swcregistry.io/docs/SWC-114" }]

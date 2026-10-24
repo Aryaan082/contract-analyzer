@@ -1,0 +1,30 @@
+title = "Missing validation of inputs and settings"
+group = "code_bugs"
+summary = "A function accepts an untrusted address, amount or setting with no check, so a crafted value can move funds or break accounting."
+applies_to = ["any"]
+visible_in = ["source"]
+description = '''
+Some functions take an argument, a token or contract address, or a setting that someone else chooses, and the contract never checks it. When the missing check lets a crafted value through, the result is lost funds or broken accounting: an arbitrary token or wrapper contract that is trusted as if it were honest (so it can keep an approval or misreport balances), a zero or oversized amount that skips a safety step, a fee or rate with no ceiling, a recipient that is never checked. A gap that only an admin could hit by mistake, such as a zero address in an admin-only setter, is housekeeping and not what this entry is about.
+'''
+what_to_check = '''
+Not visible to the current tools. In verified source, read each external function and setter and list what the code assumes about its arguments, then look for the matching require.
+'''
+look_for_in_code = '''
+Pattern: parameters used as token or contract addresses, amounts, rates or indexes with no check before use, in a function that moves value or changes who may.
+Vulnerable when: an outsider can supply an untrusted token or wrapper that the contract then approves, calls or trusts; an amount can be zero or larger than the balance and skip an invariant; a fee or percentage can exceed its maximum; an index or length is not bounded; two related settings can contradict each other; or the check is on the wrong variable or uses the wrong comparison (== where >= is meant).
+Safe form: explicit require statements for ranges and trusted addresses at the point of use, constants for limits, and tests at the boundaries.
+False alarms: validation that happens in a called function or modifier you have not opened; zero values that are intentionally allowed; setters that only an admin can call and whose worst case is a mistake, not an exploit.
+'''
+example_vulnerable = '''
+function setFee(uint256 newFee) external onlyOwner {
+    fee = newFee;
+}
+'''
+example_safe = '''
+function setFee(uint256 newFee) external onlyOwner {
+    require(newFee <= MAX_FEE, "fee too high");
+    fee = newFee;
+}
+'''
+source_keywords = ["require(", "revert", "address(0)", "<=", ">="]
+references = [{ title = "Solidity security considerations", url = "https://docs.soliditylang.org/en/latest/security-considerations.html" }]

@@ -1,0 +1,20 @@
+title = "Approving a contract that can change or take funds"
+group = "token_tricks"
+summary = "An approval lets a contract move your tokens; if that contract can be upgraded or drained, so can your allowance."
+applies_to = ["any"]
+visible_in = ["tools", "bytecode", "source"]
+signals = ["risk.kind=upgrade", "risk.kind=delegatecall_opcode", "risk.kind=owner_withdraw", "identify.summary=unrecognized"]
+description = '''
+Approving a token gives a contract the standing right to move up to the approved amount from your wallet, and many sites ask for an unlimited amount. The approval does not expire when you stop using the site. If the approved contract is upgradeable, executes code chosen by someone else, or has a function to sweep funds, then whoever controls it can later use your approval in ways you never saw. This is why "is it safe to approve" is a question about the contract's controllers as much as its code today.
+'''
+what_to_check = '''
+Identify the contract: official, lookalike or unrecognized. Check upgrade, delegatecall and owner-withdraw signals and whether it sits behind a proxy (identify reports EIP-1967, legacy OpenZeppelin and EIP-1167 proxies). An unrecognized contract with any of these has no track record to lean on. Suggest approving only the amount needed, and revoking afterwards.
+'''
+look_for_in_code = '''
+Pattern: a contract that pulls tokens with transferFrom using an allowance the user gave it.
+Vulnerable when: the spender can be upgraded, calls into an address supplied by someone else (delegatecall or an arbitrary call target), or has an owner-only function that can move tokens it was allowed to pull; or when the code transfers from msg.sender to a recipient chosen from untrusted input.
+Safe form: transferFrom is used only for the exact amount of the user's own action, to a fixed destination, in an immutable contract; permit signatures have a deadline and a nonce.
+False alarms: an upgradeable proxy governed by a timelock and a public multisig, a router that pulls tokens only for the swap the user just requested.
+'''
+source_keywords = ["transferFrom", "safeTransferFrom", "type(uint256).max", "approve"]
+references = [{ title = "EIP-20: Token Standard (allowance)", url = "https://eips.ethereum.org/EIPS/eip-20" }]

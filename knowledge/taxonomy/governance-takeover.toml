@@ -1,0 +1,19 @@
+title = "Governance takeover"
+group = "defi"
+summary = "Voting power can be borrowed, concentrated or bypassed, letting one party pass proposals that move the protocol's funds."
+applies_to = ["any"]
+visible_in = ["source", "external"]
+description = '''
+Protocols controlled by token voting can be taken over if votes can be acquired cheaply for a moment (a flash loan, a snapshot taken at the wrong time), if a few holders already control a majority, or if a quorum or timelock is low or missing. A malicious proposal can then upgrade the contracts or send out the treasury. Good designs measure voting power at a past block, require a delay, and keep a veto or guardian for emergencies.
+'''
+what_to_check = '''
+Not visible to the current tools. For a protocol with governance, look at token distribution, quorum and proposal thresholds, the voting delay and the timelock, and whether the governor can upgrade contracts or move the treasury.
+'''
+look_for_in_code = '''
+Pattern: a governor or voting contract that counts token balances, delegated votes or snapshots, and executes proposals.
+Vulnerable when: votes are read at the current block (not a past snapshot), a quorum is a small share of supply, proposals can be executed without a delay, the proposer threshold is tiny or the proposal can call any contract, or the governor controls upgrades with no veto.
+Safe form: checkpointed voting power, a voting delay and period, a timelock between passing and executing, a meaningful quorum, and limits on what a proposal can touch.
+False alarms: governance over parameters only, with the ability to upgrade held elsewhere.
+'''
+source_keywords = ["getPastVotes", "quorum", "propose", "castVote", "TimelockController", "votingDelay"]
+references = [{ title = "OpenZeppelin Governance", url = "https://docs.openzeppelin.com/contracts/5.x/api/governance" }]

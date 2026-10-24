@@ -1,0 +1,18 @@
+title = "Unlocked liquidity"
+group = "token_tricks"
+summary = "The liquidity-pool tokens are held by an account that can remove them, so the pool can be emptied at any time."
+applies_to = ["erc20"]
+visible_in = ["external"]
+description = '''
+When a project adds a token and ETH to a trading pool it receives liquidity-pool (LP) tokens that represent the right to take that liquidity back. If those LP tokens sit in an ordinary wallet, their holder can withdraw the pool in one transaction, leaving buyers holding a token nobody can buy. Locking the LP tokens in a time-lock contract, or burning them, removes that option. This is the most common form of rug pull and cannot be seen from the token's code.
+'''
+what_to_check = '''
+None of the current tools reads this. It needs the pool's LP token holders: who holds the LP supply, whether that holder is a known lock contract and for how long, or whether the LP tokens were sent to a burn address. Say so in the report rather than implying the pool is safe. The sell rehearsal says nothing about it: a pool can be sellable today and withdrawn tomorrow.
+'''
+look_for_in_code = '''
+Pattern: code that creates a pool or adds liquidity (addLiquidity, addLiquidityETH, a pair created by the factory) and then handles the LP tokens it receives.
+Vulnerable when: the LP tokens are sent to the deployer or owner, or the contract has a function to remove liquidity that the owner can call.
+Safe form: the LP tokens go to a lock contract with a long, stated unlock time, or to the dead address; no function in the token removes liquidity.
+False alarms: protocol-owned liquidity managed by a governed contract with a timelock, and pools that belong to others where the token has no role.
+'''
+source_keywords = ["addLiquidityETH", "removeLiquidity", "lockLiquidity", "createPair"]

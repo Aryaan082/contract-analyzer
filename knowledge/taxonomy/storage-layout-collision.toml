@@ -1,0 +1,20 @@
+title = "Storage layout collision between proxy and implementation"
+group = "upgradeability"
+summary = "Proxy and implementation write to the same storage slot for different purposes, corrupting state."
+applies_to = ["any"]
+visible_in = ["source", "bytecode"]
+signals = ["identify.proxy=eip1967_slot", "identify.proxy=legacy_oz_slot"]
+description = '''
+A proxy runs the implementation's code against the proxy's own storage. Variables are stored by position, so if the proxy keeps its own variable in the same slot the implementation uses for a balance, or a new implementation version reorders variables, values are overwritten with meaning they were never meant to have. Standardised slots (EIP-1967) exist to keep the proxy's variables out of the way; the remaining risk is between versions of the implementation.
+'''
+what_to_check = '''
+The proxy kind from identify tells you a proxy is present, which is why this entry is raised. Whether the layouts collide needs the storage layout of both contracts, which is visible in source or recoverable from bytecode with limits. Report it as not checked unless you compared them.
+'''
+look_for_in_code = '''
+Pattern: variable declarations in a proxy and an implementation, and in each upgraded version of the implementation.
+Vulnerable when: the proxy declares ordinary state variables at the start of its storage; a new version inserts, removes or reorders variables in the middle; a parent contract is added or changed in the inheritance order; or a variable's type changes size.
+Safe form: new variables only at the end, reserved gaps in base contracts, namespaced storage (ERC-7201) or standardised slots, and an automated layout check before each upgrade.
+False alarms: non-upgradeable contracts (no proxy), and variables that are intentionally replaced by a migration.
+'''
+source_keywords = ["__gap", "StorageSlot", "ERC7201", "sload", "sstore"]
+references = [{ title = "OpenZeppelin: storage gaps and layout in upgradeable contracts", url = "https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable" }]

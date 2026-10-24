@@ -1,0 +1,26 @@
+title = "Arithmetic overflow and rounding errors"
+group = "code_bugs"
+summary = "Numbers wrap around, lose precision or round in the wrong direction, so amounts come out wrong."
+applies_to = ["any"]
+visible_in = ["source"]
+description = '''
+Integer arithmetic on the EVM has no decimals. Overflow used to wrap silently before Solidity 0.8, and still can inside unchecked blocks, inline assembly and casts to smaller types. Division discards the remainder, so doing division before multiplication loses precision, and rounding in the wrong direction lets small repeated actions drain a pool or lets a rounded-down value become zero. These bugs are subtle and many audit findings in lending and AMM code are rounding issues.
+'''
+what_to_check = '''
+Not visible to the current tools beyond the compiler version, which is not recovered yet. In verified source, check the pragma version, every unchecked block and assembly arithmetic, every cast, and each division.
+'''
+look_for_in_code = '''
+Pattern: arithmetic that mixes amounts with different decimals, divides before multiplying, casts to a narrower type, or sits inside unchecked or assembly.
+Vulnerable when: a value can exceed the type's range, a division result can round to zero and bypass a check, rounding favours the user where it should favour the protocol (minting shares rounded up, withdrawing rounded up), or decimals of two tokens are mixed without scaling.
+Safe form: Solidity 0.8 or later with checked arithmetic by default, multiply before divide, explicit rounding direction chosen to protect the protocol, safe-cast helpers, and tests for tiny and huge values.
+False alarms: unchecked blocks proven safe by a preceding bound, and casts guarded by a range check.
+'''
+example_vulnerable = '''
+// fee rounds to 0 for small amounts
+uint256 fee = amount / 10000 * feeBps;
+'''
+example_safe = '''
+uint256 fee = (amount * feeBps) / 10000;
+'''
+source_keywords = ["unchecked", "assembly", "uint128(", "uint96(", "mulDiv", "SafeCast"]
+references = [{ title = "SWC-101 Integer Overflow and Underflow", url = "https://swcregistry.io/docs/SWC-101" }, { title = "Solidity: checked arithmetic", url = "https://docs.soliditylang.org/en/latest/control-structures.html#checked-or-unchecked-arithmetic" }]

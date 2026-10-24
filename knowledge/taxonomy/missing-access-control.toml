@@ -1,0 +1,31 @@
+title = "Privileged function without a proper caller check"
+group = "admin_power"
+summary = "A function that moves funds, mints, upgrades or destroys can be called by anyone, or by the wrong account."
+applies_to = ["any"]
+visible_in = ["source", "external"]
+signals = ["risk.kind=mint", "risk.kind=owner_withdraw", "risk.kind=upgrade", "risk.kind=destroy"]
+description = '''
+Access control decides who may call each sensitive function. When a check is missing, wrong or bypassable, an outsider can mint, withdraw, upgrade or destroy. Bytecode shows that a powerful function exists; it does not show who may call it, which is why a risk signal alone is not a finding. This is among the most common serious bugs in audit reports, often as a forgotten modifier on one function out of many.
+'''
+what_to_check = '''
+A risk signal tells you the capability exists. To learn whether it is protected, read the function in verified source, or run the access probe (call it from an unrelated address on a fork and see whether it reverts) if that probe exists. If neither is possible, report "not checked" for access control, never "no problem found".
+'''
+look_for_in_code = '''
+Pattern: every external or public function that changes privileged state, and the check at its top.
+Vulnerable when: there is no check; the check compares against a variable that anyone can set or that is never initialised; visibility is wrong (a function meant to be internal is public); the check is on the wrong variable; or the role can be granted by someone who should not hold that power.
+Safe form: one clear check at the top of each privileged function (an onlyOwner or role modifier from a tested library), roles managed by a small set of accounts, and administrative changes logged with events.
+False alarms: functions that are meant to be open (deposit, permissionless liquidation), and functions that are public but only act on the caller's own funds.
+'''
+example_vulnerable = '''
+function setOwner(address newOwner) external {
+    owner = newOwner;
+}
+'''
+example_safe = '''
+function setOwner(address newOwner) external onlyOwner {
+    require(newOwner != address(0), "zero address");
+    owner = newOwner;
+}
+'''
+source_keywords = ["onlyOwner", "onlyRole", "require(msg.sender", "external", "public"]
+references = [{ title = "OpenZeppelin Access Control", url = "https://docs.openzeppelin.com/contracts/5.x/access-control" }, { title = "SWC-105 Unprotected Ether Withdrawal", url = "https://swcregistry.io/docs/SWC-105" }]

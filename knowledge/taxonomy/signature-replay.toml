@@ -1,0 +1,31 @@
+title = "Signature replay and permit abuse"
+group = "code_bugs"
+summary = "A signed message can be reused (again, on another contract or chain) because it lacks a nonce or domain, or an approval signature is phished."
+applies_to = ["any"]
+visible_in = ["source"]
+description = '''
+Off-chain signatures authorise on-chain actions: permits, orders, meta-transactions, airdrop claims. If the signed message does not include a nonce, a deadline, the contract address and the chain ID, the same signature can be submitted twice, on a fork, or against a copy of the contract. Signatures can also be malleable. Separately, EIP-2612 permits let a user approve a spender by signing, which makes a signing prompt as dangerous as an approval transaction.
+'''
+what_to_check = '''
+Not visible to the current tools. In verified source, find each use of ecrecover or a signature library and see what the signed message contains and what is recorded after use. For a token with permit, remember that a signature request is an approval.
+'''
+look_for_in_code = '''
+Pattern: ecrecover or ECDSA.recover followed by an action.
+Vulnerable when: the message has no per-signer nonce that is consumed, no deadline, no chain ID and contract address (EIP-712 domain), signatures are accepted from the zero address when recovery fails, the signature itself is used as a unique key without normalising, or a stored used-signature flag is missing.
+Safe form: EIP-712 typed data with a domain separator that includes chain ID and contract, a nonce incremented on use, a deadline, a library for recovery that rejects invalid signatures, and checks that the recovered signer is not the zero address.
+False alarms: signatures that authorise a single, idempotent action with no value at stake.
+'''
+example_vulnerable = '''
+address signer = ecrecover(hash, v, r, s);
+require(signer == owner);
+balances[to] += amount;
+'''
+example_safe = '''
+require(!used[hash], "replayed");
+used[hash] = true;
+address signer = ECDSA.recover(hash, sig);
+require(signer == owner && signer != address(0));
+balances[to] += amount;
+'''
+source_keywords = ["ecrecover", "ECDSA", "permit", "nonce", "DOMAIN_SEPARATOR", "chainid"]
+references = [{ title = "EIP-712: Typed structured data hashing and signing", url = "https://eips.ethereum.org/EIPS/eip-712" }, { title = "EIP-2612: Permit extension for ERC-20", url = "https://eips.ethereum.org/EIPS/eip-2612" }, { title = "SWC-121 Missing Protection against Signature Replay Attacks", url = "https://swcregistry.io/docs/SWC-121" }]

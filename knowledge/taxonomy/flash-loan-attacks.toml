@@ -1,0 +1,18 @@
+title = "Flash loan manipulation"
+group = "defi"
+summary = "Capital borrowed and repaid within one transaction is used to move a price, a vote or a limit that the protocol reads in that same transaction."
+applies_to = ["any"]
+visible_in = ["source", "external"]
+description = '''
+A flash loan lends any amount with no collateral as long as it is repaid before the transaction ends. For that one transaction, anyone has the capital of a very large holder. The loan is not the bug: it multiplies weaknesses that depend on a balance, a price or a vote read at a single instant. A spot price used as an oracle, voting power counted at the current block, an exchange rate computed from raw token balances, a collateral check done before another step that changes it. Protocols defend with time-averaged prices, past-block voting power and accounting that does not move within a transaction.
+'''
+what_to_check = '''
+Not visible to the current tools. Ask whether the contract reads any value (a price, a share rate, voting power, a reserve ratio) that someone with unlimited temporary capital could change inside one transaction. For lending markets and pools, an official deployment (identify's registry status) has its own defences; for others, find where prices and rates come from and see the oracle and governance entries.
+'''
+look_for_in_code = '''
+Pattern: a value derived from current token balances or pool reserves (balanceOf(address(this)), getReserves, slot0, a total taken from raw balance) or from current-block votes, then used to price, lend, mint, vote or release funds.
+Vulnerable when: that value can be moved within one transaction and the contract acts on it in the same transaction with no delay, no average and no bound; or a step that changes the value is followed by a check that assumes it did not change.
+Safe form: time-weighted or independently sourced prices, voting power read at an earlier block, internal accounting instead of raw balances, and per-block or per-transaction limits where needed.
+False alarms: flash loans used for ordinary arbitrage or liquidation that the design expects, and values that cannot move within a transaction.
+'''
+source_keywords = ["flashLoan", "getReserves", "balanceOf(address(this))", "slot0", "getPastVotes"]
