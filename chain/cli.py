@@ -12,6 +12,7 @@ from web3 import Web3
 
 from chain.config import DEFAULT_CHAIN, load_env
 from chain.errors import ChainError, ToolError
+from chain.identify import Identity, identify_contract
 from chain.models import Provenance, ToolResult, normalize_address
 from chain.rpc import RpcClient, probe_chains
 from chain.selectors import SelectorsData, run_extract_selectors
@@ -99,6 +100,24 @@ def cmd_simulate_sell(args: argparse.Namespace, env: Mapping[str, str]) -> int:
     return 1 if isinstance(result.data, ToolError) else 0
 
 
+def cmd_identify(args: argparse.Namespace, env: Mapping[str, str]) -> int:
+    """Say what kind of contract this is, whether a protocol's own registry lists it, and which
+    further checks fit it."""
+    try:
+        client = RpcClient.connect(args.chain, env, args.block)
+    except ChainError as err:
+        failed = Provenance(chain=args.chain, chain_id=None, address=None, block=None, source="")
+        print(
+            ToolResult[Identity](provenance=failed, data=err.to_tool_error()).model_dump_json(
+                indent=2
+            )
+        )
+        return 1
+    result = identify_contract(client, args.address)
+    print(result.model_dump_json(indent=2))
+    return 1 if isinstance(result.data, ToolError) else 0
+
+
 def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m chain", description=__doc__)
     parser.add_argument("-v", "--verbose", action="store_true", help="log scrubbed RPC failures")
@@ -116,6 +135,13 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         "--chain", default=DEFAULT_CHAIN, help="with --address (default ethereum)"
     )
     selectors.add_argument("--block", type=int, help="with --address: pin to this block")
+    identify = commands.add_parser(
+        "identify",
+        help="what kind of contract this is, whether a protocol lists it, which checks fit",
+    )
+    identify.add_argument("--address", required=True, help="the contract's address")
+    identify.add_argument("--chain", default=DEFAULT_CHAIN, help="default ethereum")
+    identify.add_argument("--block", type=int, help="pin to this block (default: latest)")
     sell = commands.add_parser(
         "simulate-sell",
         help="rehearse buying then selling a token on a scratch copy of the chain (sends nothing)",
@@ -146,4 +172,6 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         return cmd_selectors(args, env)
     if args.command == "simulate-sell":
         return cmd_simulate_sell(args, env)
+    if args.command == "identify":
+        return cmd_identify(args, env)
     return 2
