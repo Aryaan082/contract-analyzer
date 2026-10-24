@@ -1,0 +1,122 @@
+{
+  "report": "morpho-v1-tob-2022-06",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "MorphoLabs.pdf",
+    "sha256": "011af7fa142120dfdf5a5bcef7a3b36bdf8fc8cc17a24477a2f41e5d1b0034cc",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "high": 2,
+    "low": 1,
+    "informational": 3,
+    "undetermined": 2
+  },
+  "table_rows": 8,
+  "findings": [
+    {
+      "id": "morpho-v1-tob-2022-06:TOB-MORPHO-6",
+      "report": "morpho-v1-tob-2022-06",
+      "protocol": "Morpho Protocol V1",
+      "auditor": "Trail of Bits",
+      "date": "2022-06",
+      "finding_id": "TOB-MORPHO-6",
+      "severity": "high",
+      "title": "Anyone can destroy Morpho’s implementation",
+      "category": "Access Controls",
+      "difficulty": "Low",
+      "affected_contract": "contracts/compound/Morpho*.sol",
+      "description": "An incorrect access control on the initialize function for Morpho’s implementation contract allows anyone to destroy the contract.\n\nMorpho uses the delegatecall proxy pattern for upgradeability:\n\n[code listing omitted]\n\nFigure 6.1: contracts/compound/MorphoStorage.sol#L16\n\nWith this pattern, a proxy contract is deployed and executes a delegatecall to the implementation contract for certain operations. Users are expected to interact with the system through this proxy. However, anyone can also directly call Morpho’s implementation contract.\n\nDespite the use of the proxy pattern, the implementation contract itself also has delegatecall capacities. For example, when called in the updateP2PIndexes function, setReserveFactor executes a delegatecall on user-provided addresses:\n\n[code listing omitted]\n\nFigure 6.2: contracts/compound/MorphoGovernance.sol#L203-L209\n\n[code listing omitted]\n\nFigure 6.3: contracts/compound/MorphoUtils.sol#L119-L126\n\nThese functions are protected by the onlyOwner modifier; however, the system’s owner is set by the initialize function, which is callable by anyone:\n\n[code listing omitted]\n\nFigure 6.4: contracts/compound/MorphoGovernance.sol#L114-L125\n\nAs a result, anyone can call Morpho.initialize to become the owner of the implementation and execute any delegatecall from the implementation, including to a contract containing a selfdestruct.\n\nDoing so will cause the proxy to point to a contract that has been destroyed.\n\nThis issue is also present in PositionsManagerForAave.",
+      "recommendation": "Short term, add a constructor in MorphoStorage and PositionsManagerForAaveStorage that will set an is_implementation variable to true and check that this variable is false before executing any critical operation (such as initialize, delegatecall, and selfdestruct). By setting this variable in the constructor, it will be set only in the implementation and not in the proxy.\n\nLong term, carefully review the pitfalls of using the delegatecall proxy pattern.",
+      "page": 23,
+      "page_end": 24,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/MorphoLabs.pdf",
+      "taxonomy": [
+        "missing-access-control",
+        "selfdestruct-and-destroy",
+        "upgradeable-implementation"
+      ]
+    },
+    {
+      "id": "morpho-v1-tob-2022-06:TOB-MORPHO-7",
+      "report": "morpho-v1-tob-2022-06",
+      "protocol": "Morpho Protocol V1",
+      "auditor": "Trail of Bits",
+      "date": "2022-06",
+      "finding_id": "TOB-MORPHO-7",
+      "severity": "undetermined",
+      "title": "Lack of return value checks during token transfers",
+      "category": "Data Validation",
+      "difficulty": "Undetermined",
+      "affected_contract": "contracts/compound/IncentivesVault.sol",
+      "description": "In certain parts of the codebase, contracts that execute transfers of the Morpho token do not check the values returned from those transfers.\n\nThe development of the Morpho token was not yet complete at the time of the audit, so we were unable to review the code specific to the Morpho token. Some tokens that are not ERC20 compliant return false instead of reverting, so failure to check such return values could result in undefined behavior, including the loss of funds. If the Morpho token adheres to ERC20 standards, then this issue may not pose a risk; however, due to the lack of return value checks, the possibility of undefined behavior cannot be eliminated.\n\n[code listing omitted]\n\nFigure 7.1: The transerMorphoTokensToDao method in IncentivesVault",
+      "recommendation": "Short term, consider using a safeTransfer library for all token transfers.\n\nLong term, review the token integration checklist and check all the components of the system to ensure that they interact with tokens safely.",
+      "page": 25,
+      "page_end": 25,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/MorphoLabs.pdf",
+      "taxonomy": [
+        "unchecked-call-result"
+      ]
+    },
+    {
+      "id": "morpho-v1-tob-2022-06:TOB-MORPHO-8",
+      "report": "morpho-v1-tob-2022-06",
+      "protocol": "Morpho Protocol V1",
+      "auditor": "Trail of Bits",
+      "date": "2022-06",
+      "finding_id": "TOB-MORPHO-8",
+      "severity": "undetermined",
+      "title": "Risk of loss of precision in division operations",
+      "category": "Data Validation",
+      "difficulty": "Undetermined",
+      "affected_contract": "contracts/compound/PositionsManager.sol",
+      "description": "A common pattern in the codebase is to divide a user’s debt by the total supply of a token; a loss of precision in these division operations could occur, which means that the supply delta would not account for the entire matched delta amount. The impact of this potential loss of precision requires further investigation.\n\nFor example, the borrowLogic method uses this pattern:\n\n[code listing omitted]\n\nFigure 8.1: Part of the borrowLogic() method\n\nHere, if matchedDelta is not a multiple of poolSupplyIndex, the remainder would not be taken into account. In an extreme case, if matchedDelta is smaller than poolSupplyIndex, the result of the division operation would be zero.\n\nAn attacker could exploit this loss of precision to extract small amounts of underlying tokens sitting in the Morpho contract.",
+      "recommendation": "Short term, add checks to validate input data to prevent precision issues in division operations.\n\nLong term, review all the arithmetic that is vulnerable to rounding issues. Summary of Recommendations\n\nThe Morpho Protocol is a work in progress with multiple planned iterations. Trail of Bits recommends that Morpho Labs address the findings detailed in this report and take the following additional steps prior to deployment:\n\n- Continue to improve the system’s documentation, including the yellow paper specification and the incident response plan.\n\n- Continue to explore alternative approaches to implementing arithmetic that will reduce the number of rounding and loss-of-precision errors.\n\n- Integrate static analysis tooling, such as Slither, into the continuous integration pipeline.\n\n- Consider adding Echidna to the test suite to augment Foundry’s fuzz testing (which is already implemented).\n\n- Carefully review the pitfalls of using the delegatecall proxy pattern.",
+      "page": 26,
+      "page_end": 27,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/MorphoLabs.pdf",
+      "taxonomy": [
+        "arithmetic-and-rounding"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "finding_id": "TOB-MORPHO-1",
+      "severity": "high",
+      "title": "Lack of two-step process for contract ownership changes",
+      "reason": "not_an_exploit",
+      "why": "Ownership transfer in one step; a process best practice."
+    },
+    {
+      "finding_id": "TOB-MORPHO-2",
+      "severity": "informational",
+      "title": "Incomplete information provided in Withdrawn and Repaid events",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MORPHO-3",
+      "severity": "informational",
+      "title": "Missing access control check in withdrawLogic",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MORPHO-4",
+      "severity": "informational",
+      "title": "Lack of zero address checks in setter functions",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MORPHO-5",
+      "severity": "low",
+      "title": "Risky use of toggle functions",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "report": "compound-v2-tob-2019-08",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "compound-3.pdf",
+    "sha256": "e3bf2f0bf8213abef5bc7d13e89772736b68713f7513500dd70cc6c8a0a24a93",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "high": 1,
+    "medium": 1,
+    "low": 2,
+    "undetermined": 1
+  },
+  "table_rows": 5,
+  "findings": [],
+  "excluded": [
+    {
+      "finding_id": "Compound-TOB-024",
+      "severity": "low",
+      "title": "Large error codes will invalidate error messages",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "Compound-TOB-025",
+      "severity": "medium",
+      "title": "Failure information changes could cause on- and off-chain repercussions",
+      "reason": "not_an_exploit",
+      "why": "Error-code ordering that could confuse integrations; not exploitable."
+    },
+    {
+      "finding_id": "Compound-TOB-026",
+      "severity": "high",
+      "title": "Lack of newOracle validation when setting a price oracle",
+      "reason": "not_an_exploit",
+      "why": "A skipped check and test when the admin sets the oracle; an admin mistake, not an attacker path."
+    },
+    {
+      "finding_id": "Compound-TOB-027",
+      "severity": "low",
+      "title": "Invalid documentation regarding upper-bounds error checks",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "Compound-TOB-028",
+      "severity": "undetermined",
+      "title": "Missing tests and functionality for checking senders when setting allowSeize",
+      "reason": "not_an_exploit",
+      "why": "A test double has no caller check; a gap in tests, not in the deployed contracts."
+    }
+  ]
+}

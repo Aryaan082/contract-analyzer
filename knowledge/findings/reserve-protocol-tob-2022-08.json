@@ -1,0 +1,153 @@
+{
+  "report": "reserve-protocol-tob-2022-08",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2022-08-reserve-protocol-securityreview.pdf",
+    "sha256": "c4717723dc375625cbce82c9f0ca612f9eac79b535f25571b0ffa1cdf90cbac4",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "high": 5,
+    "medium": 2,
+    "low": 3,
+    "informational": 5
+  },
+  "table_rows": 15,
+  "findings": [
+    {
+      "id": "reserve-protocol-tob-2022-08:TOB-RES-12",
+      "report": "reserve-protocol-tob-2022-08",
+      "protocol": "Reserve Protocol",
+      "auditor": "Trail of Bits",
+      "date": "2022-08",
+      "finding_id": "TOB-RES-12",
+      "severity": "high",
+      "title": "System owner has excessive privileges",
+      "category": "Access Controls",
+      "difficulty": "High",
+      "affected_contract": "contracts/mixins/ComponentRegistry.sol",
+      "description": "The owner of the Main contract has excessive privileges, which puts the entire system at risk. The owner of the Main contract is effectively the owner of all periphery contracts and thus the entire system.\n\nAn exhaustive list of the system owner’s privileges is provided in appendix D. These privileges include changing numerous system parameters. For example, at any time, the owner can change the address of any of the following contracts by calling the functions shown in figure 12.1 (which are defined in the ComponentRegistry abstract contract from which Main inherits):\n\n- RToken\n\n- StRSR\n\n- AssetRegistry\n\n- BasketHandler\n\n- BackingManager\n\n- Distributor\n\n- The RevenueTrader of the RToken and RSR token\n\n- Furnace\n\n- Broker\n\n[code listing omitted]\n\nFigure 12.1: Critical address–changing functions in ComponentRegistry.sol#L30-98\n\nThe owner’s ability to change so many critical components of the system architecture creates a single point of failure. It increases the likelihood that the Main contract’s owner will be targeted by an attacker and increases the incentives for the owner to act maliciously.\n\nThe RToken(s) deployed by the Reserve team will be owned by on-chain governance. However, malicious parties with significant stakes may be able to swing proposals in their favor. Alternatively, because the process of creating an RToken is permissionless, the owner of an RToken could also be a single private key.",
+      "recommendation": "Short term, set all addresses in the __ComponentRegistry_init function, and remove all address-setter functions from the ComponentRegistry contract. Alternatively, add the onlyInitializing modifier to all address-setter functions in the ComponentRegistry contract.\n\nLong term, develop user documentation on all risks associated with the system, including those associated with privileged users and the existence of a single point of failure.",
+      "page": 45,
+      "page_end": 46,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2022-08-reserve-protocol-securityreview.pdf",
+      "taxonomy": [
+        "single-key-admin"
+      ]
+    },
+    {
+      "id": "reserve-protocol-tob-2022-08:TOB-RES-14",
+      "report": "reserve-protocol-tob-2022-08",
+      "protocol": "Reserve Protocol",
+      "auditor": "Trail of Bits",
+      "date": "2022-08",
+      "finding_id": "TOB-RES-14",
+      "severity": "medium",
+      "title": "RTokens can be purchased at a discount",
+      "category": "Data Validation",
+      "difficulty": "Medium",
+      "affected_contract": "contracts/p1/RToken.sol",
+      "description": "If the collateral in a basket has decreased in price but has not defaulted, users may be able to purchase RTokens at a discount by creating large issuance requests.\n\nThe status of a collateral token can be either SOUND, IFFY, or DISABLED. If the status of a collateral token is SOUND, the price is within a stable range; if it is IFFY, the price has deviated from the range; and if it is DISABLED, the price has deviated from the range for an extended period of time.\n\nWhen a user makes an issuance request, the RToken.issue function checks whether any collateral in the basket is DISABLED. If none is, the user will be issued RTokens atomically or over some number of blocks (figure 14.1). If the issuance is non-atomic, all collateral must be SOUND for the vesting to finish.\n\n[code listing omitted]\n\nFigure 14.1: The issue function in RToken.sol#L95-198\n\nHowever, if a user makes an issuance request when the status of a collateral token is IFFY (because of a price decrease), the user will pay a discounted price for the RTokens. This is because the user sends the cheap collateral immediately, during the call to RToken.issue, but the RToken vesting will occur later, after the price of the collateral has stabilized and its status has changed back to SOUND.",
+      "recommendation": "Short term, in the issue function, change require(status!= CollateralStatus.DISABLED) to require(status == CollateralStatus.SOUND).\n\nLong term, use dynamic fuzz testing to identify any edge cases that could invalidate system properties.",
+      "page": 49,
+      "page_end": 51,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2022-08-reserve-protocol-securityreview.pdf",
+      "taxonomy": []
+    }
+  ],
+  "excluded": [
+    {
+      "finding_id": "TOB-RES-1",
+      "severity": "informational",
+      "title": "Solidity compiler optimizations can be problematic",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-RES-2",
+      "severity": "high",
+      "title": "Lack of a two-step process for contract ownership changes",
+      "reason": "not_an_exploit",
+      "why": "Ownership transfer in one step; a process best practice."
+    },
+    {
+      "finding_id": "TOB-RES-3",
+      "severity": "medium",
+      "title": "Unbounded and invalidly bounded system parameters may cause undefined behavior",
+      "reason": "not_an_exploit",
+      "why": "Owner-set parameters have no bounds; an admin-mistake risk, not an attacker path."
+    },
+    {
+      "finding_id": "TOB-RES-4",
+      "severity": "high",
+      "title": "All auction initiation attempts may fail",
+      "reason": "not_an_exploit",
+      "why": "Auctions would fail if a third party changed its fee; a workflow break with no attacker path."
+    },
+    {
+      "finding_id": "TOB-RES-5",
+      "severity": "informational",
+      "title": "Per-block issuance limit can be bypassed",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-RES-6",
+      "severity": "high",
+      "title": "All attempts to initiate auctions of defaulted collateral tokens will fail",
+      "reason": "not_an_exploit",
+      "why": "Auctions of defaulted collateral always revert because of a zero minimum; a logic bug, no attacker gain."
+    },
+    {
+      "finding_id": "TOB-RES-7",
+      "severity": "informational",
+      "title": "Fallen-target auctions can be prevented from occurring",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-RES-8",
+      "severity": "low",
+      "title": "Faulty RToken issuance-cancellation process",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-RES-9",
+      "severity": "low",
+      "title": "Token auctions may not cover entire collateral token deficits",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-RES-10",
+      "severity": "informational",
+      "title": "Inability to validate the recency of Aave and Compound oracle data",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-RES-11",
+      "severity": "high",
+      "title": "An RSR seizure could leave the StRSR contract unusable",
+      "reason": "not_an_exploit",
+      "why": "A rare seizure edge case can block unstaking until someone restakes; recoverable and not attacker-driven."
+    },
+    {
+      "finding_id": "TOB-RES-13",
+      "severity": "low",
+      "title": "Lack of zero address checks in Deployer constructor",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-RES-15",
+      "severity": "informational",
+      "title": "Inconsistent use of the FixLib library",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}

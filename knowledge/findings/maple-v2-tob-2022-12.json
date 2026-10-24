@@ -1,0 +1,119 @@
+{
+  "report": "maple-v2-tob-2022-12",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2022-09-maplefinance-mapleprotocolv2-securityreview.pdf",
+    "sha256": "f69f2a10a71efe4326913a2a8f03016a1e65520124d2164b7bf6e66351e5873d",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "medium": 2,
+    "low": 9,
+    "undetermined": 1
+  },
+  "table_rows": 12,
+  "findings": [
+    {
+      "id": "maple-v2-tob-2022-12:TOB-MPL-9",
+      "report": "maple-v2-tob-2022-12",
+      "protocol": "Maple Finance v2",
+      "auditor": "Trail of Bits",
+      "date": "2022-12",
+      "finding_id": "TOB-MPL-9",
+      "severity": "medium",
+      "title": "Attackers can prevent the pool manager from finishing liquidation",
+      "category": "Denial of Service",
+      "difficulty": "High",
+      "affected_contract": "pool-v2/contracts/LoanManager.sol",
+      "description": "The finishCollateralLiquidation function requires that a liquidation is no longer active. However, an attacker can prevent the liquidation from finishing by sending a minimal amount of collateral token to the liquidator address.\n\n[code listing omitted]\n\nFigure 9.1: An excerpt of the finishCollateralLiquidation function\n\n[code listing omitted]\n\nThe finishCollateralLiquidation function uses the isLiquidationActive function to verify if the liquidation process is finished by checking the collateral asset balance of the liquidator address. Because anyone can send tokens to that address, it is possible to make isLiquidationActive always return false.\n\n[code listing omitted]\n\nFigure 9.2: The isLiquidationActive function\n\n[code listing omitted]",
+      "recommendation": "Short term, use a storage variable to track the remaining collateral in the Liquidator contract. As a result, the collateral balance cannot be manipulated through the transfer of tokens and can be safely checked in isLiquidationActive.\n\nLong term, avoid using exact comparisons for ether and token balances, as users can increase those balances by executing transfers, making the comparisons evaluate to false.",
+      "page": 29,
+      "page_end": 30,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2022-09-maplefinance-mapleprotocolv2-securityreview.pdf",
+      "taxonomy": [
+        "denial-of-service"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "finding_id": "TOB-MPL-1",
+      "severity": "low",
+      "title": "Incorrect argument passed to _getPlatformOriginationFee",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MPL-2",
+      "severity": "low",
+      "title": "The protocol could stop working prematurely",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MPL-3",
+      "severity": "low",
+      "title": "Insufficient event generation",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MPL-4",
+      "severity": "low",
+      "title": "Incorrect GovernorshipAccepted event argument",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MPL-5",
+      "severity": "low",
+      "title": "Partially incorrect Chainlink price feed safety checks",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MPL-6",
+      "severity": "low",
+      "title": "Incorrect implementation of EIP-4626",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MPL-7",
+      "severity": "low",
+      "title": "setAllowedSlippage and setMinRatio functions are unreachable",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MPL-8",
+      "severity": "medium",
+      "title": "Inaccurate accounting of unrealizedLosses during default warning revert",
+      "reason": "not_an_exploit",
+      "why": "A loss figure stays too high after a default warning is removed; an accounting error with no attacker path."
+    },
+    {
+      "finding_id": "TOB-MPL-10",
+      "severity": "low",
+      "title": "WithdrawalManager can have an invalid exit configuration",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-MPL-11",
+      "severity": "undetermined",
+      "title": "Loan can be impaired when the protocol is paused",
+      "reason": "not_an_exploit",
+      "why": "A trusted role can mark a loan impaired while paused; it cannot cause a default and can be reversed."
+    },
+    {
+      "finding_id": "TOB-MPL-12",
+      "severity": "low",
+      "title": "Fee treasury could go to the zero address",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}

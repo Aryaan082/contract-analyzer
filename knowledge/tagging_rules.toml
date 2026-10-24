@@ -1,0 +1,129 @@
+# Rules that tag a finding with the taxonomy entries it illustrates. They are plain patterns, read
+# by anyone, and run by `python -m knowledge tag`; no model is involved. A tag is a hint for
+# retrieval and filtering, never evidence, and these rules favour precision over coverage: a finding
+# with no tag is normal.
+#
+# For each rule: `title` patterns are matched against the finding's title; `text` patterns against
+# its title and description; `category` is the auditor's own label, matched exactly. Patterns are
+# regular expressions, case-insensitive. A finding gets the tag if ANY of them match.
+
+[[rule]]
+taxonomy = "reentrancy"
+title = ["re-?entran"]
+text = ["re-?entran"]
+
+[[rule]]
+taxonomy = "unchecked-call-result"
+title = ["return value check", "unchecked (call|return|low-level)", "check.{0,12}return value"]
+
+[[rule]]
+taxonomy = "arithmetic-and-rounding"
+title = ["rounding", "loss of precision", "unsafe cast", "overflow", "underflow", "truncat"]
+
+[[rule]]
+taxonomy = "denial-of-service"
+category = ["Denial of Service"]
+title = ["denial.of.service", "\\bDoS\\b", "prevent .{0,30} from (finishing|completing)", "block .{0,20}(actions|loans)"]
+
+[[rule]]
+taxonomy = "signature-replay"
+title = ["signature", "chainid", "\\bpermit\\b", "\\bwithsig\\b", "EIP-2612"]
+
+[[rule]]
+taxonomy = "front-running-and-slippage"
+title = ["front-?run", "(lack of|no|without|missing) slippage", "slippage protection", "sandwich"]
+
+[[rule]]
+taxonomy = "missing-input-validation"
+title = [
+  "^(?!.*(return value|access control|existence)).*(missing|lack of|improper|insufficient|no)\\b.{0,30}(valid|check)",
+  "zero address",
+  "unbounded",
+  "not limited",
+  "invalidly bounded",
+]
+
+[[rule]]
+taxonomy = "missing-access-control"
+title = ["access control", "\\banyone can\\b"]
+
+[[rule]]
+taxonomy = "single-key-admin"
+title = ["two-step process", "excessive privileges", "single (owner|key|point)"]
+
+[[rule]]
+taxonomy = "unprotected-initializer"
+title = ["re-?initiali", "initiali[sz]\\w* can be front-run"]
+
+[[rule]]
+taxonomy = "upgradeable-implementation"
+title = ["upgradeab", "proxy", "destroy .{0,20}implementation", "constructor rather than the initialize"]
+
+[[rule]]
+taxonomy = "storage-layout-collision"
+title = ["storage variable.{0,40}delegatecall", "storage (layout|collision|slot)"]
+
+[[rule]]
+taxonomy = "delegatecall-to-untrusted"
+title = ["delegatecall"]
+
+[[rule]]
+taxonomy = "selfdestruct-and-destroy"
+title = ["selfdestruct", "\\bdestroy\\b"]
+
+[[rule]]
+taxonomy = "weak-randomness-and-timestamps"
+title = ["randomness", "timestamp"]
+
+[[rule]]
+taxonomy = "oracle-manipulation"
+title = ["oracle", "chainlink", "price feed", "recency", "source of truth for asset prices"]
+
+[[rule]]
+taxonomy = "external-dependency-upgradeable"
+title = ["single external source", "external source of truth"]
+
+[[rule]]
+taxonomy = "erc4626-share-inflation"
+title = ["4626", "share inflation", "donat"]
+
+[[rule]]
+taxonomy = "governance-takeover"
+title = ["governance", "quorum", "voting power"]
+
+[[rule]]
+taxonomy = "bridge-message-validation"
+text = ["\\bbridges?\\b", "ferry"]
+
+[[rule]]
+taxonomy = "lending-liquidation-logic"
+title = ["^(?!.*(event|documentation)).*(liquidat|isolation mode|emode|\\bborrow|debt token)"]
+
+[[rule]]
+taxonomy = "pausable-transfers"
+title = ["\\bpaus"]
+
+[[rule]]
+taxonomy = "owner-withdraw-rug"
+title = ["rescue", "\\bsweep"]
+
+[[rule]]
+taxonomy = "unlimited-approval-exposure"
+title = ["approval"]
+
+[[rule]]
+taxonomy = "tx-origin-auth"
+text = ["tx\\.origin"]
+
+[[rule]]
+taxonomy = "logic-errors"
+title = [
+  "^(?!.*(event|documentation)).*(\\bincorrect|\\binaccurate)",
+  "reserve updates",
+  "bypass",
+  "circumvent",
+]
+
+[[rule]]
+taxonomy = "flash-loan-attacks"
+title = ["flash.?loan"]

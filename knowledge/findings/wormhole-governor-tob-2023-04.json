@@ -1,0 +1,139 @@
+{
+  "report": "wormhole-governor-tob-2023-04",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2023-03-wormhole-securityreview.pdf",
+    "sha256": "b366368a73297d062207de22a9b497985610b90f6d411f3d590be08ff30d1782",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "low": 4,
+    "informational": 10,
+    "undetermined": 3
+  },
+  "table_rows": 17,
+  "findings": [],
+  "excluded": [
+    {
+      "finding_id": "TOB-WORMGUWA-1",
+      "severity": "informational",
+      "title": "Lack of doc comments",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-2",
+      "severity": "informational",
+      "title": "Fields protected by mutex are not documented",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-3",
+      "severity": "low",
+      "title": "Potential nil pointer dereference in reloadPendingTransfer",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-4",
+      "severity": "low",
+      "title": "Unchecked type assertion in queryCoinGecko",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-5",
+      "severity": "informational",
+      "title": "Governor relies on a single external source of truth for asset prices",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-6",
+      "severity": "informational",
+      "title": "Potential resource leak",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-7",
+      "severity": "undetermined",
+      "title": "PolygonConnector does not properly use channels",
+      "reason": "not_an_exploit",
+      "why": "A Go channel misuse that can hang a caller in node software; robustness, not a contract exploit."
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-8",
+      "severity": "undetermined",
+      "title": "Receiver closes channel, contradicting Golang guidance",
+      "reason": "not_an_exploit",
+      "why": "A Go receiver closes a channel against guidance; robustness in node software, not a contract exploit."
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-9",
+      "severity": "informational",
+      "title": "Watcher configuration is overly complex",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-10",
+      "severity": "informational",
+      "title": "evm.Watcher.Run’s default behavior could hide bugs",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-11",
+      "severity": "informational",
+      "title": "Race condition in TestBlockPoller",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-12",
+      "severity": "informational",
+      "title": "Unconventional test structure",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-13",
+      "severity": "undetermined",
+      "title": "Vulnerable Go packages",
+      "reason": "not_an_exploit",
+      "why": "Known vulnerabilities in Go dependencies of the node software; dependency hygiene, not a smart-contract issue."
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-14",
+      "severity": "informational",
+      "title": "Wormhole node does not build with latest Go version",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-15",
+      "severity": "low",
+      "title": "Missing or wrong context",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-16",
+      "severity": "low",
+      "title": "Use of defer in a loop",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-WORMGUWA-17",
+      "severity": "informational",
+      "title": "Finalizer is allowed to be nil",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}

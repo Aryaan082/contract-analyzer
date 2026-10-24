@@ -1,0 +1,225 @@
+{
+  "report": "balancer-v3-tob-2024-12",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2024-12-balancer-v3-securityreview.pdf",
+    "sha256": "aefb7b64d8bef60e601c7af986ad21f1a500b60f5e91048fbe097a016a78dc23",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "high": 3,
+    "medium": 1,
+    "low": 5,
+    "informational": 10,
+    "undetermined": 2
+  },
+  "table_rows": 21,
+  "findings": [
+    {
+      "id": "balancer-v3-tob-2024-12:TOB-BALV3-1",
+      "report": "balancer-v3-tob-2024-12",
+      "protocol": "Balancer v3",
+      "auditor": "Trail of Bits",
+      "date": "2024-12",
+      "finding_id": "TOB-BALV3-1",
+      "severity": "high",
+      "title": "Lack of approval reset on buffer allows anyone to drain the Vault",
+      "category": "Data Validation",
+      "difficulty": "Low",
+      "affected_contract": "Vault.sol",
+      "description": "The lack of approval reset after the call to deposit allows a malicious wrapper contract to steal the Vault’s funds.\n\nWhen wrapping tokens the _wrapWithBuffer function allows the wrapped token contract to transfer the underlying tokens through the ERC20’s approval mechanism:\n\n[code listing omitted]\n\nFigure 1.1: Vault.sol#L1169–L1172\n\nGiven that the approval is not reset to zero after the call to deposit, a malicious wrapper contract that would do nothing on deposit will keep the approved amount. As a result, the wrapper will be able to move the funds once the Vault has been locked, bypassing all the Vault’s protection.\n\nGiven that anyone can create a buffer pair for any underlying token <> wrapped token pair, an attacker can use this issue to drain all of the Vault’s tokens.",
+      "recommendation": "Short term, reset the approval to zero after calling deposit in _wrapWithBuffer\n\nLong term, clearly identify the trust assumptions of external components. Use these assumptions to evaluate all asset/token interactions (transfer and approval) and their safeguards against malicious actors.",
+      "page": 22,
+      "page_end": 23,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2024-12-balancer-v3-securityreview.pdf",
+      "taxonomy": [
+        "unlimited-approval-exposure"
+      ]
+    },
+    {
+      "id": "balancer-v3-tob-2024-12:TOB-BALV3-2",
+      "report": "balancer-v3-tob-2024-12",
+      "protocol": "Balancer v3",
+      "auditor": "Trail of Bits",
+      "date": "2024-12",
+      "finding_id": "TOB-BALV3-2",
+      "severity": "high",
+      "title": "Lack of reserve updates when collecting fees allows anyone to drain the Vault",
+      "category": "Data Validation",
+      "difficulty": "Low",
+      "affected_contract": "Vault.sol",
+      "description": "The lack of reserve updates when fees are collected allows anyone to drain the Vault.\n\nThe accumulated fees for each of the pools are counted as part of the token reserves of the Vault and can be collected by calling the collectAggregateFees function. This function is permissionless, allowing anyone to call it, and it withdraws the fees to the ProtocolFeeController contract.\n\n[code listing omitted]\n\nFigure 2.1: VaultAdmin.sol#L273–L295 However, when the fees are collected, the Vault reserves of the tokens are not reduced. This results in the Vault token balance being smaller than the reserves accounting for that token.\n\nThis discrepancy can be exploited by calling the erc4626BufferWrapOrUnwrap function. This function allows users to wrap and unwrap underlying and ERC4626 share tokens either by using the buffer liquidity or by directly calling functions of the ERC4626 wrapper contract. In the second case, it dynamically deduces the amount of tokens that it needs to credit to the user using the _updateReservesAfterWrapping internal function:\n\n[code listing omitted]\n\nFigure 2.2: Vault.sol#L1367–L1390\n\nSince vaultUnderlyingBefore will exceed vaultUnderlyingAfter after the fees have been collected, this will trigger the highlighted branch in figure 2.2, allowing anyone to withdraw the difference by using a malicious wrapper contract. This exploit can be further exacerbated by creating a malicious pool that collects 100% of the fees to the pool creator, allowing a malicious user to generate a large discrepancy in the Vault balance in order to drain the Vault. Appendix D contains a unit test triggering a simplified scenario.",
+      "recommendation": "Short term, update the reserves whenever collecting fees.\n\nLong term, improve the testing suite by ensuring that all expected side-effects of an action are tested. Consider separating the _updateReservesAfterWrapping function into two separate functions, one for the _wrapWithBuffer operation and one for the _unwrapWithBuffer operation.",
+      "page": 24,
+      "page_end": 26,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2024-12-balancer-v3-securityreview.pdf",
+      "taxonomy": [
+        "logic-errors"
+      ]
+    },
+    {
+      "id": "balancer-v3-tob-2024-12:TOB-BALV3-6",
+      "report": "balancer-v3-tob-2024-12",
+      "protocol": "Balancer v3",
+      "auditor": "Trail of Bits",
+      "date": "2024-12",
+      "finding_id": "TOB-BALV3-6",
+      "severity": "high",
+      "title": "Vault can be drained by updating the buffer underlying token",
+      "category": "Data Validation",
+      "difficulty": "Low",
+      "affected_contract": "Vault.sol, VaultAdmin.sol",
+      "description": "The total liquidity of the Vault can be drained via a malicious buffer by updating the underlying token of that buffer.\n\nThe Vault allows users to perform wrap and unwrap operations on an uninitialized buffer. Since the wrappedToken is an arbitrary contract, we can perform a wrap operation through this contract by setting the asset address to a token that we control:\n\n[code listing omitted]\n\nFigure 6.1: The erc4626BufferWrapOrUnwrap function of the Vault.sol#L1054–L1108\n\nThis allows us to use the wrap operation to add liquidity to our uninitialized buffer by having the amountOutWrapped amount equal to zero, or by abusing the buffer surplus mechanism. The former code path is highlighted in figure 6.2:\n\n[code listing omitted]\n\nFigure 6.2: The _wrapWithBuffer function of the Vault.sol#L1117–L1238\n\nThis allows us to update the underlying token of our wrappedToken to be a valuable token held in the Vault. Since the _bufferTokenBalances mapping key is the address of the wrappedToken, we can initialize our buffer, set the _bufferAssets mapping to the valuable token, and still keep the liquidity balance that we deposited with our malicious token.\n\n[code listing omitted]\n\nFigure 6.3: The addLiquidityToBuffer function of the VaultAdmin.sol#L415–L465\n\nThis allows us to deposit a malicious token to inflate our buffer balances, switch the underlying token of the buffer, and then withdraw the valuable token from the pool. By doing this, we can withdraw the entire balance of any token held in the Vault.\n\nAppendix D contains a unit test triggering a simplified scenario.",
+      "recommendation": "Short term, add a check that ensures that a buffer needs to be explicitly initialized before users can interact with it.\n\nLong term, retroactively write a specification for the buffer mechanisms, taking care to explicitly define all checks, limitations, and security mitigations that need to be implemented. Use this specification to guide the redesign of the buffer mechanism and the development of the testing suite.",
+      "page": 32,
+      "page_end": 35,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2024-12-balancer-v3-securityreview.pdf",
+      "taxonomy": []
+    },
+    {
+      "id": "balancer-v3-tob-2024-12:TOB-BALV3-12",
+      "report": "balancer-v3-tob-2024-12",
+      "protocol": "Balancer v3",
+      "auditor": "Trail of Bits",
+      "date": "2024-12",
+      "finding_id": "TOB-BALV3-12",
+      "severity": "undetermined",
+      "title": "Reentrancy on pool initialization allows users to re-initialize pools",
+      "category": "Data Validation",
+      "difficulty": "Low",
+      "affected_contract": "VaultExtension.sol",
+      "description": "An incorrect check-effect-interaction pattern in the pool initialization allows users to re-initialize a pool multiple times through a reentrancy.\n\nWhen initializing a pool through initialize, isPoolInitialized is checked at the beginning of the function:\n\n[code listing omitted]\n\nFigure 12.1: VaultExtension.sol#L364–L379\n\nAfter this check, an external call can be triggered through the BeforeInitialize hook:\n\n[code listing omitted]\n\nFigure 12.2: VaultExtension.sol#L391–L392\n\nThe pool is then marked as initialized:\n\n[code listing omitted]\n\nFigure 12.3: VaultExtension.sol#L443–L446\n\nThe following order of operations enables a reentrancy:\n\n1. Checking for initialization 2. External call 3. Setting initialization In this order of operations, a malicious pool can re-enter to initialize to trigger the initialization steps multiple times.\n\nWe marked this issue’s severity as undetermined, since the limited time allotted for the review meant that we could not fully assess the issue’s severity. Because an attacker can perform multiple interactions (including adding/removing liquidity and swapping assets) before re-initializing the pool, it is possible that this issue can be abused with a larger impact.",
+      "recommendation": "Short term, initialize the pool before any external calls.\n\nLong term, when checking a condition and then updating the state of that condition, keep the check and the update close together in the code.",
+      "page": 46,
+      "page_end": 47,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2024-12-balancer-v3-securityreview.pdf",
+      "taxonomy": [
+        "reentrancy",
+        "unprotected-initializer"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "finding_id": "TOB-BALV3-3",
+      "severity": "informational",
+      "title": "Quote functions should not be payable",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-4",
+      "severity": "low",
+      "title": "Pool registration and initialization can be front-run",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-5",
+      "severity": "informational",
+      "title": "Buffer total supply can be reset",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-7",
+      "severity": "medium",
+      "title": "Yield fees collected when exiting recovery mode will be lost",
+      "reason": "not_an_exploit",
+      "why": "Yield fees are lost when a pool leaves recovery mode; a bookkeeping bug with no attacker gain."
+    },
+    {
+      "finding_id": "TOB-BALV3-8",
+      "severity": "informational",
+      "title": "Risks with non-standard token implementations",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-9",
+      "severity": "informational",
+      "title": "Buffer can consider it has liquidity when it has none",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-10",
+      "severity": "informational",
+      "title": "Dynamic swap fee is not limited to 100%",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-11",
+      "severity": "low",
+      "title": "Lack of slippage protection on liquidity buffer increase",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-13",
+      "severity": "informational",
+      "title": "Insufficient event generation",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-14",
+      "severity": "low",
+      "title": "Buffer _CONVERT_FACTOR can be avoided by providing unbalanced liquidity",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-15",
+      "severity": "informational",
+      "title": "Buffer wrap and unwrap queries return incorrect results",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-16",
+      "severity": "informational",
+      "title": "Providing unbalanced liquidity to a buffer can mint more shares due to rounding",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-17",
+      "severity": "low",
+      "title": "Permit signatures can be front-run to execute a temporary denial-of-service attack",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-18",
+      "severity": "informational",
+      "title": "permitBatchAndCall will revert when non-payable functions are called with value",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-19",
+      "severity": "informational",
+      "title": "BalancerPoolToken permit signatures cannot be revoked",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-20",
+      "severity": "low",
+      "title": "Single token liquidity provision and removal will not work on tokens that revert on zero value transfers",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-BALV3-21",
+      "severity": "undetermined",
+      "title": "The swap functions allows zero amountIn to be provided",
+      "reason": "not_an_exploit",
+      "why": "Zero-amount swaps are only dangerous if some other calculation is already wrong; hardening, no attack described."
+    }
+  ]
+}

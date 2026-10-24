@@ -1,0 +1,113 @@
+{
+  "report": "frax-fraxlend-fraxferry-tob-2022-11",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2022-10-fraxfinance-fraxlend-fraxferry-securityreview.pdf",
+    "sha256": "91814b71c1fd99efe1337704b6ce9ecf8d578ad7b62b57e256c98f652971f8ab",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "high": 1,
+    "medium": 4,
+    "low": 5,
+    "informational": 2,
+    "undetermined": 1
+  },
+  "table_rows": 13,
+  "findings": [],
+  "excluded": [
+    {
+      "finding_id": "TOB-FXLEND-1",
+      "severity": "medium",
+      "title": "Lack of two-step process for contract ownership changes",
+      "reason": "not_an_exploit",
+      "why": "Ownership transfer in one step; a process best practice."
+    },
+    {
+      "finding_id": "TOB-FXLEND-2",
+      "severity": "low",
+      "title": "Missing checks of constructor/initialization parameters",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-FXLEND-3",
+      "severity": "medium",
+      "title": "Incorrect application of penalty fee rate",
+      "reason": "not_an_exploit",
+      "why": "A penalty rate applied to too long a period overcharges borrowers; a calculation bug nobody gains from."
+    },
+    {
+      "finding_id": "TOB-FXLEND-4",
+      "severity": "low",
+      "title": "Improper validation of Chainlink data",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-FXLEND-5",
+      "severity": "informational",
+      "title": "Risk of oracle outages",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-FXLEND-6",
+      "severity": "low",
+      "title": "Unapproved lenders could receive fTokens",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-FXLEND-7",
+      "severity": "medium",
+      "title": "FraxlendPairDeployer cannot deploy contracts of fewer than 13,000 bytes",
+      "reason": "not_an_exploit",
+      "why": "The pair deployer fails for small contracts; a functional bug."
+    },
+    {
+      "finding_id": "TOB-FXLEND-8",
+      "severity": "undetermined",
+      "title": "setCreationCode fails to overwrite _secondHalf slice if updated code size is less than 13,000 bytes",
+      "reason": "not_an_exploit",
+      "why": "A stale code half after the owner replaces the creation code; an admin-only functional bug."
+    },
+    {
+      "finding_id": "TOB-FXFERRY-9",
+      "severity": "low",
+      "title": "Missing checks in setter functions",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-FXFERRY-10",
+      "severity": "high",
+      "title": "Risk of invalid batches due to unsafe cast in depart function",
+      "reason": "not_an_exploit",
+      "why": "An unsafe cast makes an invalid batch only if the trusted captain passes a huge value; the system stops until it is removed."
+    },
+    {
+      "finding_id": "TOB-FXFERRY-11",
+      "severity": "low",
+      "title": "Transactions that were already executed can be canceled",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-FXFERRY-12",
+      "severity": "medium",
+      "title": "Lack of contract existence check on low-level call",
+      "reason": "not_an_exploit",
+      "why": "A call to an address with no code succeeds silently; the sender chose the address and no third party gains."
+    },
+    {
+      "finding_id": "TOB-FXFERRY-13",
+      "severity": "informational",
+      "title": "Events could be improved",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}

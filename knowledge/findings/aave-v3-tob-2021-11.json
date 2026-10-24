@@ -1,0 +1,203 @@
+{
+  "report": "aave-v3-tob-2021-11",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2021-11-aave-v3-securityreview.pdf",
+    "sha256": "76b13ef947b2669f967a314507c563290fed6e6e801b428444c81d56c38528f8",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "high": 5,
+    "medium": 1,
+    "low": 2,
+    "informational": 7
+  },
+  "table_rows": 15,
+  "findings": [
+    {
+      "id": "aave-v3-tob-2021-11:TOB-AAVE-002",
+      "report": "aave-v3-tob-2021-11",
+      "protocol": "Aave V3",
+      "auditor": "Trail of Bits",
+      "date": "2021-11",
+      "finding_id": "TOB-AAVE-002",
+      "severity": "high",
+      "title": "Lack of chainID validation allows attackers to reuse signatures across forks",
+      "category": "Authentication",
+      "difficulty": "High",
+      "affected_contract": "protocol/tokenization/AToken.sol, protocol/tokenization/VariableDebtToken.sol, protocol/tokenization/StableDebtToken.sol, protocol/tokenization/base/DebtTokenBase.sol",
+      "description": "The AToken, VariableDebtToken, and StableDebtToken contracts implement EIP-2612 to provide EIP-712-signed approvals through the permit function. The domain separator and the chainID are included in the signature scheme. However, the chainID is fixed at the time of deployment. In the event of a post-deployment hard fork of the chain, the chainID cannot be updated, and signatures may be replayed across both versions of the chain. As a result, an attacker could reuse signatures to receive user funds on both chains. Explicitly including the chainID in the scheme of the signature passed to permit would mitigate this issue without requiring the regeneration of the entire domain separator.\n\nThe chainID is included in the DOMAIN_SEPARATOR, which is part of the signed data of a permit call. The DOMAIN_SEPARATOR is created once, during deployment.\n\n[code listing omitted]\n\nFigure 2.1: protocol/tokenization/AToken.sol#L60-L79\n\n[code listing omitted]\n\nFigure 2.2: protocol/tokenization/VariableDebtToken.sol#L32-L57\n\nThe signature scheme does not account for a change in the contract’s chain after the initial deployment. As a result, if a fork of Ethereum is made after the contract’s creation, every signature will be usable in both forks.\n\nDepending on the deadline value in the signed data, this issue is unlikely to be exploited. The shorter the deadline, the more unlikely cross-chain replay will be.",
+      "recommendation": "Short term, add the chainID opcode to the signature scheme to prevent post-deployment forks from affecting the permit call.\n\nLong term, identify and document the risks associated with having forks of multiple chains and develop related mitigation strategies.",
+      "page": 18,
+      "page_end": 19,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2021-11-aave-v3-securityreview.pdf",
+      "taxonomy": [
+        "missing-input-validation",
+        "signature-replay"
+      ]
+    },
+    {
+      "id": "aave-v3-tob-2021-11:TOB-AAVE-007",
+      "report": "aave-v3-tob-2021-11",
+      "protocol": "Aave V3",
+      "auditor": "Trail of Bits",
+      "date": "2021-11",
+      "finding_id": "TOB-AAVE-007",
+      "severity": "high",
+      "title": "Incorrect eMode category fetched by borrow",
+      "category": "Data Validation",
+      "difficulty": "Low",
+      "affected_contract": "protocol/pool/Pool.sol",
+      "description": "The borrow function incorrectly fetches the eMode category of msg.sender instead of onBehalfOf. This error could cause a delegator to be liquidated immediately after the delegatee borrows assets; it could also allow the delegatee to borrow assets outside of the eMode selected by the delegator.\n\n[code listing omitted]\n\nFigure 7.1: protocol/pool/Pool.sol#L190-L217",
+      "recommendation": "Short term, use _usersEModeCateogory[onBehalfOf] instead of _usersEModeCateogory[msg.sender] in the borrow function.\n\nLong term, write extensive unit tests that test all of the expected post conditions. Unit tests could have uncovered this issue.",
+      "page": 25,
+      "page_end": 25,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2021-11-aave-v3-securityreview.pdf",
+      "taxonomy": [
+        "lending-liquidation-logic",
+        "logic-errors"
+      ]
+    },
+    {
+      "id": "aave-v3-tob-2021-11:TOB-AAVE-009",
+      "report": "aave-v3-tob-2021-11",
+      "protocol": "Aave V3",
+      "auditor": "Trail of Bits",
+      "date": "2021-11",
+      "finding_id": "TOB-AAVE-009",
+      "severity": "high",
+      "title": "Missing/incorrect isolation mode checks circumvent collateral isolation mode",
+      "category": "Data Validation",
+      "difficulty": "Low",
+      "affected_contract": "protocol/pool/SupplyLogic.sol, protocol/pool/BridgeLogic.sol",
+      "description": "There are several places in the codebase in which the isolation mode checks for newly added collateral are either missing or incorrect. Only one isolated asset (or multiple non-isolated assets) should be marked as collateral. However, due to the missing or incorrect isolation mode checks, multiple isolated assets could be marked as collateral.\n\nFigure 9.1 shows the correct isolation mode checks. An added asset should be marked as collateral only if the user has not yet added any collateral, or if the user has already added collateral and both the existing collateral and the added asset are non-isolated.\n\n[code listing omitted]\n\nFigure 9.1: protocol/libraries/logic/SupplyLogic.sol#L69-L78\n\nFigure 9.2 shows that mintUnbacked does not contain the isolation mode checks. As a result, the function allows other assets to be marked as collateral even if an isolated asset has already been marked as collateral. The function also allows multiple isolated assets to be added as collateral.\n\n[code listing omitted]\n\nFigure 9.2: protocol/libraries/logic/BridgeLogic.sol#L79-L82\n\nFigure 9.3 shows that finalizeTransfer contains incomplete isolation mode checks. If isolation mode is inactive, indicating that there may be multiple non-isolated assets used as collateral, the function still allows an isolated asset to be marked as collateral.\n\n[code listing omitted]\n\nFigure 9.3: protocol/libraries/logic/SupplyLogic.sol#L178-L182",
+      "recommendation": "Short term, implement the correct isolation mode checks (figure 9.1) in all of the indicated locations.\n\nLong term, if a multi-line check is required in several places, consider moving the check into a function and calling that function in all locations that require the check. This will lower the risk of missing or incomplete checks across the codebase.",
+      "page": 28,
+      "page_end": 29,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2021-11-aave-v3-securityreview.pdf",
+      "taxonomy": [
+        "lending-liquidation-logic",
+        "logic-errors",
+        "missing-input-validation"
+      ]
+    },
+    {
+      "id": "aave-v3-tob-2021-11:TOB-AAVE-010",
+      "report": "aave-v3-tob-2021-11",
+      "protocol": "Aave V3",
+      "auditor": "Trail of Bits",
+      "date": "2021-11",
+      "finding_id": "TOB-AAVE-010",
+      "severity": "high",
+      "title": "Isolation mode bypassed when liquidating and receiving aTokens",
+      "category": "Data Validation",
+      "difficulty": "Low",
+      "affected_contract": "protocol/libraries/logic/LiquidationLogic.sol",
+      "description": "When a user liquidates and chooses to receive aTokens and his current aToken balance is zero, the isolation mode checks are not performed and the received aTokens are simply set as the liquidator’s collateral. If the liquidator’s account is in isolation mode, both an isolated asset and the received aToken will be set as his collateral. This breaks the following isolation mode invariant, as specified in Aave’s documentation: “Borrowers supplying an isolated asset as collateral cannot supply other assets as collateral (though they can still supply to capture yield).”\n\n[code listing omitted]\n\nFigure 10.1: protocol/libraries/logic/LiquidationLogic.sol#L201-L211",
+      "recommendation": "Short term, add the isolation mode checks to the liquidation process before aTokens are assigned as collateral.\n\nLong term, if a multi-line check is required in several places, consider moving the check into a function and calling that function in all locations that require the check. This will lower the risk of missing or incomplete checks across the codebase.",
+      "page": 30,
+      "page_end": 30,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2021-11-aave-v3-securityreview.pdf",
+      "taxonomy": [
+        "lending-liquidation-logic",
+        "logic-errors"
+      ]
+    },
+    {
+      "id": "aave-v3-tob-2021-11:TOB-AAVE-015",
+      "report": "aave-v3-tob-2021-11",
+      "protocol": "Aave V3",
+      "auditor": "Trail of Bits",
+      "date": "2021-11",
+      "finding_id": "TOB-AAVE-015",
+      "severity": "medium",
+      "title": "Variable debt token incorrectly tracks debtor’s previous index",
+      "category": "Data Validation",
+      "difficulty": "Medium",
+      "affected_contract": "protocol/libraries/logic/BorrowLogic.sol, protocol/libraries/logic/ValidationLogic.sol, protocol/tokenization/VariableDebtToken.sol",
+      "description": "When a user borrows funds at a variable rate from the Aave protocol, the mint function stores reserveCache.nextVariableBorrowIndex in _userConfig[user].additionalData and then mints debt tokens to onBehalfOf. This causes unexpected behavior when credit delegation is used, because _userConfig[onBehalfOf].additionalData is uninitialized (i.e., zero), and the credit delegator’s loan information cannot be accessed.\n\n[code listing omitted]\n\nFigure 15.1: contracts/protocol/tokenization/VariableDebtToken.sol#L87-L112\n\nWhen minting stable debt tokens, the system stores the loan information of the credit delegator in _userConfig[onBehalfOf].additionalData.\n\n[code listing omitted]\n\nFigure 15.2: contracts/protocol/tokenization/StableDebtToken.sol#L152\n\nThe variable index accounts for the interest earned on variable debt. To calculate the compound interest rate, the system uses block.timestamp, which retains the same value in a single block; if the reserve is updated (i.e., a user repays a loan) in the same block in which the user took out the loan, zero interest accumulates. This does not present an issue when user and onBehalfOf are the same address, but it does cause issues when Aave’s credit delegation functionality is used.\n\nThe incorrect tracking of the variable index breaks the invariant that users cannot borrow and repay within the same block; by borrowing and repaying in a single block, users can avoid paying interest and flash loan fees. Because variableDebtPreviousIndex is uninitialized for the credit delegator, his variableDebtPreviousIndex is zero. As a result, variableDebtPreviousIndex < reserveCache.nextVariableBorrowIndex will not revert when calculated in the same block, as expected.\n\n[code listing omitted]\n\nFigure 15.3: contracts/protocol/libraries/logic/ValidationLogic.sol#L302-L328\n\nAdditionally, the calculation for accumulatedInterest in mint and burn operations for variable debt tokens is incorrect since the uninitialized value (i.e., zero) is read from _userConfig[onBehalfOf].additionalData, and incorrect values will be emitted in the events.\n\n[code listing omitted]\n\nFigure 15.4: contracts/protocol/libraries/logic/BorrowLogic.sol#L49-L103",
+      "recommendation": "Short term, ensure that the system tracks the variable index in the _userConfig of onBehalfOf.\n\nLong term, ensure that invariants related to borrows, repays, liquidations, eMode, and flash loans are not broken when credit delegation is used.",
+      "page": 38,
+      "page_end": 40,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2021-11-aave-v3-securityreview.pdf",
+      "taxonomy": [
+        "lending-liquidation-logic",
+        "logic-errors"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "finding_id": "TOB-AAVE-001",
+      "severity": "informational",
+      "title": "Solidity compiler optimizations can be problematic",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-003",
+      "severity": "informational",
+      "title": "Risks associated with EIP-2612",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-004",
+      "severity": "informational",
+      "title": "Insufficient Repay event parameters",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-005",
+      "severity": "informational",
+      "title": "Base class functions that are used only in a single derived class could cause confusion",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-006",
+      "severity": "low",
+      "title": "Use of the constructor rather than the initialize function prevents the incentives controller from being updated after deployment",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-008",
+      "severity": "low",
+      "title": "Missing validation when setting eMode categories",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-011",
+      "severity": "high",
+      "title": "Isolation mode total debt does not decrease on liquidation, potentially blocking new loans using the isolated asset",
+      "reason": "not_an_exploit",
+      "why": "Accounting drift that can eventually block new loans against one asset; no attacker path is described."
+    },
+    {
+      "finding_id": "TOB-AAVE-012",
+      "severity": "informational",
+      "title": "Unclear behavior when calculating interest rates",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-013",
+      "severity": "informational",
+      "title": "Use of deprecated Chainlink interface and function",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-014",
+      "severity": "informational",
+      "title": "Lack of contract existence check on delegatecall",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}

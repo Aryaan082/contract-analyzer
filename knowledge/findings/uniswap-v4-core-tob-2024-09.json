@@ -1,0 +1,61 @@
+{
+  "report": "uniswap-v4-core-tob-2024-09",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2024-07-uniswap-v4-core-securityreview.pdf",
+    "sha256": "17989f42379ea3427060c8c0dd1dda2bed6ffd7832aa589d1e4a3dad9c48623f",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "low": 1,
+    "informational": 5
+  },
+  "table_rows": 6,
+  "findings": [],
+  "excluded": [
+    {
+      "finding_id": "TOB-UNI4-1",
+      "severity": "informational",
+      "title": "Strict equality on fee comparison can cause fees to exceed 100%",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-UNI4-2",
+      "severity": "informational",
+      "title": "Incorrect variable usage on swap fee",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-UNI4-3",
+      "severity": "low",
+      "title": "Collected protocol fees may count against user’s currency deltas",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-UNI4-4",
+      "severity": "informational",
+      "title": "Use of incorrect mask to clear higher bits of the protocolFee value",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-UNI4-5",
+      "severity": "informational",
+      "title": "Insufficient event generation",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-UNI4-6",
+      "severity": "informational",
+      "title": "Similar-looking pool IDs can be brute-forced through the PoolKey hooks fields",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}

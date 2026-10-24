@@ -1,0 +1,90 @@
+{
+  "report": "treehouse-teth-tob-2024-10",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2024-09-treehouse-finance-teth-extension-securityreview.pdf",
+    "sha256": "fc375b0a65c9c7696ee6ba58f2fc5bdfea1c6e652058a197fb92dca8cad793a2",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "medium": 2,
+    "informational": 4
+  },
+  "table_rows": 6,
+  "findings": [
+    {
+      "id": "treehouse-teth-tob-2024-10:TOB-TETH-1",
+      "report": "treehouse-teth-tob-2024-10",
+      "protocol": "Treehouse tETH",
+      "auditor": "Trail of Bits",
+      "date": "2024-10",
+      "finding_id": "TOB-TETH-1",
+      "severity": "medium",
+      "title": "Anyone can steal wstETH tokens accidentally transferred to the TreehouseRouter contract",
+      "category": "Undefined Behavior",
+      "difficulty": "High",
+      "affected_contract": "contracts/TreehouseRouter.sol",
+      "description": "The _stethToWsteth function returns the contract’s balance of wstETH tokens instead of the value returned from the WstEth.wrap function. As a result, the returned value includes any wstETH that was accidentally transferred to the TreehouseRouter contract.\n\n[code listing omitted]\n\nFigure 1.1: The _stethToWsteth function in TreehouseRouter.sol\n\nThe TreehouseRouter.depositEth function calls the _ethToWsteth function. This function first deposits the ETH into the StEth (= Lido) contract, and then the ETH amount is passed into the _stethToWsteth function. The _stethToWsteth function will call the WstEth.wrap function, which will use safeTransferFrom to transfer the stETH tokens into the WstEth contract, which will calculate and convert that amount of stETH tokens to wstETH tokens. At the end of the WstEth.wrap function, the amount of wstETH that was calculated and minted to the caller (= TreehouseRouter) is returned.\n\n[code listing omitted]\n\nFigure 1.2: The wrap function in WstEth.sol\n\nTo deal with tokens that were accidentally transferred to the TreehouseRouter contract, the TreehouseRouter contract inherits the Rescuable contract, which allows a privileged account to withdraw accidentally transferred tokens. Due to the above-described issue, any account could front-run such calls to sweep any of the accidentally transferred wstEth tokens from the TreehouseRouter contract.",
+      "recommendation": "Short term, update the _stethToWsteth function so that it returns the value returned from the WstEth.wrap call. This ensures that no accidentally transferred wstETH tokens can be stolen (they can, however, be “rescued” to return them to whoever accidentally transferred them into the TreehouseRouter contract).\n\nLong term, when interacting with external protocols, ensure that the integration is correct by verifying that all of the correct input arguments are passed in and that the return arguments are used correctly and not ignored.",
+      "page": 16,
+      "page_end": 17,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2024-09-treehouse-finance-teth-extension-securityreview.pdf",
+      "taxonomy": [
+        "missing-access-control"
+      ]
+    },
+    {
+      "id": "treehouse-teth-tob-2024-10:TOB-TETH-2",
+      "report": "treehouse-teth-tob-2024-10",
+      "protocol": "Treehouse tETH",
+      "auditor": "Trail of Bits",
+      "date": "2024-10",
+      "finding_id": "TOB-TETH-2",
+      "severity": "medium",
+      "title": "Underlying tokens can be “rescued”",
+      "category": "Data Validation",
+      "difficulty": "High",
+      "affected_contract": "contracts/libs/Rescuable.sol, contracts/TreehouseRedemption.sol, contracts/Vault.sol, contracts/TreehouseRouter.sol",
+      "description": "Contracts that inherit the Rescuable contract do not override its implementation to exclude tokens that are part of the protocol and should not be “rescuable.” This allows the privileged role in charge of “rescuing” tokens to withdraw underlying tokens. Note that this role is privileged (i.e., controlled by the Treehouse team), and this scenario is therefore unlikely to happen.\n\nThe TreehouseRedemption, TreehouseRouter, and Vault contracts all inherit the Rescuable contract so the Treehouse team can withdraw (i.e., “rescue”) any tokens that accidentally were transferred to these contracts. Although this is a wise safety precaution to prevent people from losing tokens that were transferred incorrectly, if not protected accordingly, this allows a privileged actor to withdraw user assets that were not accidentally transferred to the protocol.\n\nFor example, the TreehouseRedemption contract is used for redemptions in a two-stage process. After the first stage TAsset tokens will be held in the TreehouseRedemption contract. After a seven-day delay, the second stage can be executed, which will result in actually redeeming the TAsset tokens for the underlying tokens and transferring those to the caller. The TAsset tokens should therefore not be rescuable in the TreehouseRedemption contract since that allows them to be “rescued” after stage 1 but before stage 2.",
+      "recommendation": "Short term, inside the TreehouseRedemption, TreehouseRouter, and Vault contracts, override the Rescuable functions so that, depending on the contract, certain tokens can be made non-rescuable. Long term, when privileged actors can control tokens owned by protocol users, always account for the possibility that such privileged actors may lose access to their accounts or become rogue. Design and implement the system to remain robust in case this happens so that user assets stay safe.",
+      "page": 18,
+      "page_end": 19,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2024-09-treehouse-finance-teth-extension-securityreview.pdf",
+      "taxonomy": [
+        "owner-withdraw-rug"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "finding_id": "TOB-TETH-3",
+      "severity": "informational",
+      "title": "WstEth.wrap expects stETH amount instead of ETH amount",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-TETH-4",
+      "severity": "informational",
+      "title": "Single-asset vault is not a single-asset vault",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-TETH-5",
+      "severity": "informational",
+      "title": "Dangerous storage variable in Strategy contract due to use of delegatecall",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-TETH-6",
+      "severity": "informational",
+      "title": "Missing return value check can lead to incorrect event emission",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}

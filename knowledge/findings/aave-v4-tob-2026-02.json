@@ -1,0 +1,98 @@
+{
+  "report": "aave-v4-tob-2026-02",
+  "source": {
+    "repository": "trailofbits/publications",
+    "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+    "file": "2026-02-aave-v4-securityreview.pdf",
+    "sha256": "b8260e48c7eb3b27904b7f232c15bbb80b11cb49c3b559c100724969acd6f00a",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE"
+  },
+  "stated_counts": {
+    "medium": 2,
+    "low": 1,
+    "informational": 4
+  },
+  "table_rows": 7,
+  "findings": [
+    {
+      "id": "aave-v4-tob-2026-02:TOB-AAVE-1",
+      "report": "aave-v4-tob-2026-02",
+      "protocol": "Aave V4",
+      "auditor": "Trail of Bits",
+      "date": "2026-02",
+      "finding_id": "TOB-AAVE-1",
+      "severity": "medium",
+      "title": "Deficit reporting denial of service via micro-collateral",
+      "category": "Denial of Service",
+      "difficulty": "Medium",
+      "affected_contract": "src/spoke/libraries/LiquidationLogic.sol",
+      "description": "During liquidation, a deficit is reported only if the liquidated collateral is emptied and the user has no other active collateral while some debt remains. This condition is sound in principle, but “active collateral” is defined as any non ‐ zero collateral, so a user can keep deficit reporting blocked by maintaining dust collateral on another reserve.\n\nLiquidation first computes user account data and then evaluates whether a deficit should be reported. The decision gates on whether the targeted collateral is emptied and whether the user still has any other active collateral legs.\n\n[code listing omitted]\n\nFigure 1.1: Deficit decision gated by active collateral count in the _evaluateDeficit\n\n[code listing omitted]\n\nIn account data computation, any non ‐ zero suppliedShares on a reserve marked as collateral increments activeCollateralCount, regardless of how economically insignificant the value is. This allows a 1 ‐ wei collateral position to keep the user “not in deficit” even after the main collateral leg is fully liquidated.\n\nThe impact is a DoS against timely deficit crystallization. Liquidators must clear every collateral leg alongside the main liquidation to allow for deficit reporting, which increases gas and operational complexity. Until that happens, uncollectible debt continues to accrue interest.",
+      "recommendation": "Short term, treat collateral below a protocol dust threshold as inactive when determining whether “other active collateral” exists.\n\nLong term, revisit the deficit reporting design to remove this grief surface.",
+      "page": 23,
+      "page_end": 24,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2026-02-aave-v4-securityreview.pdf",
+      "taxonomy": [
+        "denial-of-service"
+      ]
+    },
+    {
+      "id": "aave-v4-tob-2026-02:TOB-AAVE-7",
+      "report": "aave-v4-tob-2026-02",
+      "protocol": "Aave V4",
+      "auditor": "Trail of Bits",
+      "date": "2026-02",
+      "finding_id": "TOB-AAVE-7",
+      "severity": "medium",
+      "title": "Users can become immediately liquidatable after executing an action",
+      "category": "Data Validation",
+      "difficulty": "Medium",
+      "affected_contract": "src/spoke/Spoke.sol, src/spoke/libraries/LiquidationLogic.sol",
+      "description": "The Spoke contract validates a user's health factor before applying risk premium updates, which can leave users in a liquidatable state immediately after performing legitimate actions such as withdrawing collateral or disabling collateral.\n\nIn the withdraw, borrow, and setUsingAsCollateral functions, the contract first calls _refreshAndValidateUserPosition to check that the user's health factor remains above the liquidation threshold, and then calls _notifyRiskPremiumUpdate to update the user's premium debt parameters:\n\n[code listing omitted]\n\nFigure 7.1: The ` withdraw ` function validates health factor before updating risk premium (Spoke.sol#L213-L240)\n\nThe _refreshAndValidateUserPosition function calculates the user's total debt value using the current premiumShares and premiumOffset stored in the user's position:\n\n[code listing omitted]\n\nFigure 7.2: Health factor validation occurs before risk premium is applied (Spoke.sol#L680-L690)\n\nThe _notifyRiskPremiumUpdate function then refreshes the user's premium debt accounting:\n\n[code listing omitted]\n\nFigure 7.3: Risk premium update occurs after health factor validation (Spoke.sol#L812-L850)\n\nIn theory, the premium refresh operation should not increase the user's debt, as it simply transitions accounting from in-flight to realized premium debt. However, during the computation of premium debt accruals at the user level, the premium debt can increase by up to 2 wei. This occurs because opposite rounding directions are applied: the conversion from premium drawn shares to assets rounds up, while the offset calculation rounds down.\n\nSince the health factor validation occurs before _notifyRiskPremiumUpdate, a user whose health factor is exactly at the liquidation threshold will pass validation but then have their premium debt increase by up to 2 wei, pushing their health factor below the threshold and making them immediately liquidatable. Additionally a related issue was found in an ongoing PR trying to improve this behavior during the audit.\n\nNote: This was found by running our invariant testing suite against the PR #978 and then discussing an invariant failure with the Aave team. The Aave team later decided to close the PR in favor of a different approach.\n\nThe idea behind PR #978 was to overestimate the user’s debt by adding 2 wei for every borrowed reserve to account for the possible impact of 2 wei imprecision in premium debt calculations on the user's health factor.\n\nThat situation could cause the user to be immediately liquidatable when the _refreshAndValidateUserAccountData function is called before the _notifyRiskPremiumUpdate function, because the health factor check is in _refreshAndValidateUserAccountData while _notifyRiskPremiumUpdate could increase the user’s debt, hence lowering the health factor potentially under the liquidation threshold but the transaction would still succeed. In particular, this pattern is present in the borrow (figure 7.4), withdraw, setUsingAsCollateral, and updateUserDynamicConfig functions.\n\n[code listing omitted]\n\nFigure 7.4: The borrow function validates the health factor before updating premium accounting (Spoke.sol#L266-L267)\n\nThe PR code at the time of our review was using the over estimated debt value to compute the health factor that was used to check if a position was liquidatable (figure 7.5). That would have caused users with a health factor near the liquidation threshold to be incorrectly liquidated due to the overestimation of their debt value when their real premium debt could have been lower.\n\n[code listing omitted]\n\nFigure 7.5: The liquidation validation uses the health factor computed with overestimated debt (LiquidationLogic.sol#L362-L365)",
+      "recommendation": "Short term, improve the design around rounding operations of the system to avoid instant debt creation, and add adequate tests to avoid regressions on the introduction of new bugs in other parts of the system.\n\nLong term, add invariant tests that verify users with health factors above the liquidation threshold cannot be liquidated, and that users cannot become liquidatable immediately after a successful borrow or withdraw operation. This prevents the issue because the test suite will detect rounding mismatches between validation and liquidation checks.",
+      "page": 35,
+      "page_end": 38,
+      "url": "https://raw.githubusercontent.com/trailofbits/publications/89940dfbec07ad03b0989e67d78e84250765366b/reviews/2026-02-aave-v4-securityreview.pdf",
+      "taxonomy": [
+        "lending-liquidation-logic"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "finding_id": "TOB-AAVE-2",
+      "severity": "informational",
+      "title": "Spoke contract does not follow upgradeability best practices",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-3",
+      "severity": "informational",
+      "title": "Lowering riskPremiumThreshold can temporarily block premium refresh and user actions",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-4",
+      "severity": "informational",
+      "title": "Incorrect liquidation event documentation",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-5",
+      "severity": "low",
+      "title": "A Spoke may not be able to add a valid Hub asset",
+      "reason": "below_severity",
+      "why": null
+    },
+    {
+      "finding_id": "TOB-AAVE-6",
+      "severity": "informational",
+      "title": "The setSelfAsUserPositionManagerWithSig function assumes the positionManager value in the params argument is address(this)",
+      "reason": "below_severity",
+      "why": null
+    }
+  ]
+}
