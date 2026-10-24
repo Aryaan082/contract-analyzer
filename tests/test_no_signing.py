@@ -78,7 +78,7 @@ def test_the_scanner_accepts_ordinary_read_only_code():
 
 def test_none_of_our_modules_sign_or_send():
     problems = {}
-    for folder, check_strings in (("chain", True), ("tests", False)):
+    for folder, check_strings in (("chain", True), ("references", True), ("tests", False)):
         for path in sorted((ROOT / folder).rglob("*.py")):
             found = violations(path.read_text(), check_strings=check_strings)
             if found:

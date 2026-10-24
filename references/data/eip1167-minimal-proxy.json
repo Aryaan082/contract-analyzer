@@ -1,0 +1,22 @@
+{
+  "id": "eip1167-minimal-proxy",
+  "name": "EIP-1167 minimal proxy (clone)",
+  "family": "proxy",
+  "kind": "contract",
+  "origin": {
+    "type": "spec",
+    "standard": "EIP-1167",
+    "url": "https://eips.ethereum.org/EIPS/eip-1167"
+  },
+  "source_url": "https://eips.ethereum.org/EIPS/eip-1167",
+  "functions": [],
+  "code": "0x363d3d373d3d3d363d7300000000000000000000000000000000000000005af43d82803e903d91602b57fd5bf3",
+  "code_hash": "0x3cf92464268225a4513da40a34d967354684c32cd0edd67b5f668dfe3550e940",
+  "variable_ranges": [
+    [
+      10,
+      20
+    ]
+  ],
+  "notes": "Bytes as written in the standard. The embedded implementation address (zeros here) differs in every clone, hence the variable range."
+}

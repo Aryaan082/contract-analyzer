@@ -1,0 +1,9 @@
+{
+  "chain": "ethereum",
+  "chain_id": 1,
+  "address": "0x30b044c3568F61d85289c7E44c455712ba3c5a89",
+  "block": 26253254,
+  "note": "EIP-1167 clone found on-chain; code read with RpcClient.get_code",
+  "code": "0x363d3d373d3d3d363d73d5fe1c1f216b775dfd30638fa7164d41321ef79b5af43d82803e903d91602b57fd5bf3",
+  "code_hash": "0xd37d7cb1b00b1a35c54303484441c301235a1b48e7da36cf2df888ee40df1d1f"
+}

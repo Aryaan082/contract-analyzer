@@ -1,0 +1,21 @@
+# Build settings for the reference library. Every compiled reference records these values, so
+# changing one here changes the library: rebuild with `python -m references.dev.build`.
+[profile.default]
+src = "src/refs"
+out = "out/refs"
+cache_path = "cache/refs"
+solc = "0.8.28"
+optimizer = true
+optimizer_runs = 200
+evm_version = "cancun"
+# No source hash in the metadata tail, so rebuilding from a different folder gives the same bytes.
+bytecode_hash = "none"
+remappings = ["@openzeppelin/contracts/=../../.cache/openzeppelin-contracts/contracts/"]
+allow_paths = ["../../.cache"]
+
+# Test fixtures: built like a typical deployment (source hash in the metadata tail).
+[profile.fixtures]
+src = "src/fixtures"
+out = "out/fixtures"
+cache_path = "cache/fixtures"
+bytecode_hash = "ipfs"

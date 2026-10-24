@@ -1,0 +1,28 @@
+{
+  "id": "oz-beacon-proxy",
+  "name": "OpenZeppelin BeaconProxy",
+  "family": "proxy",
+  "kind": "contract",
+  "origin": {
+    "type": "compiled",
+    "repository": "OpenZeppelin/openzeppelin-contracts",
+    "tag": "v5.7.0",
+    "commit": "cab19933c33c2ad1d4c7a84864a3601dddfd16f3",
+    "wrapper": "references/dev/forge/src/refs/RefBeaconProxy.sol",
+    "solc": "0.8.28+commit.7893614a",
+    "optimizer_runs": 200,
+    "evm_version": "cancun",
+    "forge": "0.2.0 (a79dfae 2024-11-16T00:21:53.964085000Z)"
+  },
+  "source_url": "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.7.0/contracts/proxy/beacon/BeaconProxy.sol",
+  "functions": [],
+  "code": "0x6080604052600a600c565b005b60186014601a565b609d565b565b5f7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316635c60da1b6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156076573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906098919060ba565b905090565b365f5f375f5f365f845af43d5f5f3e80801560b6573d5ff35b3d5ffd5b5f6020828403121560c9575f5ffd5b81516001600160a01b038116811460de575f5ffd5b939250505056fea164736f6c634300081c000a",
+  "code_hash": "0x04729a48cd31f6b70d8b200f48e5ab14871191f4ab1ae1c19991663ac50bad72",
+  "variable_ranges": [
+    [
+      29,
+      32
+    ]
+  ],
+  "notes": "The beacon address is an immutable."
+}

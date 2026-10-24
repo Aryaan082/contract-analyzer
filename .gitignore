@@ -7,6 +7,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .DS_Store
+references/.cache/
+references/dev/forge/out/
+references/dev/forge/cache/
 chain/sandbox/out/
 chain/sandbox/cache/
 chain/sandbox/results/*
