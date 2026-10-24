@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Findings spot-check</title>
+<style>
+  :root {
+    --bg: #ffffff; --panel: #f6f7f9; --text: #1b1f24; --muted: #5b6573; --line: #d5d9e0;
+    --accent: #1f6feb; --ok: #1a7f37; --bad: #b42318;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151a; --panel: #1b2027; --text: #e6e9ee; --muted: #9aa5b4; --line: #333b47;
+      --accent: #6aa5ff; --ok: #4cc26b; --bad: #ff7b72;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
+  header { display: flex; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; }
+  header .spacer { flex: 1; }
+  button { font: inherit; padding: 6px 12px; border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 6px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  main { display: grid; grid-template-columns: minmax(340px, 42%) 1fr; height: calc(100vh - 54px); }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; height: auto; } iframe { height: 70vh; } }
+  .left { overflow: auto; padding: 14px 16px; border-right: 1px solid var(--line); }
+  .meta { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+  h2 { font-size: 17px; margin: 4px 0 10px; }
+  .grid { display: grid; grid-template-columns: 120px 1fr; gap: 2px 10px; margin-bottom: 10px; }
+  .grid dt { color: var(--muted); } .grid dd { margin: 0; overflow-wrap: anywhere; }
+  .text { white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px; margin: 4px 0 12px; max-height: 38vh; overflow: auto; }
+  h3 { font-size: 13px; margin: 12px 0 2px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .checks label { display: block; padding: 3px 0; }
+  .checks .row { display: flex; gap: 10px; align-items: baseline; }
+  input[type="text"] { width: 100%; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; }
+  iframe { width: 100%; height: 100%; border: 0; }
+  .right { display: flex; flex-direction: column; min-height: 0; }
+  .right .bar { padding: 6px 12px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+  .right a { color: var(--accent); }
+  .done { color: var(--ok); font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Findings spot-check</h1>
+  <button id="prev">← Previous</button>
+  <span id="where"></span>
+  <button id="next">Next →</button>
+  <span class="spacer"></span>
+  <span id="progress"></span>
+  <button id="copy">Copy results</button>
+</header>
+<main>
+  <section class="left">
+    <div class="meta" id="meta"></div>
+    <h2 id="title"></h2>
+    <dl class="grid" id="fields"></dl>
+    <h3>Description (as parsed)</h3><div class="text" id="description"></div>
+    <h3>Recommendation (as parsed)</h3><div class="text" id="recommendation"></div>
+    <h3>Check against the PDF on the right</h3>
+    <div class="checks" id="checks"></div>
+    <h3>Notes</h3><input type="text" id="note" placeholder="what was wrong, if anything">
+  </section>
+  <section class="right">
+    <div class="bar" id="pdfbar"></div>
+    <iframe id="pdf" title="source PDF"></iframe>
+  </section>
+</main>
+<script>
+"use strict";
+const DATA = /*DATA*/[];
+const CHECKS = [
+  ["title", "Title matches the PDF"],
+  ["severity", "Severity matches"],
+  ["target", "Affected contract (Target) is complete"],
+  ["description", "Description is complete, in order, nothing missing or added"],
+  ["recommendation", "Recommendation is complete"],
+  ["page", "Page is where the finding starts"],
+  ["clean", "No page footers, odd characters or code left in the text"],
+];
+const KEY = "findings-spotcheck-v1";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { state = {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+let index = 0;
+const $ = (id) => document.getElementById(id);
+
+function field(label, value) {
+  const dt = document.createElement("dt"); dt.textContent = label;
+  const dd = document.createElement("dd"); dd.textContent = value == null || value === "" ? "–" : value;
+  $("fields").append(dt, dd);
+}
+
+function render() {
+  const r = DATA[index];
+  const s = state[r.id] || (state[r.id] = { checks: {}, note: "" });
+  $("where").textContent = (index + 1) + " of " + DATA.length;
+  $("meta").textContent = r.protocol + " · " + r.date + " · " + r.id;
+  $("title").textContent = r.title;
+  $("fields").textContent = "";
+  field("Severity", r.severity); field("Difficulty", r.difficulty); field("Category", r.category);
+  field("Affected contract", r.affected_contract);
+  field("Pages", r.page === r.page_end ? String(r.page) : r.page + "–" + r.page_end);
+  field("Tags", r.taxonomy.join(", "));
+  $("description").textContent = r.description;
+  $("recommendation").textContent = r.recommendation;
+  $("checks").textContent = "";
+  for (const [key, label] of CHECKS) {
+    const row = document.createElement("label"); row.className = "row";
+    const box = document.createElement("input"); box.type = "checkbox"; box.checked = !!s.checks[key];
+    box.addEventListener("change", () => { s.checks[key] = box.checked; save(); progress(); });
+    const text = document.createElement("span"); text.textContent = label;
+    row.append(box, text); $("checks").append(row);
+  }
+  $("note").value = s.note || "";
+  $("note").oninput = () => { s.note = $("note").value; save(); };
+  const url = r.pdf + "#page=" + r.page;
+  $("pdf").src = url;
+  const bar = $("pdfbar"); bar.textContent = "Opens at page " + r.page + " of " + r.pdf + ". If nothing shows, ";
+  const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener";
+  a.textContent = "open it in a tab"; bar.append(a, ".");
+  progress();
+}
+
+function complete(id) {
+  const s = state[id];
+  return !!s && CHECKS.every(([key]) => s.checks[key]);
+}
+function progress() {
+  const done = DATA.filter((r) => complete(r.id)).length;
+  const el = $("progress"); el.textContent = done + " of " + DATA.length + " fully ticked";
+  el.className = done === DATA.length ? "done" : "";
+}
+
+$("prev").onclick = () => { index = (index + DATA.length - 1) % DATA.length; render(); };
+$("next").onclick = () => { index = (index + 1) % DATA.length; render(); };
+$("copy").onclick = async () => {
+  const lines = DATA.map((r) => {
+    const s = state[r.id] || { checks: {}, note: "" };
+    const failed = CHECKS.filter(([k]) => !s.checks[k]).map(([, l]) => l);
+    return (failed.length ? "CHECK " : "OK    ") + r.id + (failed.length ? " — not ticked: " + failed.join("; ") : "") + (s.note ? " — note: " + s.note : "");
+  });
+  const text = lines.join("\n");
+  try { await navigator.clipboard.writeText(text); $("copy").textContent = "Copied"; }
+  catch (e) { window.prompt("Copy this:", text); }
+  setTimeout(() => { $("copy").textContent = "Copy results"; }, 1500);
+};
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" && e.target.type === "text") return;
+  if (e.key === "ArrowRight") $("next").click();
+  if (e.key === "ArrowLeft") $("prev").click();
+});
+render();
+</script>
+</body>
+</html>
