@@ -1,0 +1,129 @@
+{
+  "repository": "trailofbits/publications",
+  "commit": "89940dfbec07ad03b0989e67d78e84250765366b",
+  "licence": "CC-BY-SA-4.0",
+  "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE",
+  "reports": [
+    {
+      "slug": "uniswap-v4-core-tob-2024-09",
+      "file": "2024-07-uniswap-v4-core-securityreview.pdf",
+      "protocol": "Uniswap v4 Core",
+      "auditor": "Trail of Bits",
+      "date": "2024-09",
+      "size": 2028568,
+      "git_blob_sha": "6f23eda3b88524e7ed58372d4edf04f6cbdef981",
+      "sha256": "17989f42379ea3427060c8c0dd1dda2bed6ffd7832aa589d1e4a3dad9c48623f",
+      "held_out": false
+    },
+    {
+      "slug": "aave-v3-tob-2021-11",
+      "file": "2021-11-aave-v3-securityreview.pdf",
+      "protocol": "Aave V3",
+      "auditor": "Trail of Bits",
+      "date": "2021-11",
+      "size": 1092258,
+      "git_blob_sha": "f66c63aefa5725d8301e994309f68dc6bce05ebd",
+      "sha256": "76b13ef947b2669f967a314507c563290fed6e6e801b428444c81d56c38528f8",
+      "held_out": false
+    },
+    {
+      "slug": "aave-v4-tob-2026-02",
+      "file": "2026-02-aave-v4-securityreview.pdf",
+      "protocol": "Aave V4",
+      "auditor": "Trail of Bits",
+      "date": "2026-02",
+      "size": 1216757,
+      "git_blob_sha": "2e0329f8511d8ea51f2971a8923118c561b622bd",
+      "sha256": "b8260e48c7eb3b27904b7f232c15bbb80b11cb49c3b559c100724969acd6f00a",
+      "held_out": false
+    },
+    {
+      "slug": "balancer-v3-tob-2024-12",
+      "file": "2024-12-balancer-v3-securityreview.pdf",
+      "protocol": "Balancer v3",
+      "auditor": "Trail of Bits",
+      "date": "2024-12",
+      "size": 1549818,
+      "git_blob_sha": "96427c0337caf57cfe47b4e7c8b12ca570998113",
+      "sha256": "aefb7b64d8bef60e601c7af986ad21f1a500b60f5e91048fbe097a016a78dc23",
+      "held_out": false
+    },
+    {
+      "slug": "compound-v2-tob-2019-08",
+      "file": "compound-3.pdf",
+      "protocol": "Compound Protocol",
+      "auditor": "Trail of Bits",
+      "date": "2019-08",
+      "size": 756464,
+      "git_blob_sha": "606fc52ac9d60a468fde714ffca04a2bb856146b",
+      "sha256": "e3bf2f0bf8213abef5bc7d13e89772736b68713f7513500dd70cc6c8a0a24a93",
+      "held_out": true
+    },
+    {
+      "slug": "frax-fraxlend-fraxferry-tob-2022-11",
+      "file": "2022-10-fraxfinance-fraxlend-fraxferry-securityreview.pdf",
+      "protocol": "Frax Finance: Fraxlend and Fraxferry",
+      "auditor": "Trail of Bits",
+      "date": "2022-11",
+      "size": 801276,
+      "git_blob_sha": "cfbc8c4de2f529b11404712da2ba5b483008d349",
+      "sha256": "91814b71c1fd99efe1337704b6ce9ecf8d578ad7b62b57e256c98f652971f8ab",
+      "held_out": false
+    },
+    {
+      "slug": "maple-v2-tob-2022-12",
+      "file": "2022-09-maplefinance-mapleprotocolv2-securityreview.pdf",
+      "protocol": "Maple Finance v2",
+      "auditor": "Trail of Bits",
+      "date": "2022-12",
+      "size": 1034564,
+      "git_blob_sha": "1acb0ac2e40beafccf21e325a8ebcc0b86b4641a",
+      "sha256": "f69f2a10a71efe4326913a2a8f03016a1e65520124d2164b7bf6e66351e5873d",
+      "held_out": false
+    },
+    {
+      "slug": "reserve-protocol-tob-2022-08",
+      "file": "2022-08-reserve-protocol-securityreview.pdf",
+      "protocol": "Reserve Protocol",
+      "auditor": "Trail of Bits",
+      "date": "2022-08",
+      "size": 1553158,
+      "git_blob_sha": "b964340837ed88c72be73f70ab24480ece3570ee",
+      "sha256": "c4717723dc375625cbce82c9f0ca612f9eac79b535f25571b0ffa1cdf90cbac4",
+      "held_out": false
+    },
+    {
+      "slug": "wormhole-governor-tob-2023-04",
+      "file": "2023-03-wormhole-securityreview.pdf",
+      "protocol": "Wormhole Governor and Watchers",
+      "auditor": "Trail of Bits",
+      "date": "2023-04",
+      "size": 989891,
+      "git_blob_sha": "52921cbb0d6dcb364b61fcb83a0dba635f4879d1",
+      "sha256": "b366368a73297d062207de22a9b497985610b90f6d411f3d590be08ff30d1782",
+      "held_out": false
+    },
+    {
+      "slug": "morpho-v1-tob-2022-06",
+      "file": "MorphoLabs.pdf",
+      "protocol": "Morpho Protocol V1",
+      "auditor": "Trail of Bits",
+      "date": "2022-06",
+      "size": 966408,
+      "git_blob_sha": "54f5eaf725d4ca49d77eaf1f7dbbcd539bd9cbd1",
+      "sha256": "011af7fa142120dfdf5a5bcef7a3b36bdf8fc8cc17a24477a2f41e5d1b0034cc",
+      "held_out": true
+    },
+    {
+      "slug": "treehouse-teth-tob-2024-10",
+      "file": "2024-09-treehouse-finance-teth-extension-securityreview.pdf",
+      "protocol": "Treehouse tETH",
+      "auditor": "Trail of Bits",
+      "date": "2024-10",
+      "size": 784676,
+      "git_blob_sha": "44dc815d3759689f959e93891ecfc6daeb12991e",
+      "sha256": "fc375b0a65c9c7696ee6ba58f2fc5bdfea1c6e652058a197fb92dca8cad793a2",
+      "held_out": false
+    }
+  ]
+}
