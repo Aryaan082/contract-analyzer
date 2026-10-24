@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 from collections.abc import Mapping, Sequence
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from web3 import Web3
@@ -14,6 +15,7 @@ from chain.errors import ChainError, ToolError
 from chain.models import Provenance, ToolResult, normalize_address
 from chain.rpc import RpcClient, probe_chains
 from chain.selectors import SelectorsData, run_extract_selectors
+from chain.simulate import DEFAULT_TRADE_WEI, SellSimulation, simulate_sell
 
 
 def cmd_list(env: Mapping[str, str]) -> int:
@@ -69,6 +71,34 @@ def cmd_selectors(args: argparse.Namespace, env: Mapping[str, str]) -> int:
     return 1 if isinstance(result.data, ToolError) else 0
 
 
+def _eth_to_wei(text: str) -> int:
+    try:
+        amount = Decimal(text)
+    except InvalidOperation:
+        amount = Decimal(-1)
+    if not amount.is_finite() or amount <= 0:
+        raise ChainError("invalid_amount", "The trade size must be a positive number of ETH.")
+    return int(amount * 10**18)
+
+
+def cmd_simulate_sell(args: argparse.Namespace, env: Mapping[str, str]) -> int:
+    """Rehearse a buy and a sell of the token on a scratch copy of the chain. Nothing is sent."""
+    try:
+        trade_wei = DEFAULT_TRADE_WEI if args.amount_eth is None else _eth_to_wei(args.amount_eth)
+        client = RpcClient.connect(args.chain, env, args.block)
+    except ChainError as err:
+        failed = Provenance(chain=args.chain, chain_id=None, address=None, block=None, source="")
+        print(
+            ToolResult[SellSimulation](provenance=failed, data=err.to_tool_error()).model_dump_json(
+                indent=2
+            )
+        )
+        return 1
+    result = simulate_sell(client, args.token, trade_wei)
+    print(result.model_dump_json(indent=2))
+    return 1 if isinstance(result.data, ToolError) else 0
+
+
 def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m chain", description=__doc__)
     parser.add_argument("-v", "--verbose", action="store_true", help="log scrubbed RPC failures")
@@ -86,6 +116,14 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         "--chain", default=DEFAULT_CHAIN, help="with --address (default ethereum)"
     )
     selectors.add_argument("--block", type=int, help="with --address: pin to this block")
+    sell = commands.add_parser(
+        "simulate-sell",
+        help="rehearse buying then selling a token on a scratch copy of the chain (sends nothing)",
+    )
+    sell.add_argument("--token", required=True, help="the token's address")
+    sell.add_argument("--chain", default=DEFAULT_CHAIN, help="default ethereum")
+    sell.add_argument("--block", type=int, help="pin to this block (default: latest)")
+    sell.add_argument("--amount-eth", help="size of the rehearsal buy in ETH (default 0.01)")
     args = parser.parse_args(argv)
 
     # Only our own logger: web3's DEBUG lines include the RPC URL.
@@ -106,4 +144,6 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         return run_inspector(env, args.port)
     if args.command == "selectors":
         return cmd_selectors(args, env)
+    if args.command == "simulate-sell":
+        return cmd_simulate_sell(args, env)
     return 2

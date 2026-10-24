@@ -8,8 +8,10 @@ import logging
 from collections.abc import Iterator, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from dataclasses import dataclass
 
 from web3 import HTTPProvider, Web3
+from web3.exceptions import ContractLogicError
 from web3.providers.base import BaseProvider
 
 from chain.config import chain_url, configured_chains
@@ -27,6 +29,33 @@ def build_provider(url: str) -> BaseProvider:
     # block, arrive as a response and are not retried. Its default timeout is 30s; across five
     # retries that is too long to wait on a dead node.
     return HTTPProvider(url, request_kwargs={"timeout": REQUEST_TIMEOUT_SECONDS})
+
+
+@dataclass(frozen=True, slots=True)
+class BlockInfo:
+    number: int
+    timestamp: int
+    base_fee: int  # wei; 0 on chains without a base fee
+
+
+@dataclass(frozen=True, slots=True)
+class CallOutcome:
+    """An `eth_call`. A revert is an outcome, not an error: `ok` is False and `data` holds the
+    revert data (empty for a bare revert). Revert text is chosen by the contract, so it is never
+    shown to the agent as is."""
+
+    ok: bool
+    data: bytes
+
+
+def _revert_bytes(err: ContractLogicError) -> bytes:
+    data = getattr(err, "data", None)
+    if isinstance(data, str) and data.startswith("0x"):
+        try:
+            return bytes.fromhex(data[2:])
+        except ValueError:
+            pass
+    return b""
 
 
 @contextmanager
@@ -50,10 +79,20 @@ class RpcClient:
         self._requested_block = block
         self._chain_id: int | None = None
         self._block: int | None = None
+        self._fork_url: str | None = None
 
     @classmethod
     def connect(cls, chain: str, env: Mapping[str, str], block: int | None = None) -> "RpcClient":
-        return cls(chain, Web3(build_provider(chain_url(chain, env))), block)
+        url = chain_url(chain, env)
+        client = cls(chain, Web3(build_provider(url)), block)
+        client._fork_url = url
+        return client
+
+    @property
+    def fork_url(self) -> str | None:
+        """The node's URL, for Foundry to fork from. It holds the provider's API key: hand it only
+        to the sandbox's child process, never to a log, a command line or the agent."""
+        return self._fork_url
 
     @property
     def chain_id(self) -> int:
@@ -107,6 +146,26 @@ class RpcClient:
         block = self.pin()
         with _guard():
             return bytes(self._w3.eth.get_storage_at(address, slot, block))
+
+    def block_info(self) -> BlockInfo:
+        block = self.pin()
+        with _guard():
+            header = self._w3.eth.get_block(block)
+        return BlockInfo(
+            number=block,
+            timestamp=int(header["timestamp"]),
+            base_fee=int(header.get("baseFeePerGas") or 0),
+        )
+
+    def call(self, to: str, data: bytes) -> CallOutcome:
+        """A read-only `eth_call` at the pinned block. It runs on the node and changes nothing."""
+        to = normalize_address(to)
+        block = self.pin()
+        with _guard():
+            try:
+                return CallOutcome(True, bytes(self._w3.eth.call({"to": to, "data": data}, block)))
+            except ContractLogicError as err:
+                return CallOutcome(False, _revert_bytes(err))
 
 
 def probe_chains(env: Mapping[str, str]) -> dict[str, tuple[int | None, ChainError | None]]:
