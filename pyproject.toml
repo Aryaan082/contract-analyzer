@@ -8,6 +8,7 @@ dependencies = [
     "pydantic>=2",
     "python-dotenv",
     "evmole>=0.9.4",
+    "pypdf>=6.21.2",
 ]
 
 [dependency-groups]

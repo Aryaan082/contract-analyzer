@@ -14,3 +14,6 @@ chain/sandbox/out/
 chain/sandbox/cache/
 chain/sandbox/results/*
 !chain/sandbox/results/.gitkeep
+knowledge/reports/*
+!knowledge/reports/.gitkeep
+knowledge/spotcheck.html
