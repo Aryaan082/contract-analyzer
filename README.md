@@ -234,7 +234,8 @@ Adding the checklist to plain lowered its score, and the checklist pipeline scor
 Plain, then the pipeline, joined by place, then verifier v3 re-reads every flag (1,232 flags on dev,
 436 on held-out) and a place is shown if a flag in it is valid at severity low or up.
 DeepSeek V4.1 Flash throughout. One plain run and one pipeline run per pair; five pairs on dev, one
-on held-out. Not quotable (draft rubric, DeepSeek also judges).
+on held-out. Not quotable (draft rubric, DeepSeek also judges). Reproduce, free from the cache:
+`python -m evals.source_review.verifier_eval score --side dev --cache <tob cache>`.
 
 **Dev group (5 reports)**
 
@@ -271,7 +272,7 @@ About 2,500 tests, none needing a network or a model. Built: chain tools, refere
 knowledge base, retrieval, the agent, the evals, source review, the layered run, the verifier and the
 review queue. Not built: the FastAPI service, web UI, tracing dashboard and a public deployment; the
 layered run and the queue are not reachable from `python -m agent`; nothing writes approved findings
-into the directory. The scripts that produced the layered-system and verifier tables are not in the repo yet (the settings and commits are in the log). A fair test of the verifier needs reports nobody has read. CI is parked in
+into the directory. The layered-system and verifier tables reproduce with `python -m evals.source_review.verifier_eval` ([commands](evals/datasets/tob_items/README.md#reproducing-the-layered-system-and-verifier-tables)). A fair test of the verifier needs reports nobody has read. CI is parked in
 [`.github/workflows-disabled/`](.github/workflows-disabled).
 
 ## Running it

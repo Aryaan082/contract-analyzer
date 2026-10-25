@@ -3,7 +3,8 @@
 A reader (plain or the checklist pipeline) raises flags: a sentence about a place in the code. Most are
 not real. This package re-reads each flag with a different model and says whether to show it.
 Results and how they were measured: the root [README](../README.md) and
-[`evals/datasets/tob_items/README.md`](../evals/datasets/tob_items/README.md).
+[`evals/datasets/tob_items/README.md`](../evals/datasets/tob_items/README.md). The evaluation command is
+[`evals/source_review/verifier_eval.py`](../evals/source_review/verifier_eval.py).
 
 | Module | Role |
 |---|---|

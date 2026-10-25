@@ -537,3 +537,43 @@ the wide key) therefore did not replicate on held-out; the sample is small (one 
 found in 4 of 7 reports), so it is weak evidence against rather than a refutation, and it gives
 the dev result no support.
 
+## Reproducing the layered-system and verifier tables
+
+The tables in the root README come from `python -m evals.source_review.verifier_eval` (added after
+the held-out run; no pre-registered path changed). `C` is the tob cache folder (`tob pdfs` and
+`tob fetch --confirm-download` fill it). `WHY` is the waiver text for DeepSeek judging its own
+flags (dev only, not quotable). Answers and verdicts are cached, so repeating a command is free.
+
+```bash
+# the layered system on dev: five run pairs (folders ds, ds3, rep-p3..5, rep-t2..5; --pair takes others)
+python -m evals.source_review.verifier_eval claims --side dev --cache C \
+    --allow-same-company WHY --confirm-spend --max-spend 3        # a model call: every distinct flag
+python -m evals.source_review.verifier_eval score --side dev --cache C --allow-same-company WHY
+
+# held-out, one pair (folder held-p1): plain, judging, the pipeline on every report, judging, verifier
+python -m evals.source_review tob screen --side held_out --model deepseek --runs held-p1 \
+    --plain-max-tokens 32768 --declare WHY --confirm-spend --max-spend 0.4 --cache C
+python -m evals.source_review tob judge --side held_out --stage all --model deepseek --runs held-p1 \
+    --draft --allow-same-company WHY --confirm-spend --max-spend 1 --workers 40 --cache C
+python -m evals.source_review.verifier_eval pipeline-all --side held_out --runs held-p1 \
+    --allow-same-company WHY --declare WHY --confirm-spend --max-spend 0.6 --cache C
+python -m evals.source_review tob judge ...                       # again, for the pipeline flags
+python -m evals.source_review.verifier_eval claims --side held_out --cache C \
+    --declare WHY --confirm-spend --max-spend 0.7
+python -m evals.source_review.verifier_eval score --side held_out --cache C --allow-same-company WHY
+
+# exploratory and post-hoc: the held-out wide key (judge its pairs, then score with it)
+python -m evals.source_review tob judge --side held_out --key wide --exploratory-held-out \
+    --stage all --model deepseek --runs held-p1 --draft --allow-same-company WHY \
+    --confirm-spend --max-spend 1 --workers 10 --cache C
+python -m evals.source_review.verifier_eval score --side held_out --exploratory-held-out \
+    --cache C --allow-same-company WHY
+```
+
+`pipeline-all` exists because `tob score` runs only the reports with a hard finding and refuses to
+start while one screening pair has no verdict (a glm pair that stays unreadable). The dev run folders
+were made with `tob screen` and `tob score --stages pipeline --pipeline two_pass` under different
+`--runs` names (listed in the log). Request errors are printed: an OpenRouter 402 at a low balance
+with many workers shows up as unanswered flags, and the same command run again with fewer workers
+fills them in.
+
