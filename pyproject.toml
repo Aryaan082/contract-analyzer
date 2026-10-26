@@ -9,6 +9,7 @@ dependencies = [
     "python-dotenv",
     "evmole>=0.9.4",
     "pypdf>=6.21.2",
+    "fastembed>=0.9.1",
 ]
 
 [dependency-groups]
@@ -27,5 +28,8 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-m 'not live' --strict-markers"
-markers = ["live: hits real RPC or explorer endpoints (needs .env); skipped by default"]
+addopts = "-m 'not live and not models' --strict-markers"
+markers = [
+    "live: hits real RPC or explorer endpoints (needs .env); skipped by default",
+    "models: needs the downloaded retrieval models (python -m retrieval models); skipped by default",
+]
