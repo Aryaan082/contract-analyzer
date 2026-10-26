@@ -49,7 +49,7 @@ Defaults; change if needed.
 | Language | Python 3.12 | Best ecosystem for evals, embeddings, fine-tuning |
 | Chains | Any chain; start with Ethereum. A chain option (e.g. `--chain`) selects it, and RPC providers are added as more chains are needed | |
 | LLM | Claude API with tool use | Native tool calling, strong long-context reading |
-| Vector store | Postgres + pgvector | One DB for metadata, keyword search and vectors |
+| Vector store | In-memory vectors, exact search | 54 chunks: a database adds setup and no speed; revisit Postgres + pgvector if the corpus or serving needs it |
 | Serving | FastAPI + simple Next.js UI, with server-sent events | Matches Aryaan's existing stack |
 
 ## Components
@@ -91,11 +91,13 @@ Done when: every finding from the sample reports is a clean, complete record (sp
 ### 4. Retrieval — `retrieval/`
 
 - One chunk per finding or taxonomy entry
-- Hybrid search: BM25 (exact terms, function names) + embeddings (meaning)
+- Meaning search: embeddings, with the vectors held in memory (default model Qwen3-Embedding-8B via OpenRouter). No word scoring: keyword (BM25) and hybrid search were built and measured, then removed
 - Metadata filters: severity, protocol, date
-- Reranker over the top ~50 candidates
+- Optional reranker over the top ~50 candidates (off by default)
 
-Done when: retrieval metrics are reported for each variant (dense, hybrid, hybrid + rerank).
+Done when: retrieval metrics are reported for each variant (dense, dense + rerank).
+
+Measured history (dev, first 69 questions, recall@5, 2026-10-25): keyword only 0.86, dense (bge-small) 0.87, hybrid 0.87, hybrid + rerank 0.88; none shown to differ. Keyword and hybrid search were removed on 2026-10-26 because they never beat meaning search and were weakest on code queries; the code and every logged row are at commit `90d2cb1` and in `evals/results.md`. Current numbers (dev, 87 questions): Qwen3-8B 0.87, bge-small 0.82, bge-small + MiniLM rerank 0.84.
 
 ### 5. Agent — `agent/`
 
@@ -140,7 +142,7 @@ contract-analyzer/
 │   ├── taxonomy/        # 3. vulnerability entries (YAML/Markdown)
 │   ├── reports/         # raw audit PDFs
 │   └── parse/           # PDF → findings records
-├── retrieval/           # 4. indexing, BM25, embeddings, rerank
+├── retrieval/           # 4. indexing, embeddings, rerank
 ├── agent/               # 5. tool definitions, loop, citation validator, prompts
 ├── evals/
 │   ├── datasets/        # labeled questions, contracts, trajectories
@@ -160,7 +162,7 @@ Six weeks part-time. The eval harness is built in week 2 so every later change i
 2. **Week 2: eval harness first.** Label ~30 contracts and ~50 retrieval questions; `make eval` runs end to end, even with weak scores.
 3. **Week 3: knowledge base + baseline retrieval.** Parse reports, build the taxonomy, dense-only retrieval. Record baseline numbers.
 4. **Week 4: agent with citations.** Tool loop, structured output, citation validator. First full reports.
-5. **Week 5: improve and measure.** Hybrid search, reranker, better heuristics, expand eval sets. Each change gets a row in the results table.
+5. **Week 5: improve and measure.** Search variants, reranker, better heuristics, expand eval sets. Each change gets a row in the results table.
 6. **Week 6: ship.** API, UI, caching, tracing, deploy. Share it to get real users and log queries.
 
 ## Metrics to capture for the resume
@@ -168,7 +170,7 @@ Six weeks part-time. The eval harness is built in week 2 so every later change i
 Record these as you go; they become resume bullets and interview stories.
 
 - [ ] Detection precision / recall / F1 on the labeled contract set
-- [ ] Retrieval recall@5 for dense vs. hybrid vs. hybrid + rerank
+- [ ] Retrieval recall@5 for dense vs. dense + rerank (dev, 87 questions: Qwen3-8B 0.87, bge-small 0.82, bge-small + rerank 0.84). Measured history before keyword and hybrid search were removed (first 69 dev questions): keyword 0.86, dense 0.87, hybrid 0.87, hybrid + rerank 0.88
 - [ ] Citation validity rate (% of claims backed by real evidence)
 - [ ] p50 / p95 latency and cost per analysis
 - [ ] Cache hit rate
