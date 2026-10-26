@@ -1,0 +1,38 @@
+{"id": "q006", "relevant": ["taxonomy:unlocked-liquidity"]}
+{"id": "q007", "relevant": ["taxonomy:tx-origin-auth"]}
+{"id": "q009", "relevant": ["taxonomy:denial-of-service"]}
+{"id": "q010", "relevant": ["taxonomy:erc4626-share-inflation"]}
+{"id": "q017", "relevant": ["taxonomy:governance-takeover", "taxonomy:flash-loan-attacks"]}
+{"id": "q019", "relevant": ["reserve-protocol-tob-2022-08:TOB-RES-14"]}
+{"id": "q024", "relevant": ["taxonomy:signature-replay"]}
+{"id": "q026", "relevant": ["taxonomy:oracle-manipulation"]}
+{"id": "q028", "relevant": ["taxonomy:pausable-transfers"]}
+{"id": "q031", "relevant": ["taxonomy:missing-input-validation", "balancer-v3-tob-2024-12:TOB-BALV3-6"]}
+{"id": "q037", "relevant": ["taxonomy:arithmetic-and-rounding", "morpho-v1-tob-2022-06:TOB-MORPHO-8"]}
+{"id": "q038", "relevant": ["taxonomy:storage-layout-collision"]}
+{"id": "q040", "relevant": ["taxonomy:lending-liquidation-logic", "aave-v3-tob-2021-11:TOB-AAVE-009", "aave-v3-tob-2021-11:TOB-AAVE-010"]}
+{"id": "q044", "relevant": ["aave-v4-tob-2026-02:TOB-AAVE-7", "aave-v3-tob-2021-11:TOB-AAVE-007", "taxonomy:lending-liquidation-logic"]}
+{"id": "q047", "relevant": ["maple-v2-tob-2022-12:TOB-MPL-9", "aave-v4-tob-2026-02:TOB-AAVE-1"]}
+{"id": "q048", "relevant": ["taxonomy:address-blacklist"]}
+{"id": "q052", "relevant": ["taxonomy:privileged-mint"]}
+{"id": "q053", "relevant": ["taxonomy:privileged-mint"]}
+{"id": "q054", "relevant": ["taxonomy:privileged-mint"]}
+{"id": "q055", "relevant": ["taxonomy:privileged-mint"]}
+{"id": "q056", "relevant": ["taxonomy:address-blacklist"]}
+{"id": "q057", "relevant": ["taxonomy:address-blacklist"]}
+{"id": "q058", "relevant": ["taxonomy:address-blacklist"]}
+{"id": "q059", "relevant": ["taxonomy:address-blacklist"]}
+{"id": "q084", "relevant": ["taxonomy:delegatecall-to-untrusted"]}
+{"id": "q085", "relevant": ["taxonomy:delegatecall-to-untrusted"]}
+{"id": "q086", "relevant": ["taxonomy:delegatecall-to-untrusted"]}
+{"id": "q087", "relevant": ["taxonomy:delegatecall-to-untrusted"]}
+{"id": "q098", "relevant": ["taxonomy:signature-replay", "aave-v3-tob-2021-11:TOB-AAVE-002"]}
+{"id": "q099", "relevant": ["taxonomy:signature-replay", "aave-v3-tob-2021-11:TOB-AAVE-002"]}
+{"id": "q100", "relevant": ["taxonomy:signature-replay", "aave-v3-tob-2021-11:TOB-AAVE-002"]}
+{"id": "q103", "relevant": ["aave-v3-tob-2021-11:TOB-AAVE-009"]}
+{"id": "q104", "relevant": ["aave-v4-tob-2026-02:TOB-AAVE-7"]}
+{"id": "q108", "relevant": ["maple-v2-tob-2022-12:TOB-MPL-9"]}
+{"id": "q109", "relevant": ["morpho-v1-tob-2022-06:TOB-MORPHO-6"]}
+{"id": "q121", "relevant": ["taxonomy:missing-input-validation"]}
+{"id": "q123", "relevant": ["taxonomy:mutable-fees"]}
+{"id": "q124", "relevant": ["taxonomy:oracle-manipulation"]}
