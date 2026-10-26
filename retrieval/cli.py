@@ -22,7 +22,7 @@ from retrieval.embedders import (
     load_models_config,
 )
 from retrieval.filters import Filters
-from retrieval.index import IndexUnavailable, build_index, keyword_index, load_index
+from retrieval.index import IndexUnavailable, build_index, load_index
 from retrieval.search import DEFAULT_MODE, MODES, Searcher, citation_text, render_quoted
 
 MAX_MODEL_TOKENS = 512  # what the BGE models read; longer chunks are cut
@@ -83,10 +83,10 @@ def _filters(pairs: Sequence[str]) -> Filters | None:
 
 
 def _search(args: argparse.Namespace) -> int:
-    embedder = get_embedder(args.embedder) if args.mode != "bm25" else None
-    index = keyword_index(args.recipe) if embedder is None else load_index(embedder, args.recipe)
-    reranker = get_reranker(args.reranker) if args.mode == "hybrid_rerank" else None
-    searcher = Searcher(index, embedder=embedder, reranker=reranker, tokenizer=args.tokenizer)
+    embedder = get_embedder(args.embedder)
+    index = load_index(embedder, args.recipe)
+    reranker = get_reranker(args.reranker) if args.mode == "dense_rerank" else None
+    searcher = Searcher(index, embedder=embedder, reranker=reranker)
     started = time.perf_counter()
     result = searcher.search(args.query, k=args.k, filters=_filters(args.filter), mode=args.mode)
     elapsed = time.perf_counter() - started
@@ -130,7 +130,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     search.add_argument("--embedder", default=None)
     search.add_argument("--reranker", default=None)
     search.add_argument("--recipe", default="default")
-    search.add_argument("--tokenizer", choices=("identifier", "plain"), default="identifier")
     search.add_argument("--json", action="store_true")
     search.add_argument("--quoted", action="store_true", help="also print the quoted prompt text")
     search.set_defaults(run=_search)

@@ -6,13 +6,17 @@ words. Both implement the same interfaces as the real fastembed models.
 """
 
 import hashlib
+import re
 from collections.abc import Sequence
 
 import numpy as np
 
 from retrieval.chunks import Chunk, Citation
 from retrieval.embedders import normalize
-from retrieval.tokens import plain_tokens
+
+
+def words(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9_]+", text.lower())
 
 
 class HashingEmbedder:
@@ -21,7 +25,7 @@ class HashingEmbedder:
 
     def _vector(self, text: str) -> np.ndarray:
         vector = np.zeros(self._dim, dtype=np.float32)
-        for token in plain_tokens(text):
+        for token in words(text):
             vector[int(hashlib.sha1(token.encode()).hexdigest()[:8], 16) % self._dim] += 1.0
         return vector
 
@@ -36,8 +40,8 @@ class OverlapReranker:
     name = "fake-overlap"
 
     def score(self, query: str, passages: Sequence[str]) -> list[float]:
-        wanted = set(plain_tokens(query))
-        return [float(len(wanted & set(plain_tokens(p)))) for p in passages]
+        wanted = set(words(query))
+        return [float(len(wanted & set(words(p)))) for p in passages]
 
 
 def chunk(
@@ -46,7 +50,6 @@ def chunk(
     text: str,
     *,
     record_type: str = "taxonomy",
-    keywords: tuple[str, ...] = (),
     **metadata,
 ) -> Chunk:
     return Chunk(
@@ -54,7 +57,6 @@ def chunk(
         record_type=record_type,  # type: ignore[arg-type]
         title=title,
         text=text,
-        keywords=keywords,
         citation=Citation(document="test", id=chunk_id),
         **metadata,
     )
@@ -67,7 +69,6 @@ def tiny_corpus() -> list[Chunk]:
             "taxonomy:tx-origin-auth",
             "Authorization with tx.origin",
             "The contract checks tx.origin instead of msg.sender so a phishing call can pass.",
-            keywords=("tx.origin",),
             group="admin_power",
             applies_to=("any",),
         ),
@@ -75,7 +76,6 @@ def tiny_corpus() -> list[Chunk]:
             "taxonomy:privileged-mint",
             "Privileged minting",
             "An owner can create new tokens at will and dilute every other holder.",
-            keywords=("mint", "_mint"),
             group="token_tricks",
             applies_to=("erc20", "erc721"),
         ),

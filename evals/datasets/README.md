@@ -73,7 +73,7 @@ reports: CC BY-SA 4.0, with the changes listed above. The original reports remai
 ## Rules
 
 - Held-out labels are read at milestones only, each one declared in `evals/results.md`.
-- Nobody edits chunk text, `source_keywords` or labels in response to a quiz result. A label fix is
+- Nobody edits chunk text or labels in response to a quiz result. A label fix is
   allowed only if logged in `evals/results.md` and applied to every variant.
 - Tool-word queries are ambiguous on purpose: several entries share a signal, but only the target
   is marked right.

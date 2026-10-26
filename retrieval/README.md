@@ -14,36 +14,35 @@ make eval          run the retrieval quiz on the dev questions (see evals/)
 
 python -m retrieval search "who can call this without being the owner?" -k 5
 python -m retrieval search "drain the vault" --filter severity=high --filter record_type=finding
-python -m retrieval search "an upgradeable contract nobody locked" --mode hybrid --json
+python -m retrieval search "an upgradeable contract nobody locked" --mode dense_rerank --json
 ```
 
 ## How a search works
 
 1. **Filters** (`filters.py`) drop chunks that do not match: `record_type`, `severity`, `protocol`,
    `group`, `kind` (an entry's `applies_to`; `any` always matches), `date_from`, `date_to`.
-2. **Keyword search** (`bm25.py`, `tokens.py`): Okapi BM25 with `k1 = 1.5`, `b = 0.75` and a
-   non-negative IDF. The tokenizer keeps `tx.origin` and `_beforeTokenTransfer` whole and also
-   splits them into parts; an entry's `source_keywords` are added to what this side reads.
-   Postgres `ts_rank` is not BM25 (its documentation says it uses no corpus-wide information).
-3. **Meaning search** (`embedders.py`, `index.py`): every chunk was turned into a list of numbers
-   by a small model when the index was built; the query gets one too and the closest win. The
-   vectors are held in memory and compared with every chunk (exact search). At tens to hundreds of
-   chunks that takes microseconds; a database index would add setup and no speed.
-4. **Merge** (`fusion.py`): reciprocal rank fusion of the two ranked lists, `1 / (60 + rank)` each.
-5. **Rerank** (`embedders.py`): a cross-encoder reads the query and each of the top 50 candidates
-   together and re-scores them. At 54 chunks the top 50 is almost everything, so here it acts as a
-   third ranker; on a large corpus it would cap the cost at 50 pairs per query.
+2. **Meaning search** (`embedders.py`, `index.py`): every chunk was turned into a list of numbers
+   by an embedding model when the index was built; the query gets one too (with the model's
+   instruction prefix, set in `models.toml`) and the closest win. The vectors are held in memory and
+   compared with every chunk (exact search). At tens to hundreds of chunks that takes microseconds;
+   a database index would add setup and no speed.
+3. **Rerank, optional** (`embedders.py`, mode `dense_rerank`): a cross-encoder reads the query and
+   each of the top 50 candidates together and re-scores them. At 54 chunks the top 50 is almost
+   everything, so here it acts as a second ranker; on a large corpus it would cap the cost at 50
+   pairs per query. It was not shown to help and costs seconds, so it is off by default.
 
-`search.py` has the four modes (`bm25`, `dense`, `hybrid`, `hybrid_rerank`), `Searcher`, and
-`open_searcher()` for Component 5. **The default embedder is hosted** (Qwen3-Embedding-8B through OpenRouter, `default_embedder` in
-`models.toml`; it needs `OPENROUTER_API_KEY` and network, and the query text leaves the machine), and
-**the default mode is hybrid** (`DEFAULT_MODE`): the plan's rule ("simplest unless a gain is shown")
-pointed at keyword search because no variant was shown to beat another on 54 chunks, and Aryaan
-chose hybrid instead (keyword wins on exact code names, meaning search on paraphrases, and the corpus
-will grow; see the decision note in `evals/results.md`). Hybrid needs `make models` and `make index`;
-`mode="bm25"` needs neither. Hits are returned as data: use `render_quoted(hits)` to put them
-into a prompt, which prefixes every line with `> ` and says the text is quoted, untrusted material.
-Everything in a chunk came from a hand-written file or a PDF.
+There is no word scoring: no keyword search, no tokenizer, no merging of two lists. They were built
+and measured first (keyword search alone, hybrid) and removed on 2026-10-26 because they never beat
+meaning search on the quiz and were weakest on code; the code and every logged row for them are at
+commit `90d2cb1` (see `evals/results.md`).
+
+`search.py` has the two modes (`dense`, `dense_rerank`), `Searcher`, and `open_searcher()` for
+Component 5. **The default embedder is hosted** (Qwen3-Embedding-8B through OpenRouter,
+`default_embedder` in `models.toml`; it needs `OPENROUTER_API_KEY` and network, and the query text
+leaves the machine), and **the default mode is `dense`** (`DEFAULT_MODE`). Both need `make index`.
+Hits are returned as data: use `render_quoted(hits)` to put them into a prompt, which prefixes every
+line with `> ` and says the text is quoted, untrusted material. Everything in a chunk came from a
+hand-written file or a PDF.
 
 ## Changing things
 
@@ -55,7 +54,7 @@ Everything in a chunk came from a hand-written file or a PDF.
   `openai-large`, `gemini2`) call OpenRouter's `/embeddings` endpoint. They need `OPENROUTER_API_KEY`
   in `.env` (this checkout's or, from a git worktree, the main checkout's) or the shell, send the
   chunk text and the queries to OpenRouter, and cost cents for this corpus; the key is only ever put
-  in the request header. `python -m evals.run retrieval --variants hosted --also dense-small,hybrid-small`
+  in the request header. `python -m evals.run retrieval --variants hosted --also dense-small`
   compares them with the local models. CI never runs them.
 - **What goes in a chunk's text.** `recipes.toml` lists the fields per recipe (`default`,
   `with_examples`, `short`); `make index` and the evals take `--recipe`/the variant's recipe.
@@ -80,7 +79,9 @@ marker (`uv run pytest -m models`).
 
 - The corpus is 54 chunks (about 14k words) and fits in one prompt. Retrieval is built for the
   corpus it will grow into; at this size most variants score alike (see `evals/results.md`).
-- Two findings (`TOB-AAVE-015`, `TOB-AAVE-7`) are longer than the 512 tokens the embedding model
-  reads, so only their beginning is embedded; the keyword side reads all of them.
-- No stemming: "signature" and "signatures" are different words to the keyword side.
+- Two findings (`TOB-AAVE-015`, `TOB-AAVE-7`) are longer than the 512 tokens the bge models read,
+  so only their beginning is embedded with those models.
+- Code-style queries are the weak spot: recall@5 0.76 for Qwen meaning search on dev, against 0.95
+  for question-style queries, and 0.50 when the code is not from an indexed finding (8 questions).
+  The agent should search with a description of what it found, not pasted code, until that improves.
 - Reranker latency grows with the number of candidates and the model size (see the timing columns).

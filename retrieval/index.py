@@ -30,14 +30,9 @@ class IndexUnavailable(Exception):
 class Index:
     recipe: str
     chunks: tuple[Chunk, ...]
-    vectors: np.ndarray | None  # one row per chunk, length 1; None for a keyword-only index
-    embedder: str | None = None
+    vectors: np.ndarray  # one row per chunk, each of length 1
+    embedder: str
     build_seconds: float | None = None
-
-
-def keyword_index(recipe: str = "default", *, chunks: Sequence[Chunk] | None = None) -> Index:
-    """Chunks only, for the keyword search: needs no model."""
-    return Index(recipe, tuple(chunks if chunks is not None else build_chunks(recipe)), None)
 
 
 def _path(embedder: Embedder, recipe: str, index_dir: Path | None) -> Path:

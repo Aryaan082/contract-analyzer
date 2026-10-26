@@ -81,7 +81,6 @@ class Chunk(BaseModel, frozen=True):
     record_type: RecordType
     title: str
     text: str
-    keywords: tuple[str, ...] = ()  # an entry's source_keywords: keyword search only
     # Metadata for filters and display; never part of `text`.
     group: str | None = None
     applies_to: tuple[str, ...] = ()
@@ -92,11 +91,6 @@ class Chunk(BaseModel, frozen=True):
     report: str | None = None
     tags: tuple[str, ...] = Field(default=(), description="taxonomy tags on a finding")
     citation: Citation
-
-    @property
-    def keyword_text(self) -> str:
-        """What the keyword side reads: the text plus the entry's exact code words."""
-        return "\n\n".join([self.text, *self.keywords]) if self.keywords else self.text
 
 
 def _compose(values: Sequence[str | None]) -> str:
@@ -109,7 +103,6 @@ def _entry_chunk(entry: TaxonomyEntry, recipe: Recipe) -> Chunk:
         record_type="taxonomy",
         title=entry.title,
         text=_compose([getattr(entry, f) for f in recipe.entry]),
-        keywords=tuple(entry.source_keywords),
         group=entry.group,
         applies_to=tuple(entry.applies_to),
         visible_in=tuple(entry.visible_in),
@@ -152,5 +145,5 @@ def fingerprint(chunks: Sequence[Chunk], *extra: str) -> str:
     for part in extra:
         digest.update(part.encode() + b"\x00")
     for chunk in chunks:
-        digest.update(f"{chunk.id}\x00{chunk.text}\x00{' '.join(chunk.keywords)}\x00".encode())
+        digest.update(f"{chunk.id}\x00{chunk.text}\x00".encode())
     return digest.hexdigest()

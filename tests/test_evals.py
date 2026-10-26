@@ -124,7 +124,8 @@ def test_a_paired_case_has_the_same_right_answers_in_every_style():
 def test_variants_and_groups_are_consistent():
     assert set(GROUPS["core"]) <= set(VARIANTS)
     assert all(a in VARIANTS and b in VARIANTS for a, b in CHAIN)
-    assert [v.name for v in resolve("bm25,dense-small")] == ["bm25", "dense-small"]
+    assert [v.name for v in resolve("random,dense-small")] == ["random", "dense-small"]
+    assert not any("bm25" in n or "hybrid" in n for n in VARIANTS)  # word scoring is gone
     with pytest.raises(ValueError, match="unknown variant"):
         resolve("nope")
     core_models = {(v.embedder, v.reranker) for v in resolve("core") if v.needs_reranker}
@@ -158,28 +159,30 @@ def _items():
 def test_each_variant_runs_and_the_random_baseline_is_repeatable(runner):
     items = _items()
     scores = {}
-    for name in ("random", "bm25", "dense-small", "hybrid-small", "rerank-small"):
+    for name in ("random", "dense-small", "rerank-small"):
         run = runner.run(VARIANTS[name], items, "dev")
         scores[name] = [s.recall for s in run.scored]
         assert len(run.scored) == 3
-    assert scores["bm25"][0] == 1.0 and scores["dense-small"][1] == 1.0
+    assert scores["dense-small"][1] == 1.0
     again = runner.run(VARIANTS["random"], items, "dev")
     assert [s.recall for s in again.scored] == scores["random"]
 
 
 def test_summary_and_breakdown_report_counts_and_timing(runner):
-    run = runner.run(VARIANTS["hybrid-small"], _items(), "dev")
+    run = runner.run(VARIANTS["dense-small"], _items(), "dev")
     summary = summarize(run.scored)
     assert summary.n == 3 and summary.p95_ms >= summary.p50_ms >= 0
     assert set(breakdown(run, "kind")) == {"paraphrase"}
 
 
 def test_variants_that_share_models_share_one_searcher(runner):
-    hybrid = runner.searcher(VARIANTS["hybrid-small"])
-    assert runner.searcher(VARIANTS["hybrid-small"]) is hybrid
-    assert runner.searcher(VARIANTS["dense-small"]) is hybrid  # same embedder, no reranker
-    assert runner.searcher(VARIANTS["rerank-small"]) is not hybrid
-    assert runner.searcher(VARIANTS["bm25-plain"]) is not runner.searcher(VARIANTS["bm25"])
+    dense = runner.searcher(VARIANTS["dense-small"])
+    assert runner.searcher(VARIANTS["dense-small"]) is dense
+    assert runner.searcher(VARIANTS["rerank-small"]) is not dense  # adds a reranker
+    assert runner.searcher(VARIANTS["rerank-small"]) is not runner.searcher(
+        VARIANTS["rerank-small-n10"]
+    )
+    assert runner.searcher(VARIANTS["dense-base"]) is not dense  # another embedder
 
 
 def test_the_committed_quiz_loads_for_the_runner():
@@ -190,17 +193,19 @@ def test_the_baseline_check_fails_only_when_confidently_worse(tmp_path, monkeypa
     from evals.quiz import Question
 
     items = [
-        (Question(id=f"q{i}", text="zzzz qqqq", style="question", kind="paraphrase"), ("r2:F-1",))
+        (Question(id=f"q{i}", text="zzzz qqqq", style="question", kind="paraphrase"), ("nope:1",))
         for i in range(30)
     ]
     baseline = tmp_path / "baseline.json"
     monkeypatch.setattr(run_module, "BASELINE", baseline)
     monkeypatch.setattr(run_module, "load_split", lambda split: items)
-    run = runner.run(VARIANTS["bm25"], items, "dev")  # matches nothing: recall 0 everywhere
+    run = runner.run(
+        VARIANTS["dense-small"], items, "dev"
+    )  # answer not in corpus: recall 0 everywhere
     now = {s.question.id: s.recall for s in run.scored}
-    baseline.write_text(json.dumps({"variant": "bm25", "recall": now}))
-    assert run_module._check_baseline(runner, {"bm25": run}) == 0
-    baseline.write_text(json.dumps({"variant": "bm25", "recall": {k: 1.0 for k in now}}))
-    assert run_module._check_baseline(runner, {"bm25": run}) == 1
-    baseline.write_text(json.dumps({"variant": "bm25", "recall": {"other": 1.0}}))
-    assert run_module._check_baseline(runner, {"bm25": run}) == 1
+    baseline.write_text(json.dumps({"variant": "dense-small", "recall": now}))
+    assert run_module._check_baseline(runner, {"dense-small": run}) == 0
+    baseline.write_text(json.dumps({"variant": "dense-small", "recall": {k: 1.0 for k in now}}))
+    assert run_module._check_baseline(runner, {"dense-small": run}) == 1
+    baseline.write_text(json.dumps({"variant": "dense-small", "recall": {"other": 1.0}}))
+    assert run_module._check_baseline(runner, {"dense-small": run}) == 1

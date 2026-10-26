@@ -18,7 +18,7 @@ because no variant was shown to beat another. Aryaan overruled it for hybrid: by
 (dev) keyword search is perfect on exact code names (1.00, dense 0.94) and meaning search is better
 on paraphrases (0.92, keyword 0.81), the corpus is meant to grow, and 69 questions are too few to
 show a difference this size. The held-out set was not used for the decision. The CI baseline now
-guards `hybrid-small`.
+guarded `hybrid-small` (it is `dense-small` since the final note below).
 
 **Decision (2026-10-26, later): the default embedder is Qwen3-Embedding-8B through OpenRouter.**
 Chosen on dev only. Dense recall@5 / MRR: bge-small 0.87 / 0.81, Qwen3-8B 0.92 / 0.93,
@@ -46,9 +46,30 @@ score 0.12 (keyword) to 0.50 (Qwen meaning-only, MiniLM rerank). Those intervals
 meaning-only on the 8: 0.50 [0.12-0.88]) and no variant is shown to differ from another on code
 (hybrid-small to hybrid-qwen8b +0.07 [+0.00..+0.19]). Chunk text with code examples is the only
 change that moved code in the expected direction (code 0.74 against 0.63, unseen 0.50 against 0.25,
-total +0.03 [-0.01..+0.07], not shown); it is the first thing to retest on a bigger code set. No
-default was changed. Qwen's latency on these runs was 1.7 s median and 6.9 s at the 95th
+total +0.03 [-0.01..+0.07], not shown); it was the first thing to retest on a bigger code set (superseded:
+under meaning-only search it does not move code, see the final decision). No default was changed. Qwen's latency on these runs was 1.7 s median and 6.9 s at the 95th
 percentile (slower than on the 25th); the 87 queries cost about $0.0001.
+
+**Decision (2026-10-26, final): keyword search is removed and the default is meaning-only
+search.** Aryaan's call after the quiz grew. Basis, dev (87 questions), recall@5: bge-small
+meaning-only 0.82, hybrid 0.81, keyword alone 0.78; Qwen meaning-only 0.87, hybrid 0.84. On the 27
+code-style questions: keyword 0.57, bge-small hybrid 0.63, bge-small meaning-only 0.67, Qwen hybrid
+0.70, Qwen meaning-only 0.76. Held-out (the original 31 questions, milestone 4): Qwen meaning-only
+0.97, hybrid 0.96. No difference among these is shown to be real; the case for removal is that
+hybrid never won, was no better on code, and word scoring was extra code to maintain and explain.
+Removed: BM25, the tokenizer, rank fusion, the modes `bm25`, `hybrid` and `hybrid_rerank`, the
+variants `bm25*` and `hybrid-*`, and the chunks' `keywords` field (the taxonomy's `source_keywords`
+stay in `knowledge/`, unread by retrieval). Every row above that names a removed variant is
+history, and so are the `rerank-*`, `stack-*` and `recipe-*` rows dated before this note, which ran
+over the hybrid list; reproduce them at commit `90d2cb1`. After the removal the meaning-only
+variants score exactly as before on the same questions (bge-small 0.82 / 0.77, bge-base 0.82 / 0.79;
+Qwen 0.87 recall, MRR 0.88 against 0.89 earlier: rebuilding the Qwen vectors through OpenRouter
+moved one ranking, so hosted embeddings are not bit-for-bit repeatable). The reranker now
+re-scores the meaning list: dense-small to rerank-small +0.01 [-0.05..+0.08] (0.84 against 0.82),
+not shown, about 2.5 s a query. Chunk text with code examples no longer looks like a lever: with
+meaning search it moves code from 0.67 to 0.69 and the total by +0.01 [-0.03..+0.04]; the
+earlier gain was with hybrid. The CI baseline is now `dense-small`. Qwen latency in these runs was
+2.0 s median and 8.8 s at the 95th percentile (slower than on the 25th).
 
 | date | change | variant | split | n | recall@5 [95% CI] | MRR [95% CI] | p50 / p95 ms | notes |
 |---|---|---|---|---|---|---|---|---|
@@ -335,3 +356,38 @@ percentile (slower than on the 25th); the 87 queries cost about $0.0001.
 | 2026-10-26 | chunk text on the bigger quiz: with code examples / title+summary+description only, against the default recipe | recipe-short | dev [kind=snippet] | 10 | 0.85 [0.70–1.00] | 0.95 [0.85–1.00] | 19.1 / 34.1 |  |
 | 2026-10-26 | chunk text on the bigger quiz: with code examples / title+summary+description only, against the default recipe | recipe-short | dev [kind=twin] | 6 | 0.92 [0.75–1.00] | 1.00 [1.00–1.00] | 7.2 / 8.6 |  |
 | 2026-10-26 | chunk text on the bigger quiz: with code examples / title+summary+description only, against the default recipe | recipe-short | dev [kind=unseen] | 8 | 0.25 [0.00–0.50] | 0.24 [0.06–0.47] | 28.2 / 50.3 |  |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | dense-small | dev | 87 | 0.82 [0.75–0.89] | 0.77 [0.70–0.85] | 8.1 / 32.9 |  |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | rerank-small | dev | 87 | 0.84 [0.77–0.90] | 0.81 [0.74–0.87] | 2485.1 / 3327.5 |  |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | dense-base | dev | 87 | 0.82 [0.75–0.89] | 0.79 [0.72–0.86] | 21.3 / 93.7 |  |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | dense-qwen8b | dev | 87 | 0.87 [0.81–0.93] | 0.88 [0.82–0.93] | 2015.6 / 8838.0 |  |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | recipe-examples | dev | 87 | 0.83 [0.76–0.89] | 0.75 [0.68–0.82] | 8.1 / 31.4 |  |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | recipe-short | dev | 87 | 0.78 [0.70–0.85] | 0.77 [0.69–0.84] | 9.0 / 33.8 |  |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | dense-small → rerank-small | dev, paired difference | 87 | +0.01 [-0.05..+0.08] | | | recall@5 not shown; 8 better, 7 worse, 72 same; MRR +0.03 [-0.03..+0.10] |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | dense-small → dense-base | dev, paired difference | 87 | +0.00 [-0.05..+0.05] | | | recall@5 not shown; 4 better, 4 worse, 79 same; MRR +0.02 [-0.03..+0.07] |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | dense-small → dense-qwen8b | dev, paired difference | 87 | +0.05 [-0.01..+0.11] | | | recall@5 not shown; 9 better, 4 worse, 74 same; MRR +0.11 [+0.06..+0.16] |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | dense-small → recipe-examples | dev, paired difference | 87 | +0.01 [-0.03..+0.04] | | | recall@5 not shown; 2 better, 1 worse, 84 same; MRR -0.02 [-0.05..+0.00] |
+| 2026-10-26 | keyword search removed: meaning-only variants on the 87 dev questions (rerank now over the dense list, recipes now dense) | dense-small → recipe-short | dev, paired difference | 87 | -0.04 [-0.09..+0.00] | | | recall@5 not shown; 1 better, 7 worse, 79 same; MRR -0.01 [-0.06..+0.04] |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [style=code] | 27 | 0.69 [0.52–0.83] | 0.59 [0.44–0.74] | 17.6 / 36.0 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [style=description] | 9 | 0.78 [0.56–1.00] | 0.61 [0.37–0.85] | 7.3 / 9.5 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [style=question] | 44 | 0.91 [0.84–0.97] | 0.85 [0.77–0.93] | 7.3 / 8.7 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [style=tool_words] | 7 | 0.93 [0.79–1.00] | 0.93 [0.79–1.00] | 5.8 / 7.0 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [style=code] | 27 | 0.61 [0.44–0.78] | 0.59 [0.42–0.74] | 15.6 / 37.9 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [style=description] | 9 | 0.72 [0.44–1.00] | 0.47 [0.29–0.69] | 7.2 / 7.7 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [style=question] | 44 | 0.87 [0.78–0.95] | 0.90 [0.82–0.97] | 6.9 / 8.3 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [style=tool_words] | 7 | 0.93 [0.79–1.00] | 1.00 [1.00–1.00] | 4.9 / 6.2 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [kind=filtered] | 4 | 1.00 [1.00–1.00] | 1.00 [1.00–1.00] | 6.3 / 7.3 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [kind=identifier] | 8 | 0.94 [0.81–1.00] | 0.90 [0.70–1.00] | 6.7 / 8.4 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [kind=multi] | 4 | 0.62 [0.42–0.88] | 0.83 [0.50–1.00] | 7.4 / 7.6 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [kind=paired] | 34 | 0.85 [0.75–0.94] | 0.71 [0.59–0.83] | 7.3 / 10.7 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [kind=paraphrase] | 13 | 0.92 [0.77–1.00] | 0.84 [0.66–1.00] | 8.1 / 8.7 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [kind=snippet] | 10 | 0.85 [0.70–1.00] | 0.83 [0.67–1.00] | 18.6 / 36.0 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [kind=twin] | 6 | 0.92 [0.75–1.00] | 0.83 [0.67–1.00] | 7.3 / 8.1 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-examples | dev [kind=unseen] | 8 | 0.38 [0.12–0.75] | 0.30 [0.11–0.53] | 29.9 / 52.1 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=filtered] | 4 | 1.00 [1.00–1.00] | 1.00 [1.00–1.00] | 6.0 / 7.2 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=identifier] | 8 | 0.81 [0.56–1.00] | 0.88 [0.65–1.00] | 6.8 / 8.4 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=multi] | 4 | 0.46 [0.17–0.67] | 0.77 [0.31–1.00] | 7.4 / 7.6 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=paired] | 34 | 0.82 [0.71–0.93] | 0.71 [0.59–0.83] | 6.5 / 10.4 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=paraphrase] | 13 | 0.92 [0.77–1.00] | 0.89 [0.72–1.00] | 8.1 / 8.3 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=snippet] | 10 | 0.80 [0.65–0.95] | 0.95 [0.85–1.00] | 22.6 / 37.9 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=twin] | 6 | 0.92 [0.75–1.00] | 0.92 [0.75–1.00] | 7.0 / 7.7 |  |
+| 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=unseen] | 8 | 0.25 [0.00–0.50] | 0.22 [0.03–0.47] | 27.3 / 47.1 |  |

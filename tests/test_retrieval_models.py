@@ -35,5 +35,5 @@ def test_the_whole_stack_finds_a_chunk_on_a_tiny_corpus(tmp_path):
     embedder = get_embedder("small")
     index = build_index(embedder, chunks=tiny_corpus(), index_dir=tmp_path)
     searcher = Searcher(index, embedder=embedder, reranker=get_reranker("small"))
-    top = searcher.search("an owner mints new tokens", k=1, mode="hybrid_rerank").hits[0]
+    top = searcher.search("an owner mints new tokens", k=1, mode="dense_rerank").hits[0]
     assert top.chunk.id == "taxonomy:privileged-mint"

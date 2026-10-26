@@ -34,13 +34,6 @@ def test_the_code_listing_marker_is_not_part_of_the_text():
     assert not any("[code listing omitted]" in c.text for c in build_chunks())
 
 
-def test_keywords_reach_the_keyword_side_only():
-    entry = next(c for c in build_chunks() if c.id == "taxonomy:tx-origin-auth")
-    assert entry.keywords == ("tx.origin",)
-    assert entry.keyword_text.endswith("tx.origin")
-    assert not entry.text.endswith("tx.origin")
-
-
 def test_recipes_choose_which_fields_are_in_the_text():
     default = {c.id: len(c.text) for c in build_chunks("default")}
     short = {c.id: len(c.text) for c in build_chunks("short")}

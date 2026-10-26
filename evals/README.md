@@ -7,9 +7,9 @@ answer quality as further entries in `evals.run.LAYERS`).
 make eval                                                    dev questions, core variants, small models
 python -m evals.run retrieval --variants all                 every variant (needs `make models-all`)
 python -m evals.run retrieval --variants rerank-small --by style kind    recall@5 per query style and kind
-python -m evals.run retrieval --variants hybrid-small --also bm25,dense-small --log "change"
+python -m evals.run retrieval --variants rerank-small --also dense-small --log "change"
 python -m evals.run retrieval --held-out --variants ...      held-out totals; milestones only
-python -m evals.run retrieval --variants hybrid-small --save-baseline
+python -m evals.run retrieval --variants dense-small --save-baseline
 python -m evals.run retrieval --check-baseline               what CI runs
 ```
 
@@ -24,10 +24,9 @@ python -m evals.run retrieval --check-baseline               what CI runs
   loading excluded). Do not run two evals at once if the timings matter: they share the CPU.
 - **`--also a,b`** runs more variants for the paired comparisons without logging their rows again.
 - **`results.md`** is the log: one row per variant per run, appended with `--log "<change>"`.
-  Held-out rows are marked. Held-out is run at milestones (after the dense baseline, after hybrid,
-  at the end), never to choose between variants, and `--by` is refused on it.
+  Held-out rows are marked. Held-out is run at milestones (declared in results.md), never to choose between variants, and `--by` is refused on it.
 - **The baseline check** (`baseline_retrieval.json`, `--check-baseline`) is a regression gate, not
-  a target: it fails only when the saved variant (`hybrid-small`, the default mode) is confidently
+  a target: it fails only when the saved variant (`dense-small`, the local stand-in for the default mode) is confidently
   worse on the same questions.
-- Nobody edits chunk text, `source_keywords` or labels in response to a quiz result. A label fix
+- Nobody edits chunk text or labels in response to a quiz result. A label fix
   is logged as its own row and applied to every variant.

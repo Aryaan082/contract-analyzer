@@ -19,7 +19,7 @@ from evals.variants import Variant
 from retrieval.chunks import Chunk, build_chunks
 from retrieval.embedders import Embedder, Reranker, get_embedder, get_reranker
 from retrieval.filters import matches
-from retrieval.index import ensure_index, keyword_index
+from retrieval.index import ensure_index
 from retrieval.search import Searcher
 
 DEPTH = 50  # how many results are asked for; recall looks at the first five
@@ -102,34 +102,24 @@ class RetrievalRunner:
 
     def searcher(self, variant: Variant) -> Searcher:
         key = (
-            variant.embedder if variant.needs_embedder else None,
+            variant.embedder,
             variant.reranker if variant.needs_reranker else None,
-            variant.tokenizer,
             variant.recipe,
             variant.rerank_n,
         )
         if key not in self._searchers:
             chunks = self._chunks_for(variant.recipe)
-            embedder = reranker = None
-            if variant.needs_embedder:
-                embedder = self._embedder_cache.setdefault(
-                    variant.embedder, self._embedders(variant.embedder)
-                )
-                index = ensure_index(
-                    embedder, variant.recipe, chunks=chunks, index_dir=self._index_dir
-                )
-            else:
-                index = keyword_index(variant.recipe, chunks=chunks)
+            embedder = self._embedder_cache.setdefault(
+                variant.embedder, self._embedders(variant.embedder)
+            )
+            index = ensure_index(embedder, variant.recipe, chunks=chunks, index_dir=self._index_dir)
+            reranker = None
             if variant.needs_reranker:
                 reranker = self._reranker_cache.setdefault(
                     variant.reranker, self._rerankers(variant.reranker)
                 )
             self._searchers[key] = Searcher(
-                index,
-                embedder=embedder,
-                reranker=reranker,
-                tokenizer=variant.tokenizer,
-                rerank_n=variant.rerank_n,
+                index, embedder=embedder, reranker=reranker, rerank_n=variant.rerank_n
             )
             if variant.mode != "random":  # warm-up: load the models before anything is timed
                 self._searchers[key].search("warm-up", k=1, mode=variant.mode)  # type: ignore[arg-type]
