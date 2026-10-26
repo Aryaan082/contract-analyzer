@@ -1,0 +1,21 @@
+# Which fields of a record go into its chunk text (what is embedded, reranked and shown). Order
+# matters: fields are joined by blank lines in this order. An entry's `source_keywords` are always
+# added to the keyword (BM25) side only. Metadata such as severity and protocol is stored beside
+# the chunk for filtering and is never part of the text.
+#
+# Entry fields:   title summary description what_to_check look_for_in_code example_vulnerable example_safe
+# Finding fields: title category protocol difficulty affected_contract description recommendation
+
+[default]
+entry = ["title", "summary", "description", "what_to_check", "look_for_in_code"]
+finding = ["title", "category", "description", "recommendation"]
+
+# The same plus the code fragments, to see whether short examples help or only add noise.
+[with_examples]
+entry = ["title", "summary", "description", "what_to_check", "look_for_in_code", "example_vulnerable", "example_safe"]
+finding = ["title", "category", "description", "recommendation"]
+
+# Only what a person would read first: no checklist, no recommendations.
+[short]
+entry = ["title", "summary", "description"]
+finding = ["title", "description"]

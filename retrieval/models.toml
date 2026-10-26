@@ -1,0 +1,45 @@
+# Which models retrieval uses. Tiers with provider = "openrouter" are hosted: they need
+# OPENROUTER_API_KEY (in .env or the shell), send the chunk text and the queries to OpenRouter, and
+# cost cents. The others run on this machine. To try a stronger one, add a tier or change a name here, run
+# `python -m retrieval models --tier <tier>` to download it, then `make index`. Any model that
+# fastembed lists works (`TextEmbedding.list_supported_models()`, `TextCrossEncoder.list_supported_models()`);
+# anything else needs a small class with the same methods as `Embedder` / `Reranker` in embedders.py.
+#
+# `query_prefix` is put in front of a query (never a passage) before it is embedded. The BGE model
+# cards recommend this instruction for retrieval.
+
+# Chosen 2026-10-26 on the dev questions (evals/results.md): best recall@5 and MRR of the embedders
+# tried, and the cheapest hosted one. Hosted: needs OPENROUTER_API_KEY and network. For a fully
+# local setup set this back to "small" (CI does: it passes --embedder small).
+default_embedder = "qwen8b"
+default_reranker = "small"
+
+[embedder.small]
+name = "BAAI/bge-small-en-v1.5"  # 384 numbers per text, 67 MB, MIT, reads up to 512 tokens
+query_prefix = "Represent this sentence for searching relevant passages: "
+
+[embedder.base]
+name = "BAAI/bge-base-en-v1.5"  # 768 numbers per text, 210 MB, MIT
+query_prefix = "Represent this sentence for searching relevant passages: "
+
+# Hosted embedders (OpenRouter; prices per million tokens as listed 2026-10-26: qwen3-8b $0.01,
+# text-embedding-3-large $0.13, gemini-embedding-2 $0.20).
+[embedder.qwen8b]
+provider = "openrouter"
+name = "qwen/qwen3-embedding-8b"  # 4096 numbers per text, Apache-2.0, reads up to 32K tokens
+# Qwen3 embedding wants a one-sentence task instruction in front of a query (not a passage).
+query_prefix = "Instruct: Given a question about smart-contract risks, retrieve the vulnerability explanations and audit findings that answer it\nQuery:"
+
+[embedder.openai-large]
+provider = "openrouter"
+name = "openai/text-embedding-3-large"
+
+[embedder.gemini2]
+provider = "openrouter"
+name = "google/gemini-embedding-2"  # reads up to 8,192 tokens
+
+[reranker.small]
+name = "Xenova/ms-marco-MiniLM-L-6-v2"  # 80 MB, Apache-2.0, trained on web-search passages
+
+[reranker.base]
+name = "BAAI/bge-reranker-base"  # 1.04 GB, MIT

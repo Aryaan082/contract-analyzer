@@ -17,3 +17,5 @@ chain/sandbox/results/*
 knowledge/reports/*
 !knowledge/reports/.gitkeep
 knowledge/spotcheck.html
+retrieval/index/
+evals/last_run.json
