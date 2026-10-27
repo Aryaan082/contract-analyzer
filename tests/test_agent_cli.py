@@ -51,3 +51,27 @@ def test_a_report_that_failed_validation_exits_nonzero_and_a_missing_key_is_expl
     assert (
         "OPENROUTER_API_KEY is not set" in captured.err and "INSUFFICIENT EVIDENCE" in captured.out
     )
+
+
+def test_the_model_option_takes_a_tier_or_any_openrouter_slug_and_leaves_the_default_alone(
+    monkeypatch,
+):
+    seen = []
+    world = erc20_world()
+    monkeypatch.setattr(cli.RpcClient, "connect", lambda chain, env, block=None: world)
+
+    def fake_model(spec, timeout):
+        seen.append(spec.name)
+        return ScriptedModel(
+            [[call("identify_contract", address=TOKEN)], [submit(**report_body())]]
+        )
+
+    monkeypatch.setattr(cli, "OpenRouterModel", fake_model)
+    for flag in ([], ["--model", "haiku"], ["--model", "vendor/some-model-1"]):
+        steps = ["analyze", TOKEN, "--no-trace", *flag]
+        assert cli.main(steps, env={}) == 0
+    assert seen == [
+        "anthropic/claude-sonnet-5.5",
+        "anthropic/claude-haiku-5.5",
+        "vendor/some-model-1",
+    ]

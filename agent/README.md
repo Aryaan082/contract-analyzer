@@ -181,7 +181,10 @@ that matter:
   three quarters of the input tokens were read from the cache.
 - Every reply carries `usage.cost` in dollars; the cost cap counts that figure (the list price in
   `models.toml` is only a fallback).
-- Extended thinking is not used (it would mean sending reasoning blocks back each turn).
+- Extended thinking is not used for the default model. A model that thinks anyway (the eval tier
+  does) has its `reasoning_details` sent back with its tool results, as OpenRouter asks, and its
+  hidden reasoning tokens are recorded (`Usage.reasoning_tokens`); they are billed as output and
+  already inside the reported cost.
 
 Trade-offs: OpenRouter sits between this code and Anthropic, so prompts, tool results and contract
 data pass through a third party (embedding queries already do); and the key must be findable:
@@ -232,6 +235,14 @@ with six things listed as not checked, where it had said `elevated_risk` (and on
 `contracts.toml` (written before, not edited) says `insufficient_evidence` is the expected answer,
 so this is a change for Aryaan to judge, not a pass. The `risk_scan` of Seaport now flags a `mint`
 candidate on selector `0x00000000`; the report reads it, correctly, as a name collision.
+
+**A cheap model for the evals.** `--model eval` (a tier in `models.toml`, the default untouched) runs
+`deepseek/deepseek-v4.1-flash-1017`: about $0.006 a report on these eight contracts, $0.67 for 120
+runs, against $0.065 for Sonnet. It was picked on 2026-10-27 from nine non-US models by a smoke
+test (24 runs of it, 8 contracts x 3); its verdicts matched Sonnet's on four of the fixed five in every run (Seaport in two of three), and its
+reports are accurate but wordier. Where it is weaker, and the runner-up, are in the notes file
+`eval-model-smoke-test.md` (outside the repo). It is for development evals only: final results
+use Sonnet.
 
 A run is not repeatable to the letter: at temperature 0 the same contract at the same block got
 `insufficient_evidence` in one run and `elevated_risk` in another (Seaport; both pass the

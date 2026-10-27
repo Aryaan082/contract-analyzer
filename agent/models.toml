@@ -18,6 +18,15 @@ name = "anthropic/claude-haiku-5.5"
 input_per_mtok = 0.10
 output_per_mtok = 0.50
 
+# The tier for the eval harness (`--model eval`). Chosen on 2026-10-27 by a smoke test of nine
+# non-US models on the eight contracts: the cheapest model that did as well as any (about $0.006 a
+# run, under $1 for 120 runs). Sonnet stays the default and is for final results. Its hidden
+# thinking is billed as output and is counted in the cost the loop reports.
+[model.eval]
+name = "deepseek/deepseek-v4.1-flash-1017"
+input_per_mtok = 0.15
+output_per_mtok = 0.60
+
 # Caps for one run. Reaching one never ends in an unchecked answer: the run stops, and the report
 # says `insufficient_evidence` and which cap it was.
 [limits]

@@ -70,6 +70,8 @@ def test_models_toml_resolves_tiers_and_passes_unknown_slugs_through():
     config = load_config(MODELS_CONFIG)
     assert config.resolve_model().name == "anthropic/claude-sonnet-5.5"
     assert config.resolve_model("haiku").name == "anthropic/claude-haiku-5.5"
+    assert config.resolve_model("eval").name == "deepseek/deepseek-v4.1-flash-1017"
+    assert config.default_model == "sonnet"  # the eval tier does not change the default
     other = config.resolve_model("vendor/some-model")
     assert (other.name, other.input_per_mtok) == ("vendor/some-model", 0.0)
     assert config.limits.max_cost_usd > 0 and config.limits.max_turns >= 4
