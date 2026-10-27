@@ -181,3 +181,21 @@ def test_an_assistant_turn_goes_back_with_its_tool_calls():
             {"id": "c1", "type": "function", "function": {"name": "n", "arguments": "{}"}}
         ],
     }
+
+
+def test_a_thinking_models_reasoning_is_counted_and_sent_back_with_its_tool_calls():
+    body = payload()
+    body["usage"]["completion_tokens_details"] = {"reasoning_tokens": 70}
+    body["choices"][0]["message"]["reasoning_details"] = [
+        {"type": "reasoning.text", "text": "think", "index": 0}
+    ]
+    reply = model(body)[0].complete(MESSAGES, TOOLS, max_tokens=10)
+    assert reply.usage.reasoning_tokens == 70
+    assert reply.as_message()["reasoning_details"] == [
+        {"type": "reasoning.text", "text": "think", "index": 0}
+    ]
+
+
+def test_a_model_that_does_not_think_sends_no_reasoning_field_back():
+    reply = model(payload())[0].complete(MESSAGES, TOOLS, max_tokens=10)
+    assert reply.usage.reasoning_tokens == 0 and "reasoning_details" not in reply.as_message()

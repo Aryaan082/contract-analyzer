@@ -63,6 +63,7 @@ class Usage(BaseModel, frozen=True):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cached_tokens: int = 0  # of the prompt, read from the cache
+    reasoning_tokens: int = 0  # hidden thinking: billed as output and counted in completion_tokens
     cost_usd: float = 0.0
 
 
@@ -72,10 +73,15 @@ class ModelReply(BaseModel, frozen=True):
     usage: Usage = Usage()
     finish_reason: str | None = None
     model: str = ""
+    # What a thinking model hands back with its reply and expects to get back unchanged with its
+    # tool results (OpenRouter's `reasoning_details`). None for a model that does not think.
+    reasoning_details: tuple[dict[str, Any], ...] | None = None
 
     def as_message(self) -> dict[str, Any]:
         """The assistant turn as it goes back into the conversation."""
         message: dict[str, Any] = {"role": "assistant", "content": self.content or None}
+        if self.reasoning_details:
+            message["reasoning_details"] = list(self.reasoning_details)
         if self.tool_calls:
             message["tool_calls"] = [
                 {
@@ -277,6 +283,7 @@ class OpenRouterModel:
             for call in message.get("tool_calls") or []
         )
         usage = payload.get("usage") or {}
+        details = message.get("reasoning_details")
         return ModelReply(
             content=message.get("content") or None,
             tool_calls=calls,
@@ -286,8 +293,14 @@ class OpenRouterModel:
                 cached_tokens=int(
                     (usage.get("prompt_tokens_details") or {}).get("cached_tokens") or 0
                 ),
+                reasoning_tokens=int(
+                    (usage.get("completion_tokens_details") or {}).get("reasoning_tokens") or 0
+                ),
                 cost_usd=self._cost(usage),
             ),
             finish_reason=choice.get("finish_reason"),
             model=str(payload.get("model") or self.name),
+            reasoning_details=tuple(d for d in details if isinstance(d, dict))
+            if isinstance(details, list) and details
+            else None,
         )
