@@ -48,7 +48,7 @@ Defaults; change if needed.
 |---|---|---|
 | Language | Python 3.12 | Best ecosystem for evals, embeddings, fine-tuning |
 | Chains | Any chain; start with Ethereum. A chain option (e.g. `--chain`) selects it, and RPC providers are added as more chains are needed | |
-| LLM | Claude API with tool use | Native tool calling, strong long-context reading |
+| LLM | Claude via OpenRouter (tool use) | Native tool calling, strong long-context reading. Reached with the key already used for embeddings, over plain `urllib`: no new package or account. Default `anthropic/claude-sonnet-5.5`, cheap option `anthropic/claude-haiku-5.5` (`agent/models.toml`) |
 | Vector store | In-memory vectors, exact search | 54 chunks: a database adds setup and no speed; revisit Postgres + pgvector if the corpus or serving needs it |
 | Serving | FastAPI + simple Next.js UI, with server-sent events | Matches Aryaan's existing stack |
 
