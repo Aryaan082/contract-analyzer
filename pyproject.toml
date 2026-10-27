@@ -10,6 +10,7 @@ dependencies = [
     "evmole>=0.9.4",
     "pypdf>=6.21.2",
     "fastembed>=0.9.1",
+    "psycopg>=3.3.6",
 ]
 
 [dependency-groups]
