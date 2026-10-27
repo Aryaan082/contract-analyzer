@@ -17,6 +17,10 @@ never edits the report and uses no model; each rule is a plain check:
    a sell rehearsal that was blocked means `high_risk`, a lookalike of a protocol's contract means
    at least `elevated_risk`, and an address with no code means `insufficient_evidence`.
    `no_red_flags_found` also needs a successful `identify_contract`.
+7. Wording about source: the words "unverified", "no verified source", "source not available" and
+   the like are rejected unless a `get_verified_source` result in this run returned
+   `verified=false`. A tool that was missing, failed or was not run means "not checked", never
+   "unverified" (a report once said so only because the tool was not there yet).
 
 What it does NOT prove: that the cited evidence really supports the claim. A claim can cite a real
 T-ID and still misread it. That is faithfulness, measured in Component 6 with an LLM judge checked
@@ -39,6 +43,15 @@ from agent.report import (
 )
 
 MAX_FINDINGS = 25
+
+# Words that say a contract's source is unverified, unpublished or missing. Only a successful
+# get_verified_source with verified=false lets a report say that.
+_NO_SOURCE = re.compile(
+    r"\bunverified\b|\bnot (?:yet )?verified\b|\bno (?:verified|published|available) source\b|"
+    r"\bno source code\b|\bnot published\b|"
+    r"\bsource(?: code)? (?:is |was |are )?(?:not |un)(?:available|published|verified)\b",
+    re.IGNORECASE,
+)
 
 _ADDRESS = re.compile(r"0x[0-9a-fA-F]{40}(?![0-9a-fA-F])")
 _SELECTOR = re.compile(r"0x[0-9a-fA-F]{8}(?![0-9a-fA-F])")
@@ -81,6 +94,27 @@ def _known(
         else:
             found.append(item)
     return found, problems
+
+
+def check_wording(text: str, where: str, registry: EvidenceRegistry) -> list[Problem]:
+    """A claim that the source is unverified or missing needs a get_verified_source result that
+    says verified=false."""
+    found = _NO_SOURCE.search(text)
+    shown = any(
+        isinstance(item.data, dict) and item.data.get("verified") is False
+        for item in registry.tool_results("get_verified_source")
+    )
+    if found is None or shown:
+        return []
+    return [
+        Problem(
+            where=where,
+            code="unsupported_unverified_wording",
+            message=f"The words {found.group(0)!r} say the contract's source is unverified or "
+            "missing, but no get_verified_source result in this run says verified=false. A tool "
+            "that is missing, failed or was not run means 'not checked': say that instead.",
+        )
+    ]
 
 
 def _identifiers(text: str) -> set[str]:
@@ -130,6 +164,7 @@ def check_finding(finding: FindingIn, index: int, registry: EvidenceRegistry) ->
                 f"result (a T id); {why}. Cite one, or make it a context claim.",
             )
         )
+    problems += check_wording(finding.claim, where, registry)
     if finding.kind == "context" and not knowledge:
         problems.append(
             Problem(
@@ -244,10 +279,12 @@ def validate(submission: Submission, registry: EvidenceRegistry) -> list[Problem
         problems.append(
             Problem(where="summary", code="empty_summary", message="The summary is empty.")
         )
+    problems += check_wording(submission.summary, "summary", registry)
     for index, finding in enumerate(submission.findings[:MAX_FINDINGS]):
         problems += check_finding(finding, index, registry)
     for index, item in enumerate(submission.checked):
         where = f"checked[{index}]"
+        problems += check_wording(item.what, where, registry)
         if not item.what.strip():
             problems.append(Problem(where=where, code="empty_check", message="The entry is empty."))
         if not item.evidence_ids:
@@ -267,6 +304,7 @@ def validate(submission: Submission, registry: EvidenceRegistry) -> list[Problem
                 )
             )
     for index, item in enumerate(submission.not_checked):
+        problems += check_wording(f"{item.what} {item.why}", f"not_checked[{index}]", registry)
         if not item.what.strip() or not item.why.strip():
             problems.append(
                 Problem(

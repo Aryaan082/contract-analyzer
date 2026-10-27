@@ -201,3 +201,67 @@ def test_parse_submission_reports_bad_json_and_bad_values():
     assert bad[0] is None and bad[1][0].code == "schema_error" and "verdict" in bad[1][0].message
     good, problems = parse_submission(json.dumps({"verdict": "high_risk", "findings": []}))
     assert good is not None and problems == []
+
+
+# --- wording about source: missing is "not checked", never "unverified" ----------------------
+
+
+def with_source(*, verified: bool | None, ok: bool = True) -> EvidenceRegistry:
+    """The usual registry (T1 identify, T2 risk_scan, ...) plus a get_verified_source result."""
+    reg = registry()
+    data = {"verified": verified} if verified is not None else {"error": {"code": "explorer_error"}}
+    reg.add_tool("get_verified_source", {"address": ADDR}, PROV, data, ok=ok)
+    return reg
+
+
+NO_SOURCE_WORDS = [
+    "No verified source is available for this contract.",
+    "Treat it as unverified.",
+    "The source is not available.",
+    "The contract is not verified.",
+    "There is no source code to read.",
+    "Its source was never published; it is not published anywhere.",
+]
+
+
+@pytest.mark.parametrize("words", NO_SOURCE_WORDS)
+def test_saying_the_source_is_missing_needs_a_result_that_says_verified_false(words):
+    for reg in (registry(), with_source(verified=True), with_source(verified=None, ok=False)):
+        problems = check_finding(finding(f"The token has mint. {words}"), 0, reg)
+        assert codes(problems) == {"unsupported_unverified_wording"}, reg
+        assert "not checked" in problems[0].message
+    assert (
+        check_finding(finding(f"The token has mint. {words}"), 0, with_source(verified=False)) == []
+    )
+
+
+def test_ordinary_not_checked_wording_about_source_is_fine():
+    for words in (
+        "I did not read the source text.",
+        "Whether the source is verified was not checked.",
+        "get_verified_source was not available in this run.",
+    ):
+        assert check_finding(finding(f"The token has mint. {words}"), 0, registry()) == [], words
+
+
+def test_the_wording_rule_covers_the_summary_checked_and_not_checked_text():
+    sub = Submission.model_validate(
+        {
+            "verdict": "no_red_flags_found",
+            "summary": "Nothing found, but the source is unverified.",
+            "findings": [finding().model_dump()],
+            "checked": [{"what": "Source: not verified", "evidence_ids": ["T1"]}],
+            "not_checked": [{"what": "Source", "why": "No verified source is available."}],
+        }
+    )
+    where = {
+        p.where for p in validate(sub, registry()) if p.code == "unsupported_unverified_wording"
+    }
+    assert where == {"summary", "checked[0]", "not_checked[0]"}
+    clean = validate(sub, with_source(verified=False))
+    assert not [p for p in clean if p.code == "unsupported_unverified_wording"]
+
+
+def test_a_finding_with_the_wrong_wording_is_not_kept_when_the_report_falls_back():
+    bad = finding("The token has mint, and its source is unverified.")
+    assert valid_findings(submission(finding(), bad), registry()) == [finding()]
