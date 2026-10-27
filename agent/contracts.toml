@@ -1,0 +1,170 @@
+# The fixed set of five contracts: the agent's done criterion (a valid cited report for each) and the
+# set Component 6 reuses. PROPOSED 2026-10-26 by the session that built Component 5; Aryaan has not
+# confirmed it yet. All five are on Ethereum, read at block 26280500 (a block near the chain head on
+# 2026-10-26; the RPC keeps archive state, so a run can be repeated).
+#
+# `expect` is what a good report says, written from facts about the contract, not copied from agent
+# output. It was written after a first report had been seen for four of the five, so treat it as a
+# starting point for Aryaan's own labels, not as an answer key.
+
+[[contract]]
+id = "usdc"
+label = "USD Coin: a benign proxy token with mint, blacklist and pause"
+chain = "ethereum"
+address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+block = 26280500
+expect = """\
+A legacy OpenZeppelin proxy (identify) whose implementation, 0x43506849D7C04F9138D1A2050bbF3A0c054402dd, has mint, blacklist \
+and pause functions; the proxy has upgrade functions and the admin, owner and blacklister read as accounts without code. \
+The sell rehearsal passes with no tax. elevated_risk is the defensible verdict (centralised controls, typical of a regulated \
+stablecoin, whose holders the tools cannot name); no_red_flags_found would need those controls stated plainly. Never "safe". \
+Source, deployer and selector names must be listed as not checked."""
+how_verified = """\
+The address is the well-known USDC token; identify_contract at the pinned block finds a legacy_oz_slot proxy and read_getter \
+returns name "USD Coin" and symbol "USDC". tests/test_identify_live.py already uses it as the legacy-proxy case."""
+
+[[contract]]
+id = "uniswap-pair"
+label = "Uniswap V2 USDC/WETH pair: an official protocol contract"
+chain = "ethereum"
+address = "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc"
+block = 26280500
+expect = """\
+Official: the Uniswap V2 factory lists this pair for USDC and WETH (identify summary official), and the code is identical to \
+the reference Uniswap V2 pair (match exact). Its mint(address) is the pair's liquidity-share mint, also in the reference, not a \
+privileged token mint. no_red_flags_found, with what was not checked listed (the router, who holds the liquidity, price-oracle \
+use). It should not recommend a sell rehearsal (identify says it does not apply)."""
+how_verified = """\
+identify_contract at the pinned block returns summary official with registry uniswap_v2, role pair, token0 USDC, token1 WETH \
+and the factory 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f asking itself; the same address is the OFFICIAL case in \
+tests/test_identify_live.py."""
+
+[[contract]]
+id = "milka"
+label = "MILKA: a template ERC-20 with mint, blacklist, pause and fee functions added"
+chain = "ethereum"
+address = "0x84e84Bf4Ee5DE75871B59e45369C1d1ADe3Cb3fB"
+block = 26280500
+expect = """\
+An ERC-20 that has the OpenZeppelin ERC20 functions plus mint, blacklist, pause, fee and anti-whale functions (about 50 extras); \
+the owner reads as a plain account, so one key. elevated_risk. The pool is nearly empty, so the sell rehearsal passing means \
+little; a report should say so. It should not claim who can call mint or blacklist."""
+how_verified = """\
+Found by a scan of the 1,372 tokens paired with WETH on Uniswap V2 in two block ranges (the last 60,000 blocks and 19,230,000 to \
+19,250,000) for ERC-20s whose risk_scan has both a mint and a blacklist signal: this was the only one. Etherscan: verified, \
+contract ERC20TemplateStandalone, solc 0.8.28; its ABI has mint, blacklist, pause and fee functions. It is one factory's template \
+with more than mint and blacklist added, not the minimal case in the spec."""
+
+[[contract]]
+id = "groklet"
+label = "GROKLET (Grok Mascot): a known honeypot, buys work and sells revert"
+chain = "ethereum"
+address = "0x656bd1D70E24DE09744b89ea0De468d831Af5f55"
+block = 26280500
+expect = """\
+high_risk: the sell rehearsal buys with no tax and then the sell reverts (simulate_sell verdict sell_blocked), and the validator \
+does not accept a lower verdict. The report should cite that result, say that the pool exists and the buy works, and not claim \
+to know the mechanism from the tools alone. Source and deployer are not checked."""
+how_verified = """\
+Three independent signals. (1) honeypot.is, run on all 760 tokens created on Uniswap V2 in the last 60,000 blocks: buy works, sell \
+reverts, 100% sell tax, 626 of 628 holders could not sell. (2) Our own rehearsal at the pinned block: verdict sell_blocked, step \
+sell, TransferHelper: TRANSFER_FROM_FAILED, buy tax 0%; it reproduced the same verdict on 7 of the 8 tokens honeypot.is rated worst. \
+(3) The verified source on Etherscan (contract Token, solc 0.8.29) overrides balanceOf with a condition on the pair's balance and \
+tx.origin that returns 0 otherwise, the kind of trick that makes a swap revert for ordinary wallets. I read these lines but have not \
+traced the mechanism through the router."""
+
+[[contract]]
+id = "seaport"
+label = "Seaport 1.6 (OpenSea): not an ERC-20, not in the knowledge base or reference library"
+chain = "ethereum"
+address = "0x0000000000000068F116a894984e2DB1123eB395"
+block = 26280500
+expect = """\
+Unrecognised: not an ERC-20 (identify summary unrecognized, no kinds), no registry lists it, no reference matches (match quality \
+none), 18 selectors and no risk signals. The right report says what it could and could not establish, with insufficient_evidence \
+the expected verdict; it must not name the protocol as if the tools had shown it, and must not say no_red_flags_found without \
+heavy caveats. It should not run a sell rehearsal."""
+how_verified = """\
+On-chain at the pinned block: name() is "Seaport", information() returns version "1.6" and the conduit controller \
+0x00000000F9490004C11Cef243f5400493c00Ad63. Etherscan: verified, contract Seaport, solc 0.8.24, optimizer 9,999,999 runs, MIT. \
+Not checked by me: that OpenSea lists this address in its documentation (I recall it as Seaport 1.6's address but did not fetch \
+the page), and the deployer's identity. Nothing in knowledge/ or references/ mentions OpenSea or Seaport (checked 2026-10-26)."""
+
+# ---------------------------------------------------------------------------------------------------
+# EXTRA CANDIDATES: more honeypots, so the agent can be tried on several mechanisms. Not part of the
+# fixed five, which are above and unchanged. Added 2026-10-26 at Aryaan's request; his confirmation of
+# the group is pending, like the five.
+#
+# How they were chosen: from the 59 tokens honeypot.is rated honeypots in the scan that found GROKLET.
+# That scan is the only use of the service; its answers are kept as static data in
+# honeypot_is_labels.json and nothing in the code, the tests or the evals calls it. Each label here
+# stands on OUR sell rehearsal at the pinned block, as GROKLET's does. Of the 25 flagged tokens
+# rehearsed, 12 were confirmed (11 blocked sells and 1 very high sell tax) and 13 were not (sellable
+# at this block, or no ERC-20 interface): honeypot.is sees holders and moments we do not, so a token
+# qualifies only where our own result agrees. Most blocked sells are one family (a balanceOf override
+# that misreports the pair's balance, the same code in 15 of the flagged tokens: GROKLET's); the three
+# below are different.
+#
+# `expect` for these three was written BEFORE the agent was run on them, from the contract facts and
+# our rehearsal only, and is not edited afterwards. Same block as the five: 26280500.
+
+[[candidate]]
+id = "meowe"
+label = "Meowecoin: a blocked sell gated by the tax wallet (a small, different contract)"
+chain = "ethereum"
+address = "0x63b218ca3f5049F670AE7a9466bD2EA8d3F9F7F5"
+block = 26280500
+expect = """\
+high_risk: a buy-then-sell rehearsal buys with no tax and the sell reverts (simulate_sell verdict sell_blocked, step sell, \
+TransferHelper: TRANSFER_FROM_FAILED), and the validator accepts nothing lower. The outcome the tools see is the same as groklet's, \
+from a different and much smaller contract (19 selectors, no risk signals). A good report cites the rehearsal, says the pool \
+exists and the buy works, and does not name the mechanism, which no tool can show without the source. Source and deployer are \
+listed as not checked."""
+how_verified = """\
+Our rehearsal at the pinned block: verdict sell_blocked, buy tax 0%, the sell step reverts with TransferHelper: TRANSFER_FROM_FAILED \
+in the one existing Uniswap V2 pool (about 0.0012 ETH of liquidity). The verified source on Etherscan (contract Meowe, solc 0.8.12) \
+overrides balanceOf: when the account is the pair and the pair's own balance of its liquidity token is above zero, it requires \
+tx.origin to be the tax wallet, so a swap by any other wallet reverts. I read those lines and did not trace them through the router. \
+honeypot.is (static record): sell tax 100%, 147 of 150 holders could not sell."""
+
+# ERRATUM, added after the first agent run, `expect` below left as written: it says the tools show "no
+# risk signals" for this token. That was wrong: risk_scan flags a fee_setter signal (selector
+# 0x8cd09d50, setSellTax(uint256)). I had not run risk_scan on it before writing `expect`.
+[[candidate]]
+id = "asasar"
+label = "Asasar Neon: an unverified token whose sell reverts inside the router"
+chain = "ethereum"
+address = "0xBe2ab177599C6381C70725FEEE6663F9bCfF2197"
+block = 26280500
+expect = """\
+high_risk: simulate_sell verdict sell_blocked after a successful buy with no tax, and the validator accepts nothing lower. Unlike \
+the others the failure is not TransferHelper's: the revert is an Error(string) of 43 characters that is not in the tool's list of \
+known messages, so the tool reports only its length. A good report says that, does not invent the message text, and does not name \
+a mechanism. The source is unverified and the tools cannot read it, so 20 selectors, an ERC-20 shape and no risk signals are all \
+there is to go on; the report should say what could not be checked."""
+how_verified = """\
+Our rehearsal at the pinned block: verdict sell_blocked, buy tax 0%, the sell step reverts with an Error(string) of length 43 that is \
+not in the known list; the token has two Uniswap V2 pools and the rehearsal trades in the more liquid one (about 0.55 ETH). \
+Etherscan returns no source for this address, so the mechanism is unknown to me. honeypot.is (static record) gave the revert as \
+"UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT", which is also 43 characters, sell tax 100%, 24 of 26 holders could not sell. \
+That message comes from the router's own library, meaning the pair was sent nothing to price: not the same failure as the others."""
+
+[[candidate]]
+id = "brick"
+label = "Brick: sells work, but an 85% sell tax (the owner may set it up to 99%)"
+chain = "ethereum"
+address = "0xfCB260fBa59df4d1eaCa89452571Db17f2D3EFAf"
+block = 26280500
+expect = """\
+Not a blocked sell: simulate_sell verdict sellable with a buy tax of 0 and a sell tax of 8500 basis points (85%); the pool is thin. \
+The central finding is that tax: a report should cite the 85% figure from the rehearsal, rate it high, and give at least \
+elevated_risk (high_risk is defensible, since little of a sale is left). Nothing in the validator forces it, because a sell that \
+works sets no floor. The verified source has an owner-only updateFees that can set buy and sell tax up to 99%, and a blacklist, but \
+the tools cannot read source: a report should say who can change the tax is not checked rather than assert it. risk_scan may not \
+flag updateFees(uint256,uint256), which is not on the risky-name list."""
+how_verified = """\
+Our rehearsal at the pinned block: verdict sellable, buy tax 0, sell tax 8500 bps, 0 tokens left after the sale, one Uniswap V2 pool \
+holding about 0.00002 ETH. The verified source on Etherscan (contract BRICK, solc 0.8.29) sets sellTax to 25 in the constructor and \
+has updateFees(newBuyFee, newSellFee), onlyOwner, each at most 99, plus a blacklist mapping that blocks transfers; the measured 85% \
+means the owner has raised it (my inference). honeypot.is (static record) rated it a honeypot only for the tax: sell tax 84.34%, \
+0 of 4 holders failed. A honeypot by outcome (nearly all of a sale is taken) rather than by a blocked sell."""

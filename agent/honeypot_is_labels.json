@@ -1,0 +1,55 @@
+{
+  "_about": "What honeypot.is said about each labelled honeypot, queried once on 2026-10-26 (GET /v2/IsHoneypot, chainID 1) while choosing test cases, and kept here as static data. It was used for labelling only: nothing in this repository calls the service, and no test, eval or run depends on it. The labels stand on our own sell rehearsal (see contracts.toml how_verified); this file records the second opinion that pointed us at them. Fields kept: the ones used. The scan took the tokens paired with WETH on Uniswap V2 in the 60,000 blocks before block 26280500 and kept those honeypot.is rated isHoneypot with simulationSuccess true.",
+  "queried": "2026-10-26",
+  "source": "honeypot.is API v2 IsHoneypot",
+  "records": {
+    "0xfCB260fBa59df4d1eaCa89452571Db17f2D3EFAf": {
+      "id": "brick",
+      "token_name": "Brick",
+      "pair_created_block": 26250015,
+      "is_honeypot": true,
+      "simulation_success": true,
+      "honeypot_reason": "Honeypot detected",
+      "buy_tax_percent": 0.0,
+      "sell_tax_percent": 84.34,
+      "holders_analysed": 4,
+      "holders_failed": 0
+    },
+    "0x656bd1D70E24DE09744b89ea0De468d831Af5f55": {
+      "id": "groklet",
+      "token_name": "Grok Mascot",
+      "pair_created_block": 26253123,
+      "is_honeypot": true,
+      "simulation_success": true,
+      "honeypot_reason": "execution reverted: \"revert: TransferHelper: TRANSFER_FROM_FAILED\"",
+      "buy_tax_percent": 0.0,
+      "sell_tax_percent": 100.0,
+      "holders_analysed": 628,
+      "holders_failed": 626
+    },
+    "0x63b218ca3f5049F670AE7a9466bD2EA8d3F9F7F5": {
+      "id": "meowe",
+      "token_name": "Meowecoin",
+      "pair_created_block": 26253156,
+      "is_honeypot": true,
+      "simulation_success": true,
+      "honeypot_reason": "execution reverted: \"revert: TransferHelper: TRANSFER_FROM_FAILED\"",
+      "buy_tax_percent": 0.0,
+      "sell_tax_percent": 100.0,
+      "holders_analysed": 150,
+      "holders_failed": 147
+    },
+    "0xBe2ab177599C6381C70725FEEE6663F9bCfF2197": {
+      "id": "asasar",
+      "token_name": "Asasar Neon",
+      "pair_created_block": 26256575,
+      "is_honeypot": true,
+      "simulation_success": true,
+      "honeypot_reason": "execution reverted: \"revert: UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT\"",
+      "buy_tax_percent": 0.0,
+      "sell_tax_percent": 100.0,
+      "holders_analysed": 26,
+      "holders_failed": 24
+    }
+  }
+}
