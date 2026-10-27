@@ -1,0 +1,30 @@
+# Which model the agent talks to and how much one run may use. This is the only place to change
+# either. The model is Claude, reached through OpenRouter with the key used for embeddings
+# (OPENROUTER_API_KEY in .env or the shell); a tier is a short name for `--model`, and any other
+# value is passed to OpenRouter as a model slug as it is.
+#
+# Prices are USD per million tokens, as OpenRouter listed them on 2026-10-26. They are only a
+# fallback: OpenRouter reports the cost of every reply, and that figure is what the cap counts.
+default_model = "sonnet"
+
+[model.sonnet]
+name = "anthropic/claude-sonnet-5.5"
+input_per_mtok = 2.0
+output_per_mtok = 10.0
+
+# The cheap option, for simple runs; routing between the two is Component 7.
+[model.haiku]
+name = "anthropic/claude-haiku-5.5"
+input_per_mtok = 0.10
+output_per_mtok = 0.50
+
+# Caps for one run. Reaching one never ends in an unchecked answer: the run stops, and the report
+# says `insufficient_evidence` and which cap it was.
+[limits]
+max_turns = 12             # model calls
+max_tool_calls = 25        # tool calls other than submit_report
+max_output_tokens = 4096   # per model call
+wall_clock_seconds = 420   # a sell rehearsal alone can take a minute
+max_cost_usd = 0.75        # checked before every model call, from the cost OpenRouter reports
+max_report_attempts = 3    # tries at a report that passes the citation validator
+request_timeout_seconds = 90
