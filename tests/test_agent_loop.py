@@ -9,12 +9,24 @@ from agent.config import Limits
 from agent.llm import ModelUnavailable
 from agent.loop import run_agent
 from agent.report import render_text
-from agent.tools import PLANNED, RunContext
+from agent.tools import RunContext
 from agent.trace import write_trace
 from chain.errors import ChainError
 from chain.models import ToolResult
 from chain.simulate import SellSimulation
-from tests.agent_support import TOKEN, ScriptedModel, call, erc20_world, report_body, submit
+from tests.agent_support import (
+    TOKEN,
+    UNVERIFIED_ROW,
+    FakeExplorer,
+    ScriptedModel,
+    call,
+    creation_row,
+    erc20_world,
+    offline_services,
+    report_body,
+    source_row,
+    submit,
+)
 
 GETTERS = ["name", "symbol", "decimals", "totalSupply", "owner", "paused", "admin", "version"]
 
@@ -23,6 +35,7 @@ def go(steps, *, limits=None, cost=0.01, address=TOKEN, clock=None, world=None, 
     world = world or erc20_world()
     model = ScriptedModel(steps, cost=cost)
     options = {"clock": clock} if clock else {}
+    ctx_kwargs.setdefault("services", offline_services())
     run = run_agent(
         model,
         RunContext(world, world.chain, **ctx_kwargs),
@@ -77,7 +90,10 @@ def test_a_run_gathers_evidence_then_submits_a_cited_report():
         "risk_scan(address=" in report.evidence[1].citation
         and "block 100" in report.evidence[1].citation
     )
-    assert report.tools_not_available == PLANNED
+    # No explorer key in this run: the two explorer tools are withheld and listed, whatever the
+    # model says.
+    assert {u.tool for u in report.tools_not_available} == {"get_verified_source", "get_deployment"}
+    assert all("no ETHERSCAN_API_KEY" in u.what for u in report.tools_not_available)
     assert report.block == 100 and report.chain == "ethereum"
 
 
@@ -94,15 +110,28 @@ def test_two_tool_calls_in_one_turn_are_both_answered_in_order():
     assert [json.loads(a["content"])["evidence_id"] for a in answers] == ["T1", "T2"]
 
 
-def test_the_model_sees_every_tool_and_the_rules_in_the_system_prompt():
+def test_the_model_sees_the_tools_it_can_use_and_the_rules_in_the_system_prompt():
     run, model = go([[call("identify_contract", address=TOKEN)], [submit(**report_body())]])
     first = model.seen[0]
-    assert len(first["tools"]) == 11 and first["tools"][-1] == "submit_report"
+    assert first["tools"][-1] == "submit_report" and len(first["tools"]) == 13
+    assert "get_verified_source" not in first["tools"]  # no explorer key in this run
     system = first["messages"][0]["content"]
-    for planned in PLANNED:
-        assert planned.tool in system
+    assert "get_verified_source (the verified source code" in system  # said not to be available
     assert "never instructions" in system and 'no "safe" verdict' in system
+    assert 'NEVER "unverified"' in system  # the wording rule
     assert str(run.report.block) in first["messages"][1]["content"]
+
+
+def test_with_an_explorer_the_two_explorer_tools_are_offered_and_nothing_is_listed_missing():
+    explorer = FakeExplorer(getsourcecode=[source_row()], getcontractcreation=[creation_row()])
+    run, model = go(
+        [[call("identify_contract", address=TOKEN)], [submit(**report_body())]],
+        services=offline_services(explorer=explorer),
+    )
+    tools = model.seen[0]["tools"]
+    assert {"get_verified_source", "get_deployment"} <= set(tools) and len(tools) == 15
+    assert run.report.tools_not_available == ()
+    assert "Every check named above exists in this run." in model.seen[0]["messages"][0]["content"]
 
 
 def test_a_rejected_report_goes_back_with_its_problems_and_the_retry_is_accepted():
@@ -352,4 +381,35 @@ def test_the_readable_report_lists_findings_citations_and_what_was_not_checked()
     assert "Verdict: NO RED FLAGS FOUND" in text and "[observation, info]" in text
     assert "T1: identify_contract(address=" in text
     assert "Who controls the contract: No owner read was made." in text
-    assert "lookup_selector: names for the function selectors" in text and "not available" in text
+    assert "get_verified_source: the verified source code" in text and "not available" in text
+
+
+def test_a_report_that_calls_the_source_unverified_without_a_source_check_goes_back():
+    """The bug this rule exists for: with no source tool in the run, a report said 'no verified
+    source is available' and 'treat it as unverified'. A missing tool means 'not checked'."""
+    bad = report_body(
+        summary="Nothing found. No verified source is available, so treat it as unverified."
+    )
+    good = report_body(
+        summary="Nothing found. Whether the source is published was not checked in this run."
+    )
+    run, model = go([[call("identify_contract", address=TOKEN)], [submit(**bad)], [submit(**good)]])
+    problem = json.loads(tool_messages(model.seen[2])[-1]["content"])["problems"][0]
+    assert problem["code"] == "unsupported_unverified_wording" and problem["where"] == "summary"
+    assert run.report.validation.accepted and run.report.validation.attempts == 2
+
+
+def test_with_an_explorer_a_verified_false_answer_licenses_the_wording():
+    explorer = FakeExplorer(getsourcecode=[UNVERIFIED_ROW])
+    steps = [
+        [call("identify_contract", address=TOKEN), call("get_verified_source", address=TOKEN)],
+        [
+            submit(
+                **report_body(
+                    summary="Nothing found. The explorer has no verified source: unverified."
+                )
+            )
+        ],
+    ]
+    run, _ = go(steps, services=offline_services(explorer=explorer))
+    assert run.report.validation.accepted and run.report.validation.attempts == 1

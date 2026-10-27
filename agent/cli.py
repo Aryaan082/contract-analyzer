@@ -16,6 +16,7 @@ from agent.tools import RunContext
 from agent.trace import write_trace
 from chain.config import DEFAULT_CHAIN, load_env
 from chain.errors import ChainError
+from chain.profile import Services
 from chain.rpc import RpcClient
 
 
@@ -53,7 +54,10 @@ def cmd_analyze(args: argparse.Namespace, env: Mapping[str, str]) -> int:
         model = OpenRouterModel(
             config.resolve_model(args.model), timeout=limits.request_timeout_seconds
         )
-        run = run_agent(model, RunContext(client, chain), address, question, limits=limits)
+        # Postgres (the code store, the selector cache) and the explorer are optional: a missing
+        # one is reported as not available, not an error.
+        ctx = RunContext(client, chain, services=Services.from_env(env))
+        run = run_agent(model, ctx, address, question, limits=limits)
     except ChainError as err:
         print(err.message, file=sys.stderr)
         return 2

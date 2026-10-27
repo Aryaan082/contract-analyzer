@@ -17,6 +17,7 @@ from agent.llm import OpenRouterModel
 from agent.loop import run_agent
 from agent.tools import RunContext
 from chain.config import load_env
+from chain.profile import Services
 from chain.rpc import RpcClient
 
 pytestmark = pytest.mark.live
@@ -78,7 +79,7 @@ def test_a_valid_cited_report_for_each_fixed_contract(env, contract_id):
     client = RpcClient.connect(contract.chain, env, contract.block)
     run = run_agent(
         OpenRouterModel(config.resolve_model(), timeout=config.limits.request_timeout_seconds),
-        RunContext(client, contract.chain),
+        RunContext(client, contract.chain, services=Services.from_env(env)),
         contract.address,
         limits=config.limits,
     )

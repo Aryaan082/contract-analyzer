@@ -43,9 +43,10 @@ from agent.report import (
     RunInfo,
     StoppedBecause,
     Submission,
+    Unavailable,
     Validation,
 )
-from agent.tools import PLANNED, RunContext, execute, tool_map
+from agent.tools import RunContext, execute, tool_map, unavailable_tools
 from agent.validator import parse_submission, valid_findings, validate
 from chain.models import normalize_address
 
@@ -110,6 +111,7 @@ def _report(
     attempts: int,
     problems: list[Problem],
     stop: StoppedBecause,
+    unavailable: tuple[Unavailable, ...],
     run: RunInfo,
 ) -> Report:
     if accepted and submission is not None:
@@ -145,7 +147,7 @@ def _report(
             ReportChecked(what=c.what, evidence_ids=tuple(c.evidence_ids)) for c in checked
         ),
         not_checked=tuple(not_checked),
-        tools_not_available=PLANNED,
+        tools_not_available=unavailable,
         evidence=_cited(findings, checked, ctx.registry),
         validation=Validation(accepted=accepted, attempts=attempts, problems=tuple(problems)),
         run=run,
@@ -164,10 +166,11 @@ def run_agent(
     limits = limits or Limits()
     address = normalize_address(address)
     block = ctx.client.pin()
-    tools = tool_map()
+    tools = tool_map(ctx)
+    unavailable = unavailable_tools(ctx)
     offered_all = [tool.schema() for tool in tools.values()] + [SUBMIT_TOOL]
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": system_prompt(PLANNED)},
+        {"role": "system", "content": system_prompt(unavailable)},
         {"role": "user", "content": user_message(address, ctx.chain, block, question)},
     ]
     started = clock()
@@ -307,6 +310,7 @@ def run_agent(
         attempts=attempts,
         problems=[] if accepted is not None else problems,
         stop=stop,
+        unavailable=unavailable,
         run=info,
     )
     return AgentRun(

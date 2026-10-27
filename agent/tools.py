@@ -7,9 +7,9 @@ report comes from the same state. Each tool wraps a function that already exists
 `ToolError`), so the agent needs no new envelope.
 
 Adding a tool is one entry: write the arguments model and the handler, add a `Tool` to `TOOLS`.
-The Component 1 tools that are not built yet (`PLANNED`) are listed in every report as "not
-available"; when one lands, replace its `PLANNED` row with a `Tool` entry and the report stops
-listing it.
+A tool that does not exist yet goes in `PLANNED`, and one that needs a service this run lacks (the
+explorer needs an Etherscan key) is withheld from the model; both are listed in every report as "not
+available", so a missing tool reads as "not checked", never as a finding about the contract.
 
 Results come in two kinds. A *fact* (chain, references, simulation) is recorded under a `T` ID.
 *Knowledge* (taxonomy entries, audit findings) is recorded under the record's own ID, once the model
@@ -30,14 +30,21 @@ from agent.evidence import EvidenceRegistry
 from agent.llm import ToolCall
 from agent.report import Unavailable
 from agent.untrusted import clean_chain_text, looks_like_instructions
+from chain.code import read_code
 from chain.errors import ChainError, ToolError
+from chain.explorer import get_deployment, get_verified_source
 from chain.identify import identify_contract
 from chain.models import Address, Provenance, ToolResult
+from chain.profile import Services
+from chain.proxy import resolve_proxy
 from chain.rpc import RpcClient
 from chain.selectors import run_extract_selectors
+from chain.signatures import MAX_SELECTORS, LookupData, lookup_selector
 from chain.simulate import HIGH_TAX_BPS, Runner, simulate_sell
 from chain.slots import PRESETS
+from chain.storage import get_storage
 from knowledge.taxonomy import entries_for_signals
+from references.models import NameCandidate
 from references.tools import run_diff, run_match, run_risk
 from retrieval.chunks import Chunk, build_chunks
 from retrieval.embedders import ModelMissing
@@ -49,6 +56,7 @@ log = logging.getLogger(__name__)
 
 MAX_RESULT_CHARS = 24_000  # one tool result as the model sees it
 MAX_SELECTORS_SHOWN = 150
+MAX_LOOKUP_ENTRIES_SHOWN = 150
 MAX_TAXONOMY_ENTRIES = 8
 
 
@@ -161,17 +169,65 @@ class RunContext:
     client: RpcClient
     chain: str
     registry: EvidenceRegistry = field(default_factory=EvidenceRegistry)
+    services: Services = field(default_factory=Services)  # code store, selector store, explorer
     open_search: Callable[[], Searcher] = open_searcher
     sell_runner: Runner | None = None  # tests pass a scripted rehearsal; None means Foundry
     _searcher: Searcher | None = None
     _chunks: dict[str, Chunk] | None = None
     _codes: dict[str, bytes] = field(default_factory=dict)
+    _lookups: dict[str, ToolResult[LookupData]] = field(default_factory=dict)
     _seen: dict[tuple[str, str], str] = field(default_factory=dict)
 
     def code(self, address: str) -> bytes:
+        """The bytes an analysis works on. With a code store, each one read is saved there."""
         if address not in self._codes:
-            self._codes[address] = self.client.get_code(address)
+            self._codes[address] = read_code(self.client, address, self.services.code_store).code
         return self._codes[address]
+
+    def has_code(self, address: str) -> bool:
+        """Whether an address holds a contract (not saved anywhere: it is a side question)."""
+        return bool(self.client.get_code(address))
+
+    def lookup(self, address: str) -> ToolResult[LookupData]:
+        """Names for every selector in the code at this address, asked once per run. The tool
+        `lookup_selector` shows this; `risk_scan` and `diff_against_reference` use it too."""
+        if address not in self._lookups:
+            code = self.code(address)
+            found = run_extract_selectors(code, self.client.provenance(address))
+            if isinstance(found.data, ToolError):
+                raise ChainError(found.data.error.code, found.data.error.message)
+            wanted = [s.selector for s in found.data.selectors][:MAX_SELECTORS]
+            self._lookups[address] = lookup_selector(
+                wanted,
+                self.client.provenance(address),
+                store=self.services.selector_store,
+                fetch=self.services.fetch_names,
+            )
+        return self._lookups[address]
+
+    def names(self, address: str) -> dict[str, list[NameCandidate]] | None:
+        """The looked-up names in the form `references` takes, or None if the lookup could not be
+        made (then nothing is claimed about names, which is not the same as no names)."""
+        try:
+            result = self.lookup(address)
+        except ChainError:
+            return None
+        if isinstance(result.data, ToolError):
+            return None
+        names: dict[str, list[NameCandidate]] = {}
+        for entry in result.data.entries:
+            found = (
+                [NameCandidate(name=entry.name, verified=bool(entry.has_verified_contract))]
+                if entry.name
+                else []
+            )
+            found += [
+                NameCandidate(name=a.name, filtered=a.filtered, verified=a.has_verified_contract)
+                for a in entry.alternatives
+            ]
+            if found:
+                names[entry.selector] = found
+        return names
 
     def searcher(self) -> Searcher:
         if self._searcher is None:
@@ -203,6 +259,9 @@ class Tool:
     # False when the answer depends on what has been recorded so far, so asking again is not
     # asking the same thing (taxonomy_lookup).
     repeatable: bool = False
+    # True for the tools that call the block explorer (Etherscan): without ETHERSCAN_API_KEY they
+    # are not offered, and the report lists them as not available.
+    needs_explorer: bool = False
 
     def schema(self) -> dict[str, Any]:
         parameters = _strip_titles(self.args.model_json_schema())
@@ -242,7 +301,11 @@ def _failed(ctx: RunContext, address: str | None, err: ChainError, source: str) 
 
 
 def _identify(ctx: RunContext, args: AddressArgs) -> ToolOutput:
-    return _from_result(identify_contract(ctx.client, args.address))
+    return _from_result(identify_contract(ctx.client, args.address, ctx.services.code_store))
+
+
+def _resolve_proxy(ctx: RunContext, args: AddressArgs) -> ToolOutput:
+    return _from_result(resolve_proxy(ctx.client, args.address, ctx.services.code_store))
 
 
 def _list_selectors(ctx: RunContext, args: AddressArgs) -> ToolOutput:
@@ -255,6 +318,42 @@ def _list_selectors(ctx: RunContext, args: AddressArgs) -> ToolOutput:
         shown["omitted"] = len(selectors) - MAX_SELECTORS_SHOWN
         return ToolOutput(shown, out.provenance, out.ok)
     return out
+
+
+def _lookup_view(data: dict[str, Any]) -> dict[str, Any]:
+    """What the model is shown of a selector lookup. The names come from a public database that
+    anyone can write to, so each sits in a field ending in `_untrusted`. A name is kept short: the
+    flags (`risky_alternative`, `ambiguous_selector`, `weak_evidence`) and the alternative names
+    behind them are shown, since they are the reason to look, and the alternatives of a selector
+    with no flag are left out."""
+    rows = []
+    for entry in data["entries"]:
+        row: dict[str, Any] = {"selector": entry["selector"], "status": entry["status"]}
+        if entry["name"]:
+            row["name_untrusted"] = entry["name"]
+            row["has_verified_contract"] = entry["has_verified_contract"]
+        if entry["labels"]:
+            row["labels"] = [
+                {"code": f["code"], "severity": f["severity"], "names_untrusted": f["names"]}
+                for f in entry["labels"]
+            ]
+            row["alternatives"] = [
+                {"name_untrusted": a["name"], "filtered": a["filtered"]}
+                for a in entry["alternatives"]
+            ]
+        if entry["stale"]:
+            row["stale"] = True
+        rows.append(row)
+    view = {k: v for k, v in data.items() if k != "entries"}
+    view["entries"] = rows[:MAX_LOOKUP_ENTRIES_SHOWN]
+    if len(rows) > MAX_LOOKUP_ENTRIES_SHOWN:
+        view["omitted"] = len(rows) - MAX_LOOKUP_ENTRIES_SHOWN
+    return view
+
+
+def _lookup(ctx: RunContext, args: AddressArgs) -> ToolOutput:
+    out = _from_result(ctx.lookup(args.address))
+    return ToolOutput(_lookup_view(out.data), out.provenance, out.ok) if out.ok else out
 
 
 def _code_hex(ctx: RunContext, address: str) -> str:
@@ -270,63 +369,91 @@ def _match(ctx: RunContext, args: AddressArgs) -> ToolOutput:
 
 
 def _diff(ctx: RunContext, args: DiffArgs) -> ToolOutput:
-    return _from_result(
+    out = _from_result(
         run_diff(
             None,
             args.reference_id,
             code_hex=_code_hex(ctx, args.address),
+            names=ctx.names(args.address),
             provenance=ctx.client.provenance(args.address),
         )
     )
+    if out.ok:
+        for group in ("extras", "missing", "shared"):
+            for row in out.data[group]:
+                row["candidates"] = [
+                    {
+                        "name_untrusted": c["name"],
+                        "filtered": c["filtered"],
+                        "verified": c["verified"],
+                    }
+                    for c in row["candidates"]
+                ]
+    return out
 
 
 def _risk(ctx: RunContext, args: AddressArgs) -> ToolOutput:
-    return _from_result(
-        run_risk(None, _code_hex(ctx, args.address), provenance=ctx.client.provenance(args.address))
+    out = _from_result(
+        run_risk(
+            None,
+            _code_hex(ctx, args.address),
+            names=ctx.names(args.address),
+            provenance=ctx.client.provenance(args.address),
+        )
     )
+    if out.ok:
+        for signal in out.data["signals"]:
+            if signal["strength"] in ("candidate_name", "weak_candidate_name"):
+                # Named only by the database: its text (the name, and the sentence built from it)
+                # is data.
+                signal["name_untrusted"] = signal.pop("name")
+                signal["statement_untrusted"] = signal.pop("statement")
+    return out
 
 
 def _simulate(ctx: RunContext, args: SimulateArgs) -> ToolOutput:
     return _from_result(simulate_sell(ctx.client, args.token, runner=ctx.sell_runner))
 
 
-def _parse_slot(text: str) -> tuple[int, str | None]:
-    wanted = text.strip().lower()
-    if wanted in PRESETS:
-        return PRESETS[wanted], wanted
-    try:
-        value = int(wanted, 16) if wanted.startswith("0x") else int(wanted)
-    except ValueError:
-        value = -1
-    if not 0 <= value < 2**256:
-        raise ChainError(
-            "invalid_slot",
-            "Not a storage slot: give 0x-prefixed hex or a decimal number below 2**256, or one "
-            f"of {', '.join(PRESETS)}.",
-        )
-    return value, None
-
-
-def _address_in(word: bytes) -> str | None:
-    """The address a 32-byte value holds, if it has the shape of one (12 zero bytes, then 20)."""
-    if len(word) == 32 and word[:12] == bytes(12) and word[12:] != bytes(20):
-        return Web3.to_checksum_address(word[12:])
-    return None
-
-
 def _read_storage(ctx: RunContext, args: StorageArgs) -> ToolOutput:
-    slot, name = _parse_slot(args.slot)
-    word = ctx.client.get_storage_at(args.address, slot)
-    held = _address_in(word)
-    data = {
-        "slot": f"0x{slot:064x}",
-        "slot_name": name,
-        "value": "0x" + word.hex(),
-        "is_zero": word == bytes(32),
-        "as_address": held,
-        "as_address_has_code": bool(ctx.code(held)) if held else None,
+    out = _from_result(get_storage(ctx.client, args.address, args.slot))
+    held = out.data.get("as_address") if out.ok else None
+    if held:
+        # The agent's addition: whether the address in the slot is a contract or a plain account.
+        return ToolOutput(
+            {**out.data, "as_address_has_code": ctx.has_code(held)}, out.provenance, out.ok
+        )
+    return out
+
+
+def _source_view(data: dict[str, Any]) -> dict[str, Any]:
+    """What the model is shown of the explorer's source record. Facts stay as they are; the text
+    the contract's author or the explorer wrote (name, compiler string, licence, file paths) is
+    gathered under `author_text_untrusted`. The source text itself is never requested."""
+    view = dict(data)
+    text = {
+        k: view.pop(k)
+        for k in ("contract_name", "compiler", "compiler_type", "evm_version", "license")
+        if view.get(k) is not None
     }
-    return ToolOutput(data, ctx.client.provenance(args.address, source="eth_getStorageAt"))
+    files = view.get("files") or []
+    if files:
+        text["file_paths"] = [f["path"] for f in files]
+        view["files"] = [{"size": f["size"], "sha256": f["sha256"]} for f in files]
+    for key in ("contract_name", "compiler", "compiler_type", "evm_version", "license"):
+        view.pop(key, None)
+    if text:
+        view["author_text_untrusted"] = text
+    return view
+
+
+def _source(ctx: RunContext, args: AddressArgs) -> ToolOutput:
+    out = _from_result(get_verified_source(ctx.client, args.address, ctx.services.explorer))
+    return ToolOutput(_source_view(out.data), out.provenance, out.ok) if out.ok else out
+
+
+def _deployment(ctx: RunContext, args: AddressArgs) -> ToolOutput:
+    return _from_result(get_deployment(ctx.client, args.address, ctx.services.explorer))
 
 
 def _decode_string(raw: bytes) -> str | None:
@@ -453,12 +580,33 @@ TOOLS: tuple[Tool, ...] = (
         _identify,
     ),
     Tool(
+        "resolve_proxy",
+        "Whether the contract forwards its calls elsewhere, and to where: the implementation (or "
+        "beacon) address, the admin slot, whether the code contains DELEGATECALL, and every "
+        "check made with its outcome. One hop only. A status of partial or undetermined means a "
+        "read failed: that is 'not checked', never 'not a proxy'; unknown-proxy-like means it "
+        "delegates calls to somewhere that cannot be told.",
+        AddressArgs,
+        _resolve_proxy,
+    ),
+    Tool(
         "list_selectors",
         "The 4-byte function selectors found in the code at this address, with argument types "
-        "and mutability as guessed by a bytecode analyser. Ids only, no names. A proxy has few "
-        "of its own: run it on the implementation too.",
+        "and mutability as guessed by a bytecode analyser. Ids only, no names (lookup_selector "
+        "gives names). A proxy has few of its own: run it on the implementation too.",
         AddressArgs,
         _list_selectors,
+    ),
+    Tool(
+        "lookup_selector",
+        "Names for every function selector in the code at this address, from a public signature "
+        "database that anyone can add to. A name is a claim: names sit in fields ending in "
+        "_untrusted, and a selector with no name (unknown_selector) is not suspicious by itself; "
+        "unavailable means the database could not be asked. A flag risky_alternative means a "
+        "risky name such as mint shares the selector with the canonical name: a reason to look, "
+        "not proof. Run it on the implementation of a proxy.",
+        AddressArgs,
+        _lookup,
     ),
     Tool(
         "match_references",
@@ -480,15 +628,16 @@ TOOLS: tuple[Tool, ...] = (
         "Flag risky capabilities in the code at this address: mint, blacklist, fee setters, "
         "pause, owner withdraw, upgrade and destroy functions, DELEGATECALL and SELFDESTRUCT "
         "opcodes, each with how strong the evidence is and whether the closest reference has it "
-        "too. It shows a function exists, never who may call it.",
+        "too. It uses the selector names from lookup_selector (candidate names show in fields "
+        "ending in _untrusted). It shows a function exists, never who may call it.",
         AddressArgs,
         _risk,
     ),
     Tool(
         "read_storage",
         "Read one raw 32-byte storage slot at the pinned block, for example a proxy's "
-        "implementation or admin pointer. If the value is an address it also says whether that "
-        "address has code (a contract) or not (a plain account, so one key).",
+        "implementation or admin pointer. If the value fits an address it says so and whether "
+        "that address has code (a contract) or not (a plain account, so one key).",
         StorageArgs,
         _read_storage,
     ),
@@ -526,30 +675,59 @@ TOOLS: tuple[Tool, ...] = (
         _taxonomy,
         repeatable=True,
     ),
+    Tool(
+        "get_verified_source",
+        "Whether the block explorer (Etherscan) has verified source code for this address, and "
+        "if so the contract name, compiler, optimiser settings and the files with sizes and "
+        "hashes (never the text). verified=false is the only answer that means 'no published "
+        "source'; an error means not checked. The answer is for now, not the pinned block. For a "
+        "proxy the explorer may show another contract's source: ask for the implementation too.",
+        AddressArgs,
+        _source,
+        needs_explorer=True,
+    ),
+    Tool(
+        "get_deployment",
+        "Who deployed this contract and in which transaction and block, as the explorer reports "
+        "it (not re-checked on chain), and the factory if a contract created it. found=false is "
+        "a normal answer (no creation record); an error means not checked. For now, not the "
+        "pinned block.",
+        AddressArgs,
+        _deployment,
+        needs_explorer=True,
+    ),
 )
 
-# Component 1 tools that are not built yet. Reports list them as "not available".
-PLANNED: tuple[Unavailable, ...] = (
-    Unavailable(
-        tool="lookup_selector",
-        what="names for the function selectors from a signature database, so functions are "
-        "known by id only",
-    ),
-    Unavailable(
-        tool="get_verified_source",
-        what="the verified source code, if the contract has any",
-    ),
-    Unavailable(tool="get_deployment", what="who deployed the contract and in which transaction"),
-    Unavailable(
-        tool="resolve_proxy",
-        what="full proxy resolution; identify_contract follows one step (EIP-1967, legacy "
-        "OpenZeppelin, EIP-1167), so beacon and nested proxies are not followed",
-    ),
-)
+# Component 1 tools that do not exist yet. Reports list them as "not available". (All of Component
+# 1's tools are wired in; to add a planned tool, put its row here until it is built.)
+PLANNED: tuple[Unavailable, ...] = ()
+
+NEEDS_EXPLORER = {
+    "get_verified_source": "the verified source code, if the contract has any",
+    "get_deployment": "who deployed the contract and in which transaction",
+}
 
 
-def tool_map() -> dict[str, Tool]:
-    return {tool.name: tool for tool in TOOLS}
+def tool_map(ctx: RunContext | None = None) -> dict[str, Tool]:
+    """The tools offered in a run: all of them, less those that need a service the run lacks."""
+    return {
+        t.name: t
+        for t in TOOLS
+        if not (ctx is not None and t.needs_explorer and ctx.services.explorer is None)
+    }
+
+
+def unavailable_tools(ctx: RunContext) -> tuple[Unavailable, ...]:
+    """What this run cannot check, listed in the report and in the prompt: tools not built yet,
+    and tools whose service is not configured here."""
+    withheld = tuple(
+        Unavailable(
+            tool=t.name, what=f"{NEEDS_EXPLORER[t.name]} (no ETHERSCAN_API_KEY is configured)"
+        )
+        for t in TOOLS
+        if t.needs_explorer and ctx.services.explorer is None
+    )
+    return (*PLANNED, *withheld)
 
 
 # --- running one call ------------------------------------------------------------------------
