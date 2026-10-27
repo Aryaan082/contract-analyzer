@@ -60,7 +60,7 @@ Seven parts, built in this order. Each has a done criterion.
 
 Read-only functions the agent can call. Every output includes provenance: `{chain, address, block, source}`.
 
-- `get_code(address)`: runtime bytecode via RPC, cached by code hash
+- `get_code(address)`: runtime bytecode via RPC, saved in Postgres by code hash (never expires)
 - `resolve_proxy(address)`: check EIP-1967 implementation/beacon slots and EIP-1167 minimal proxies
 - `get_storage(address, slot)`: raw storage reads (owner, admin)
 - `extract_selectors(bytecode)`: parse the function dispatcher for 4-byte selectors
