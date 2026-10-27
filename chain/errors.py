@@ -24,6 +24,11 @@ ErrorCode = Literal[
     "rpc_unreachable",
     "rpc_error",
     "state_unavailable",
+    "lookup_unavailable",
+    "explorer_not_configured",
+    "explorer_unavailable",
+    "explorer_rate_limited",
+    "explorer_error",
     "internal_error",
 ]
 
