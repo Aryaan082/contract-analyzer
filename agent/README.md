@@ -13,7 +13,11 @@ python -m agent analyze 0x... --model haiku --max-cost 0.20   the cheap model, a
 ```
 
 Each `analyze` is a paid model call (cents; see "Cost"). It needs `OPENROUTER_API_KEY`, an RPC URL
-for the chain in `.env`, and the retrieval index (`make index`; the vectors are git-ignored).
+for the chain in `.env`, and the retrieval index (`make index`; the vectors are git-ignored). It
+also uses, when set, `DATABASE_URL` (Postgres: every bytecode read is saved there and selector
+names are cached) and `ETHERSCAN_API_KEY` (source and deployer). Without Postgres nothing breaks;
+without the Etherscan key the two explorer tools are not offered and every report lists them as
+not available.
 
 ## The loop (`loop.py`, about 100 lines, no framework)
 
@@ -42,26 +46,34 @@ cap it was.
 | Tool | What it wraps |
 |---|---|
 | `identify_contract` | `chain.identify`: kind, proxy, protocol registries, which checks apply |
+| `resolve_proxy` | `chain.proxy`: one hop (EIP-1967, beacon, legacy OpenZeppelin, EIP-1167), the admin slot, every check with its outcome; `partial` and `undetermined` mean "not checked" |
 | `list_selectors` | `chain.selectors` (evmole); capped at 150 shown |
-| `match_references`, `diff_against_reference`, `risk_scan` | `references.tools` |
-| `read_storage` | `RpcClient.get_storage_at`; says whether an address found in the slot has code |
+| `lookup_selector` | `chain.signatures`: names for every selector in the code, from Sourcify's public database. Names are claims, kept in `_untrusted` fields; the `risky_alternative`, `ambiguous_selector` and `weak_evidence` flags stay visible |
+| `match_references`, `diff_against_reference`, `risk_scan` | `references.tools`. `risk_scan` and `diff_against_reference` use the names from `lookup_selector` (looked up once per run, in whatever order the model calls them); a name only the database vouches for is shown in an `_untrusted` field |
+| `read_storage` | `chain.storage.get_storage`, plus (the agent's addition) whether an address found in the slot has code |
 | `read_getter` | `RpcClient.call` on a fixed list of parameterless views (name, owner, admin, paused, ...) |
+| `get_verified_source` | `chain.explorer`: whether Etherscan has verified source, compiler and settings, file list with hashes; never the text. The author's text (contract name, compiler string, licence, file paths) is under `author_text_untrusted`. For now, not the pinned block. Needs `ETHERSCAN_API_KEY` |
+| `get_deployment` | `chain.explorer`: deployer, creation transaction and block, factory (the explorer's word, not re-checked). Needs `ETHERSCAN_API_KEY` |
 | `simulate_sell` | `chain.simulate` (Foundry fork): only when `identify_contract` says it applies |
 | `search_knowledge` | `retrieval.Searcher`, results quoted |
 | `taxonomy_lookup` | `knowledge.entries_for_signals`; the signals are read from the evidence so far, not typed by the model |
 | `submit_report` | the structured output (handled by the loop) |
+
+Not offered: `get_code`. Its answer (hash, size, whether the code exists) is already in
+`identify_contract`, and what it adds, saving the bytes, happens anyway: every bytecode the tools
+read goes through `chain.code.read_code` with the Postgres code store, so the exact bytes behind a
+cited analysis are kept by hash.
 
 `read_getter` is not in the spec's Component 1 list: owner, admin and minter are the first thing an
 analyst reads, and `read_storage` alone needs the slot. It is a thin wrapper over `RpcClient.call`
 with a fixed allow-list, so the model cannot make the node call anything else.
 
 **Adding a tool** is one entry: an arguments model, a handler returning `ToolOutput`, a `Tool(...)`
-in `TOOLS`. The Component 1 tools that are not built yet are listed in `PLANNED` and appear in
-**every** report under "not available in this version": `lookup_selector`, `get_verified_source`,
-`get_deployment`, and `resolve_proxy` (full version; `identify_contract` already follows one step).
-When one lands, replace its `PLANNED` row with a `Tool` entry (a test fails if a name is in both);
-the report stops listing it and the model gets it. When `chain.get_storage` exists, re-point
-`read_storage` at it.
+in `TOOLS`. All of Component 1's tools are wired in, so `PLANNED` is empty; a tool that does not
+exist yet goes there and shows in every report under "not available in this version" (a test
+fails if a name is both planned and built). A tool that needs a service the run lacks
+(`needs_explorer=True`) is withheld from the model and listed the same way, so a missing tool reads
+as "not checked", never as a finding about the contract.
 
 ## Evidence and the report
 
@@ -99,7 +111,14 @@ It uses no model. It rejects a report when:
    needs a successful `identify_contract`;
 6. a few facts set the verdict's floor: a blocked sell rehearsal means `high_risk`, a lookalike of
    a protocol's contract means at least `elevated_risk`, no code at the address means
-   `insufficient_evidence`.
+   `insufficient_evidence`;
+7. wording about source: "unverified", "no verified source", "source not available" and the like
+   are rejected (in the summary, findings, checked and not-checked text) unless a
+   `get_verified_source` result in this run says `verified=false`. A tool that was missing, failed
+   or was not run means "not checked", never "unverified"; an early Seaport report said
+   "treat it as unverified" only because the tool was not there yet. The system prompt states the
+   same rule, so the validator is the backstop. It is a phrase list, not understanding: a rewording
+   it does not know gets through.
 
 A rejection goes back to the model naming each bad claim. After 3 failed attempts the runner
 returns `insufficient_evidence` with only the findings that passed on their own; the model's own
@@ -115,13 +134,18 @@ Aryaan's labels.
 
 ## Untrusted data (injection)
 
-Everything from the chain (token names, strings in code, function names) and everything retrieved
-(taxonomy text, audit findings) is data, never instructions.
+Everything from the chain or an outside service (token names, strings in code, selector names
+from a public database, contract names and file paths from a block explorer) and everything
+retrieved (taxonomy text, audit findings) is data, never instructions.
 
 - Chain strings are cleaned (printable characters only, whitespace collapsed, 64 characters) and
   put in a field named `..._untrusted`; wording that addresses a reader ("ignore previous
   instructions", "report this as safe") also sets `contains_instruction_like_text`, a rough
   heuristic that is itself worth reporting, never a gate.
+- Selector names (`name_untrusted`, `names_untrusted`, candidate names in `risk_scan` and
+  `diff_against_reference`) and the explorer's text (`author_text_untrusted`) are renamed the same
+  way. The names are shaped like Solidity signatures and cannot contain prose, but anyone can craft
+  one that hashes to a chosen selector, so the model is told to call them claims.
 - Retrieved text reaches the model through `retrieval.render_quoted`: every line quoted with
   `> `, under a header saying it is untrusted.
 - The system prompt states the rule and the field names. The agent has no write tools, so the worst
@@ -165,7 +189,7 @@ data pass through a third party (embedding queries already do); and the key must
 
 ## Cost
 
-Measured on 2026-10-26 with `anthropic/claude-sonnet-5.5` ($2 in / $10 out per million tokens; the
+**Before Component 1's tools were wired in.** Measured on 2026-10-26 with `anthropic/claude-sonnet-5.5` ($2 in / $10 out per million tokens; the
 cost is the figure OpenRouter reports for each reply), the five fixed contracts, one run each:
 
 | Contract | Model calls | Tool calls | Tokens in (from cache) | Tokens out | Cost | Time |
@@ -184,8 +208,30 @@ ten times the dearest run here; `--max-cost` lowers it. The Haiku 5.5 tier ($0.1
 two contracts through the loop (`uniswap-pair` $0.0039, `groklet` $0.0030, both accepted, same
 verdicts as Sonnet); that is a smoke test, not a quality comparison.
 Everything spent while building this component (probes, six trial runs, the injection check, the
-five final runs) came to about $0.55 by the traces' own costs, and the three extra honeypot
-candidates below added $0.133.
+five final runs) came to about $0.55 by the traces' own costs; the three extra honeypot candidates
+below added $0.133 and the rerun with Component 1's tools $0.326, about $1.0 in all.
+
+**With all of Component 1's tools** (selector names, proxy resolution, verified source, deployer;
+same model, contracts and block; earlier traces kept in `agent/runs/` for comparison):
+
+| Contract | Model calls | Tool calls | Tokens in (from cache) | Tokens out | Cost | Was | Verdict now (was) |
+|---|---|---|---|---|---|---|---|
+| usdc | 4 | 10 | 49,452 (34,210) | 2,714 | $0.0687 | $0.0646 | elevated_risk (elevated_risk) |
+| uniswap-pair | 3 | 5 | 25,909 (18,940) | 1,736 | $0.0367 | $0.0340 | no_red_flags_found (no_red_flags_found) |
+| milka | 4 | 11 | 52,747 (36,035) | 2,914 | $0.0745 | $0.0531 | elevated_risk (elevated_risk) |
+| groklet | 5 | 9 | 64,931 (52,309) | 3,056 | $0.0673 | $0.0429 | high_risk (high_risk) |
+| seaport | 4 | 8 | 50,403 (30,147) | 2,512 | $0.0788 | $0.0383 | no_red_flags_found (elevated_risk) |
+| **five reports** | | | | | **$0.3260** (about $0.065 each) | $0.2329 | |
+
+The new tools add about 40% to the cost (more tool results to read, and a lookup with names for
+every selector) and four of five verdicts did not change. Seaport changed: with verified source
+(contract `Seaport`, solc 0.8.24, 42 files), names such as `fulfillOrder`, `matchOrders` and
+`cancel` for its 18 selectors and a creation record, the report now says `no_red_flags_found`
+with six things listed as not checked, where it had said `elevated_risk` (and once
+`insufficient_evidence`) for an unrecognised contract it could not look into. Its `expect` in
+`contracts.toml` (written before, not edited) says `insufficient_evidence` is the expected answer,
+so this is a change for Aryaan to judge, not a pass. The `risk_scan` of Seaport now flags a `mint`
+candidate on selector `0x00000000`; the report reads it, correctly, as a name collision.
 
 A run is not repeatable to the letter: at temperature 0 the same contract at the same block got
 `insufficient_evidence` in one run and `elevated_risk` in another (Seaport; both pass the
@@ -203,13 +249,13 @@ probe and one report per fixed contract; costs money).
 
 ## The five contracts (`contracts.toml`)
 
-| id | Contract | Verdict in the final run |
-|---|---|---|
-| `usdc` | USD Coin, a benign proxy token with mint, blacklist and pause | elevated_risk |
-| `uniswap-pair` | the official Uniswap V2 USDC/WETH pair | no_red_flags_found |
-| `milka` | a template ERC-20 with mint, blacklist, pause and fee functions | elevated_risk |
-| `groklet` | GROKLET, a known honeypot (buys work, sells revert) | high_risk |
-| `seaport` | Seaport 1.6: not an ERC-20, not in the knowledge base or reference library | elevated_risk |
+| id | Contract | Verdict (all tools) | Verdict (before the chain tools) |
+|---|---|---|---|
+| `usdc` | USD Coin, a benign proxy token with mint, blacklist and pause | elevated_risk | elevated_risk |
+| `uniswap-pair` | the official Uniswap V2 USDC/WETH pair | no_red_flags_found | no_red_flags_found |
+| `milka` | a template ERC-20 with mint, blacklist, pause and fee functions | elevated_risk | elevated_risk |
+| `groklet` | GROKLET, a known honeypot (buys work, sells revert) | high_risk | high_risk |
+| `seaport` | Seaport 1.6: not an ERC-20, not in the knowledge base or reference library | no_red_flags_found | elevated_risk |
 
 All on Ethereum at block 26280500. Each entry holds what a good report says (`expect`) and how the
 address was checked (`how_verified`: the honeypot by three independent signals, Seaport by its
@@ -253,8 +299,11 @@ contract, GROKLET's; the three above are not.
 
 ## Not done
 
-- `lookup_selector`, `get_verified_source`, `get_deployment`, full `resolve_proxy` (Component 1,
-  `feat/chain-profile`): reported as not available.
+- Explorer answers are for now, not the pinned block, and the deployer is the explorer's word; a
+  proxy's source may be another contract's. The report says so only as far as the model does.
+- Source text is never read (only the file list and hashes); a model cannot check what the code
+  does, so "who may call mint" stays unknown unless an owner or admin read shows it.
+- The extra honeypot candidates have not been rerun with the new tools.
 - Faithfulness, completeness and tool-use trajectories are not measured: Component 6.
 - No API, streaming, caching of analyses, model routing or dashboard: Component 7 (the per-run
   trace is the start).
