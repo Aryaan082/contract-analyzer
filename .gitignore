@@ -19,3 +19,4 @@ knowledge/reports/*
 knowledge/spotcheck.html
 retrieval/index/
 evals/last_run.json
+agent/runs/

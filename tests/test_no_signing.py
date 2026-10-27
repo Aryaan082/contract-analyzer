@@ -84,6 +84,7 @@ def test_none_of_our_modules_sign_or_send():
         ("knowledge", True),
         ("retrieval", True),
         ("evals", True),
+        ("agent", True),
         ("tests", False),
     ):
         for path in sorted((ROOT / folder).rglob("*.py")):
