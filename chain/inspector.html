@@ -193,7 +193,7 @@ const EXAMPLES = [
         "eip1967-beacon": "0x000000000000000000000000985462c9aa4d6c3ad59ae6e1e9c0c11347ed1598" } } },
   { group: "Proxies", label: "Legacy OpenZeppelin · USDC", chain: "ethereum", slots: EIP1967 + ", " + LEGACY,
     address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    note: "An older OpenZeppelin proxy: all the EIP-1967 slots are empty and the implementation and admin sit in the legacy slots. v1 of resolve_proxy deliberately does not recognise this pattern, so it must answer 'unknown-proxy-like' here, never 'not a proxy'.",
+    note: "An older OpenZeppelin proxy: all the EIP-1967 slots are empty and the implementation and admin sit in the legacy slots. resolve_proxy reads these legacy slots and answers 'legacy-oz'.",
     expect: { chain_id: 1, has_code: true, size: 2186,
       keccak256: "0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505",
       slots: { "eip1967-implementation": "empty", "eip1967-admin": "empty", "eip1967-beacon": "empty",

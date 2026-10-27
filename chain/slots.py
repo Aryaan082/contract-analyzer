@@ -2,8 +2,8 @@
 
 EIP-1967 slots are keccak256("eip1967.proxy.<name>") - 1: the - 1 stops anyone from knowing a
 preimage, so they cannot collide with ordinary Solidity storage. The legacy OpenZeppelin slots
-(older "zos" proxies, such as USDC's) are keccak256 of the name with no - 1. Recognising legacy
-proxies is out of scope for resolve_proxy v1; the slots are here so the inspector can show them.
+(older "zos" proxies, such as USDC's) are keccak256 of the name with no - 1. chain/proxy.py reads
+both families.
 """
 
 EIP1967_IMPLEMENTATION = 0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC

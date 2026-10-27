@@ -79,7 +79,12 @@ class RpcClient:
         self._requested_block = block
         self._chain_id: int | None = None
         self._block: int | None = None
+        self._head: int | None = None
         self._fork_url: str | None = None
+        # Reads are pinned to one block, so asking twice cannot give a different answer. Several
+        # tools read the same code and slots during one run; each is fetched from the node once.
+        self._codes: dict[tuple[str, int], bytes] = {}
+        self._slots: dict[tuple[str, int, int], bytes] = {}
 
     @classmethod
     def connect(cls, chain: str, env: Mapping[str, str], block: int | None = None) -> "RpcClient":
@@ -108,6 +113,7 @@ class RpcClient:
         if self._block is None:
             with _guard():
                 head = self._w3.eth.block_number
+            self._head = head
             if self._requested_block is None:
                 self._block = head
             elif self._requested_block > head:
@@ -118,6 +124,12 @@ class RpcClient:
             else:
                 self._block = self._requested_block
         return self._block
+
+    @property
+    def head(self) -> int | None:
+        """The chain head seen when the block was pinned, or None before that. Not kept fresh: it
+        says how far behind the head the pinned block was at that moment."""
+        return self._head
 
     def pin(self) -> int:
         """Resolve chain id and block now and return the block. Every read calls this first."""
@@ -138,14 +150,20 @@ class RpcClient:
     def get_code(self, address: str) -> bytes:
         address = normalize_address(address)
         block = self.pin()
-        with _guard():
-            return bytes(self._w3.eth.get_code(address, block))
+        if (address, block) not in self._codes:
+            with _guard():
+                self._codes[address, block] = bytes(self._w3.eth.get_code(address, block))
+        return self._codes[address, block]
 
     def get_storage_at(self, address: str, slot: int) -> bytes:
         address = normalize_address(address)
         block = self.pin()
-        with _guard():
-            return bytes(self._w3.eth.get_storage_at(address, slot, block))
+        if (address, slot, block) not in self._slots:
+            with _guard():
+                self._slots[address, slot, block] = bytes(
+                    self._w3.eth.get_storage_at(address, slot, block)
+                )
+        return self._slots[address, slot, block]
 
     def block_info(self) -> BlockInfo:
         block = self.pin()

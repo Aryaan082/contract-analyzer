@@ -20,11 +20,13 @@ from urllib.parse import parse_qs, urlsplit
 from pydantic import BaseModel
 from web3 import Web3
 
+from chain.code import code_hash_of
 from chain.config import DEFAULT_CHAIN
 from chain.errors import ChainError, scrub
 from chain.models import Provenance, ToolResult, normalize_address
 from chain.rpc import RpcClient, probe_chains
 from chain.slots import PRESETS
+from chain.storage import parse_slot
 
 log = logging.getLogger(__name__)
 
@@ -42,8 +44,8 @@ SECURITY_HEADERS = {
 
 
 # -- what the inspector returns ---------------------------------------------------------------
-# Until slice 2 builds the real `get_code` tool, the inspector derives size and hash itself from
-# the raw bytes. The point is the shape: small, and cited by chain, address and block.
+# The inspector shows the raw bytes next to the small, cited summary a tool would give. The hash
+# comes from chain/code.py, the same function `get_code` uses.
 
 
 class CodeSummary(BaseModel):
@@ -71,19 +73,6 @@ def parse_block(raw: str | None) -> int | None:
         return int(text, 16) if text.lower().startswith("0x") else int(text)
     except ValueError:
         raise ChainError("invalid_block", "Block must be a whole number.") from None
-
-
-def parse_slot(raw: str) -> int:
-    text = raw.strip()
-    try:
-        slot = int(text, 16) if text.lower().startswith("0x") else int(text)
-    except ValueError:
-        slot = -1
-    if not 0 <= slot < 2**256:
-        raise ChainError(
-            "invalid_slot", "Slot must be a number from 0 to 2^256 - 1 (decimal or 0x hex)."
-        )
-    return slot
 
 
 def parse_slots(raw: str | None) -> list[tuple[str | None, int]]:
@@ -159,7 +148,7 @@ def inspect(env: Mapping[str, str], query: Mapping[str, str]) -> dict[str, Any]:
             code=CodeSummary(
                 has_code=bool(code),
                 size=len(code),
-                keccak256=Web3.to_hex(Web3.keccak(code)),
+                keccak256=code_hash_of(code),
             ),
             storage=[
                 SlotRead(slot=hex(slot), name=name, value=Web3.to_hex(value))

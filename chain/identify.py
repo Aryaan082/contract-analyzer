@@ -18,22 +18,18 @@ from importlib.metadata import version
 from typing import Literal
 
 from pydantic import BaseModel
-from web3 import Web3
 
+from chain.code import CodeStore, read_code
 from chain.dex import DEXES
 from chain.errors import ChainError
 from chain.kinds import KindMatch, match_kinds
 from chain.models import ToolResult, normalize_address
+from chain.proxy import Implementation, ProxyKind, trace_proxy
 from chain.registry import REGISTRIES, Finding, check_registries
 from chain.rpc import RpcClient
 from chain.selectors import extract_selectors, parse_code
-from chain.slots import EIP1967_IMPLEMENTATION, LEGACY_OZ_IMPLEMENTATION
 
 log = logging.getLogger(__name__)
-
-# EIP-1167 minimal proxy: a fixed prefix, the 20-byte implementation, a fixed suffix.
-_CLONE_PREFIX = bytes.fromhex("363d3d373d3d3d363d73")
-_CLONE_SUFFIX = bytes.fromhex("5af43d82803e903d91602b57fd5bf3")
 
 # Interfaces that look like tokens but are a protocol's own bookkeeping, not something traded.
 PROTOCOL_TOKEN_KINDS = frozenset(
@@ -46,16 +42,11 @@ LIMITATIONS = (
     "Only the registries in chain/registry.py are asked (Uniswap V2 and V3, Aave V3, Compound V2 "
     "and V3, on the chains listed there). Not being listed there means 'not known to these', not "
     "'bad'.",
-    "Proxies are followed one step (EIP-1967 and legacy OpenZeppelin slots, EIP-1167 clones). "
-    "Beacon proxies and nested proxies are not.",
+    "Proxies are followed one step by chain/proxy.py (EIP-1967, beacon and legacy OpenZeppelin "
+    "slots, canonical EIP-1167 clones). Nested proxies and other patterns are not.",
 )
 
 Summary = Literal["no_code", "official", "lookalike", "standard", "unrecognized"]
-
-
-class Implementation(BaseModel, frozen=True):
-    address: str
-    found_by: Literal["eip1967_slot", "legacy_oz_slot", "eip1167_clone"]
 
 
 class Check(BaseModel, frozen=True):
@@ -69,6 +60,7 @@ class Identity(BaseModel, frozen=True):
     code_hash: str | None
     code_size: int
     selector_count: int
+    proxy_kind: ProxyKind
     implementation: Implementation | None
     kinds: tuple[KindMatch, ...]  # complete matches
     near_misses: tuple[KindMatch, ...]
@@ -76,32 +68,6 @@ class Identity(BaseModel, frozen=True):
     checks: tuple[Check, ...]
     notes: tuple[str, ...]
     limitations: tuple[str, ...] = LIMITATIONS
-
-
-def _address_in_slot(word: bytes) -> str | None:
-    if len(word) != 32 or word[:12] != bytes(12) or word[12:] == bytes(20):
-        return None
-    return normalize_address("0x" + word[12:].hex())
-
-
-def _implementation(client: RpcClient, address: str, code: bytes) -> Implementation | None:
-    """One step of proxy resolution, enough to classify what sits behind a proxy. chain slice 4's
-    resolve_proxy is the full version."""
-    if (
-        len(code) == len(_CLONE_PREFIX) + 20 + len(_CLONE_SUFFIX)
-        and code.startswith(_CLONE_PREFIX)
-        and code.endswith(_CLONE_SUFFIX)
-    ):
-        target = normalize_address("0x" + code[len(_CLONE_PREFIX) :][:20].hex())
-        return Implementation(address=target, found_by="eip1167_clone")
-    for slot, found_by in (
-        (EIP1967_IMPLEMENTATION, "eip1967_slot"),
-        (LEGACY_OZ_IMPLEMENTATION, "legacy_oz_slot"),
-    ):
-        target = _address_in_slot(client.get_storage_at(address, slot))
-        if target is not None and client.get_code(target):
-            return Implementation(address=target, found_by=found_by)
-    return None
 
 
 def _summary(
@@ -183,10 +149,11 @@ def _review_check(summary: Summary) -> Check:
     )
 
 
-def _identify(client: RpcClient, address: str) -> Identity:
+def _identify(client: RpcClient, address: str, store: CodeStore | None) -> Identity:
     client.pin()
     chain_id = client.chain_id
-    code = client.get_code(address)
+    read = read_code(client, address, store)
+    code = read.code
     if not code:
         summary: Summary = "no_code"
         return Identity(
@@ -194,6 +161,7 @@ def _identify(client: RpcClient, address: str) -> Identity:
             code_hash=None,
             code_size=0,
             selector_count=0,
+            proxy_kind="not-a-proxy",
             implementation=None,
             kinds=(),
             near_misses=(),
@@ -205,13 +173,20 @@ def _identify(client: RpcClient, address: str) -> Identity:
         )
     raw = parse_code(code)
     selectors = {s.selector for s in extract_selectors(raw)}
-    implementation = _implementation(client, address, raw)
+    proxy = trace_proxy(client, address, raw, store)
+    implementation = proxy.implementation
     notes = []
     if implementation is not None:
-        behind = client.get_code(implementation.address)
-        selectors |= {s.selector for s in extract_selectors(parse_code(behind))}
+        behind = read_code(client, implementation.address, store).code
+        if behind:
+            selectors |= {s.selector for s in extract_selectors(parse_code(behind))}
         notes.append(
             "It is a proxy. Its kinds include the functions of the implementation it points to."
+        )
+    elif proxy.kind in ("unknown-proxy-like", "undetermined"):
+        notes.append(
+            f"Proxy check: {proxy.kind}. Where its calls go was not resolved, so its kinds "
+            "cover only its own functions and may miss the real ones."
         )
     elif not selectors:
         notes.append(
@@ -226,9 +201,10 @@ def _identify(client: RpcClient, address: str) -> Identity:
     summary = _summary(kinds, findings, near)
     return Identity(
         summary=summary,
-        code_hash=Web3.to_hex(Web3.keccak(raw)),
+        code_hash=read.code_hash,
         code_size=len(raw),
         selector_count=len(selectors),
+        proxy_kind=proxy.kind,
         implementation=implementation,
         kinds=kinds,
         near_misses=near,
@@ -238,12 +214,15 @@ def _identify(client: RpcClient, address: str) -> Identity:
     )
 
 
-def identify_contract(client: RpcClient, address: str) -> ToolResult[Identity]:
-    """The tool. Provenance names the chain, the address and the block everything was read at."""
+def identify_contract(
+    client: RpcClient, address: str, store: CodeStore | None = None
+) -> ToolResult[Identity]:
+    """The tool. Provenance names the chain, the address and the block everything was read at.
+    With a code store, the bytecode it reads is saved (chain/code.py)."""
     shown = None
     try:
         shown = normalize_address(address)
-        data = _identify(client, shown)
+        data = _identify(client, shown, store)
     except ChainError as err:
         return ToolResult[Identity](
             provenance=client.provenance(shown, source=_source()), data=err.to_tool_error()

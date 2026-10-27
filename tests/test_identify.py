@@ -28,6 +28,7 @@ ERC20_CODE = load_fixture("FixtureERC20Plain").code
 CLONE_CODE = bytes.fromhex(json.loads((FIXTURES / "clone_ethereum.json").read_text())["code"][2:])
 CLONE_TARGET = "0xd5fe1c1f216b775dfd30638fa7164d41321ef79b"
 JUNK = b"\x60\x00\x60\x00\xfd"
+DELEGATING = b"\x60\x00\x60\x00\xf4"  # PUSH1 0, PUSH1 0, DELEGATECALL: enough to count as a proxy
 PAIR_CODE = bytes.fromhex(
     json.loads(
         (
@@ -195,7 +196,7 @@ def test_an_eip1167_clone_is_classified_by_what_it_points_at():
 )
 def test_a_slot_proxy_is_classified_by_its_implementation(slot, found_by):
     world = World()
-    world.codes[PROXY.lower()] = JUNK
+    world.codes[PROXY.lower()] = DELEGATING
     world.codes[IMPL.lower()] = ERC20_CODE
     world.storage[(PROXY.lower(), slot)] = address_word(IMPL)
     result = ask(world, PROXY)
@@ -204,16 +205,27 @@ def test_a_slot_proxy_is_classified_by_its_implementation(slot, found_by):
     assert check(result, "sell_simulation").applies
 
 
+def test_a_slot_on_a_contract_that_cannot_delegate_is_not_trusted():
+    world = World()
+    world.codes[PROXY.lower()] = JUNK  # no DELEGATECALL, so the slot may be bait
+    world.codes[IMPL.lower()] = ERC20_CODE
+    world.storage[(PROXY.lower(), EIP1967_IMPLEMENTATION)] = address_word(IMPL)
+    data = ask(world, PROXY).data
+    assert data.implementation is None
+    assert data.proxy_kind == "unknown-proxy-like"
+    assert "erc20" not in [k.kind for k in data.kinds]
+
+
 def test_a_slot_that_points_at_nothing_is_ignored():
     world = World()
-    world.codes[PROXY.lower()] = JUNK
+    world.codes[PROXY.lower()] = DELEGATING
     world.storage[(PROXY.lower(), EIP1967_IMPLEMENTATION)] = address_word(IMPL)  # no code there
     assert ask(world, PROXY).data.implementation is None
 
 
 def test_a_slot_holding_more_than_an_address_is_ignored():
     world = World()
-    world.codes[PROXY.lower()] = JUNK
+    world.codes[PROXY.lower()] = DELEGATING
     world.codes[IMPL.lower()] = ERC20_CODE
     world.storage[(PROXY.lower(), EIP1967_IMPLEMENTATION)] = b"\x01" + address_word(IMPL)[1:]
     assert ask(world, PROXY).data.implementation is None

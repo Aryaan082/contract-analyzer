@@ -37,6 +37,7 @@ Answer = bytes | Callable[[bytes], bytes | None]
 class World:
     def __init__(self, chain_id: int = 1) -> None:
         self.chain_id, self.block = chain_id, 100
+        self.head = self.block
         self.chain = "ethereum"
         self.codes: dict[str, bytes] = {}
         self.storage: dict[tuple[str, int], bytes] = {}

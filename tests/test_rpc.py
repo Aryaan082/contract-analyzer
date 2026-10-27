@@ -201,3 +201,35 @@ def test_json_rpc_errors_are_answers_not_transient_so_they_are_not_retried(no_sl
         real_client(transport).get_code(ADDR)
     assert caught.value.code == "state_unavailable"
     assert transport.calls.count("eth_getCode") == 1
+
+
+def test_a_pinned_read_is_fetched_from_the_node_once_per_run():
+    rpc, provider = client(
+        [
+            CHAIN_ID,
+            HEAD_100,
+            ok("eth_getCode", [ADDR, "0x64"], "0x6001"),
+            ok("eth_getStorageAt", [ADDR, "0x0", "0x64"], "0x" + "00" * 32),
+            ok("eth_getStorageAt", [ADDR, "0x1", "0x64"], "0x" + "00" * 32),
+        ]
+    )
+    assert rpc.get_code(ADDR) == rpc.get_code(ADDR.upper().replace("0X", "0x")) == b"\x60\x01"
+    rpc.get_storage_at(ADDR, 0)
+    rpc.get_storage_at(ADDR, 0)
+    rpc.get_storage_at(ADDR, 1)
+    assert methods(provider).count("eth_getCode") == 1
+    assert methods(provider).count("eth_getStorageAt") == 2
+
+
+def test_a_failed_read_is_not_remembered():
+    rpc, _ = client([CHAIN_ID, HEAD_100, fail("eth_getCode", [ADDR, "0x64"], "boom")])
+    for _ in range(2):
+        with pytest.raises(ChainError):
+            rpc.get_code(ADDR)
+
+
+def test_the_head_seen_at_pinning_is_available_afterwards():
+    rpc, _ = client([CHAIN_ID, HEAD_100], block=40)
+    assert rpc.head is None
+    rpc.pin()
+    assert (rpc.block, rpc.head) == (40, 100)
