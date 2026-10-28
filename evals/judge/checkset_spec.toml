@@ -1,0 +1,649 @@
+# The faithfulness check set: what it is made of (Component 6, part D).
+#
+# THE FAULTS ARE OURS. Every "planted" fault below was written by the session that built the judge,
+# as a small edit to a real claim from a saved dev trace (the 13 Sonnet runs of the eight dev
+# contracts); every "real" fault is a claim or summary sentence a model actually wrote, picked
+# because an earlier reader (the 2026-10-27 smoke-test session) found it unsupported, and the
+# reasons are in `note`. Nobody else has read these. A judge that catches them has shown it catches
+# the kinds of fault we thought of, not the kinds we did not.
+#
+# Built offline from dev traces only (python -m evals.judge checkset build --traces <folder>); the
+# result is committed in evals/judge/checkset/ so that it does not depend on the traces being there.
+# Held-out contracts are never used: the eight contracts here are the dev-only cards of
+# agent/contracts.toml.
+#
+# Entries:
+#   [[planted]]  an edit of one real claim. `trace` is the file name of the trace and `finding` the
+#                claim's number in its report (from 0). `replace` is a list of [old, new] pairs
+#                applied in order to the claim text (each `old` must occur); `append` adds text at
+#                the end; `evidence` swaps the cited ids. The unedited claim goes in too, as the
+#                "twin" (a sound item) unless `twin = false`.
+#                `twin_tokens` must occur in the evidence the claim cites (so the sound claim's key
+#                facts are really there); `absent_tokens` must not occur (so the planted fact is
+#                really absent). The build stops if either is wrong.
+#                `catch` lists the labels that count as catching this fault.
+#   [[sound]]    a real claim believed to follow from its evidence, read by one person (the author).
+#   [[real]]     a real claim believed NOT to follow from its evidence.
+#   [[summary]]  a summary to judge sentence by sentence; `fault` and `sound` list sentence numbers
+#                (from 1) whose label is scored; the others are judged but not scored. `insert`
+#                adds a sentence at a position; `replace` edits the text.
+
+version = 1
+
+# ---- flipped facts ------------------------------------------------------------------------------
+
+[[planted]]
+id = "flip-groklet-sell"
+operator = "flip"
+trace = "20261027T014944Z-ethereum-656bd1d7.json"
+finding = 0
+replace = [["returned sell_blocked", "returned sellable"], ["but the sell reverted with 'TransferHelper: TRANSFER_FROM_FAILED' in", "and the sell also succeeded in"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["sell_blocked", "TRANSFER_FROM_FAILED"]
+
+[[planted]]
+id = "flip-asasar-owner"
+operator = "flip"
+trace = "20261027T025245Z-ethereum-be2ab177.json"
+finding = 2
+replace = [["which has code, so it is a contract and not a plain account", "which has no code, so it is a plain account and not a contract"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["\"value_has_code\": true"]
+
+[[planted]]
+id = "flip-milka-owner"
+operator = "flip"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 4
+replace = [["an address with no code, so a single key", "a contract, not a single key"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["\"value_has_code\": false"]
+
+[[planted]]
+id = "flip-usdc-paused"
+operator = "flip"
+trace = "20261027T014838Z-ethereum-a0b86991.json"
+finding = 4
+replace = [["The token is not currently paused.", "The token is currently paused."]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["\"getter\": \"paused()\"", "\"value\": false"]
+
+[[planted]]
+id = "flip-pair-proxy"
+operator = "flip"
+trace = "20261027T014856Z-ethereum-b4e16d01.json"
+finding = 0
+replace = [["It has no implementation address, so it is not a proxy.", "It has an implementation address, so it is a proxy."]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["\"implementation\": null"]
+
+[[planted]]
+id = "flip-seaport-delegatecall"
+operator = "flip"
+trace = "20261027T030446Z-ethereum-00000000.json"
+finding = 1
+replace = [["The contract is not a proxy and has no implementation address. Its bytecode has no DELEGATECALL and no SELFDESTRUCT opcodes, so the usual upgrade and destroy paths are absent.", "The contract is a proxy with an implementation address. Its bytecode has DELEGATECALL opcodes, so the usual upgrade path is present."]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["\"delegatecall_count\": 0"]
+
+# ---- changed numbers ----------------------------------------------------------------------------
+
+[[planted]]
+id = "num-brick-tax"
+operator = "number"
+trace = "20261027T025312Z-ethereum-fcb260fb.json"
+finding = 0
+replace = [["a sell tax of 8500 bps (85%)", "a sell tax of 850 bps (8.5%)"], ["so almost everything is lost on exit", "so a small part is lost on exit"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["8500"]
+absent_tokens = ["\"sell_tax_bps\": 850,"]
+
+[[planted]]
+id = "num-milka-extras"
+operator = "number"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 0
+replace = [["so there are 51 extra functions", "so there are 41 extra functions"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["\"extras\": 51"]
+
+[[planted]]
+id = "num-pair-selectors"
+operator = "number"
+trace = "20261027T014856Z-ethereum-b4e16d01.json"
+finding = 1
+replace = [["all 27 selectors", "all 17 selectors"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["27"]
+
+[[planted]]
+id = "num-groklet-extras"
+operator = "number"
+trace = "20261027T014944Z-ethereum-656bd1d7.json"
+finding = 2
+replace = [["so it has 49 extra functions", "so it has 29 extra functions"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["\"extras\": 49"]
+
+[[planted]]
+id = "num-milka-block"
+operator = "number"
+trace = "20261027T030617Z-ethereum-84e84bf4.json"
+finding = 5
+replace = [["about 7,800 blocks before the pinned block", "about 78,000 blocks before the pinned block"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["26272730"]
+
+[[planted]]
+id = "num-meowe-solc"
+operator = "number"
+trace = "20261027T025222Z-ethereum-63b218ca.json"
+finding = 1
+replace = [["compiled with solc 0.8.12", "compiled with solc 0.8.21"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["0.8.12"]
+absent_tokens = ["0.8.21"]
+
+[[planted]]
+id = "num-milka-decimals"
+operator = "number"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 6
+replace = [["with 18 decimals (1e27 raw units)", "with 6 decimals (1e15 raw units)"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["1000000000000000000000000000"]
+
+# ---- a capability stretched into an ability -----------------------------------------------------
+
+[[planted]]
+id = "str-usdc-roles"
+operator = "strengthen"
+trace = "20261027T014838Z-ethereum-a0b86991.json"
+finding = 3
+replace = [["The tools show these exist, not who may call them.", "Whoever holds the admin key can call them at will."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["mint(address,uint256)", "pause()"]
+
+[[planted]]
+id = "str-milka-mint"
+operator = "strengthen"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 1
+replace = [["Who can call it, and whether any supply cap exists, is not established.", "The owner can use it to mint unlimited tokens at any time."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["mint(address,uint256)"]
+
+[[planted]]
+id = "str-milka-blacklist"
+operator = "strengthen"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 2
+replace = [["If an owner-held list is read in the transfer path, it could trap individual holders.", "The owner uses them to block chosen holders from selling."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["setBlacklist(address,bool)"]
+
+[[planted]]
+id = "str-milka-pause"
+operator = "strengthen"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 3
+replace = [["If they act on transfers, the controller could halt all transfers, including selling.", "The owner can halt all transfers, including selling, whenever it wants."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["pause()"]
+
+[[planted]]
+id = "str-asasar-selltax"
+operator = "strengthen"
+trace = "20261027T025245Z-ethereum-be2ab177.json"
+finding = 1
+replace = [["This shows a sell-tax setter exists. It does not show whether the setter is capped.", "This lets the owner raise the sell tax to 100% at any time."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["setSellTax(uint256)"]
+
+[[planted]]
+id = "str-groklet-fees"
+operator = "strengthen"
+trace = "20261027T030648Z-ethereum-656bd1d7.json"
+finding = 2
+replace = [["These are blacklist and fee-setting capabilities. The tools cannot show whether the fees have a cap.", "These let the owner set fees of any size and blacklist any holder at will."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["blacklistAccount(address,bool)"]
+
+[[planted]]
+id = "str-milka2-powers"
+operator = "strengthen"
+trace = "20261027T030617Z-ethereum-84e84bf4.json"
+finding = 1
+replace = [["These powers could be used to dilute holders, trap addresses or restrict trading. The tools show the functions exist, not who may call them.", "The owner uses these powers to dilute holders, trap addresses and restrict trading."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["setBlacklist(address,bool)"]
+
+# ---- the right claim, the wrong evidence --------------------------------------------------------
+
+[[planted]]
+id = "cite-milka-sell"
+operator = "citation"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 5
+evidence = ["T5"]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["sellable"]
+
+[[planted]]
+id = "cite-brick-tax"
+operator = "citation"
+trace = "20261027T025312Z-ethereum-fcb260fb.json"
+finding = 1
+evidence = ["T5"]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["wrapped_native_reserve_wei"]
+
+[[planted]]
+id = "cite-pair-identical"
+operator = "citation"
+trace = "20261027T014856Z-ethereum-b4e16d01.json"
+finding = 1
+evidence = ["T1"]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["27"]
+
+[[planted]]
+id = "cite-usdc-sell"
+operator = "citation"
+trace = "20261027T014838Z-ethereum-a0b86991.json"
+finding = 5
+evidence = ["T2"]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["sell_tax_bps"]
+
+[[planted]]
+id = "cite-groklet-pool"
+operator = "citation"
+trace = "20261027T014944Z-ethereum-656bd1d7.json"
+finding = 4
+evidence = ["T2"]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["wrapped_native_reserve_wei"]
+
+[[planted]]
+id = "cite-seaport-explorer"
+operator = "citation"
+trace = "20261027T030446Z-ethereum-00000000.json"
+finding = 0
+evidence = ["T3"]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["Seaport"]
+
+# ---- a fact from outside the evidence, added to a sound claim -----------------------------------
+
+[[planted]]
+id = "inv-usdc-circle"
+operator = "invented"
+trace = "20261027T030526Z-ethereum-a0b86991.json"
+finding = 0
+append = " The implementation is the FiatToken contract that Circle operates."
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["0x43506849D7C04F9138D1A2050bbF3A0c054402dd"]
+absent_tokens = ["Circle operates"]
+
+[[planted]]
+id = "inv-pair-volume"
+operator = "invented"
+trace = "20261027T014856Z-ethereum-b4e16d01.json"
+finding = 0
+append = " It is the most heavily traded pool on Ethereum."
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["\"implementation\": null"]
+
+[[planted]]
+id = "inv-seaport-opensea"
+operator = "invented"
+trace = "20261027T030446Z-ethereum-00000000.json"
+finding = 0
+append = " It is the official marketplace contract run by OpenSea."
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["Seaport"]
+absent_tokens = ["OpenSea"]
+
+[[planted]]
+id = "inv-milka-founder"
+operator = "invented"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 4
+append = " That account belongs to the project's founder."
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["0xC3610d02548cdB1a30eDE87c5dc0d2ffe5b9b99f"]
+
+[[planted]]
+id = "inv-pair-audit"
+operator = "invented"
+trace = "20261027T030546Z-ethereum-b4e16d01.json"
+finding = 2
+append = " The code was audited by ConsenSys Diligence."
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["UniswapV2Pair"]
+absent_tokens = ["ConsenSys"]
+
+[[planted]]
+id = "inv-groklet-deployer"
+operator = "invented"
+trace = "20261027T030648Z-ethereum-656bd1d7.json"
+finding = 5
+append = " The deployer is known for earlier scam tokens."
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["0x80e56a3b4F0e104a112B60c8907716895489B523"]
+
+# ---- two true facts, put the wrong way round -----------------------------------------------------
+
+[[planted]]
+id = "swap-usdc-admin"
+operator = "swap"
+trace = "20261027T030526Z-ethereum-a0b86991.json"
+finding = 0
+replace = [["0x43506849D7C04F9138D1A2050bbF3A0c054402dd", "@@A@@"], ["0x807a96288A1A408dBC13DE2b1d087d10356395d2", "0x43506849D7C04F9138D1A2050bbF3A0c054402dd"], ["@@A@@", "0x807a96288A1A408dBC13DE2b1d087d10356395d2"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["0x43506849D7C04F9138D1A2050bbF3A0c054402dd", "0x807a96288A1A408dBC13DE2b1d087d10356395d2"]
+twin = false
+
+[[planted]]
+id = "swap-pair-tokens"
+operator = "swap"
+trace = "20261027T030546Z-ethereum-b4e16d01.json"
+finding = 0
+replace = [["USDC (0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48) and WETH (0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)", "USDC (0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2) and WETH (0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48)"]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"]
+
+[[planted]]
+id = "swap-usdc-getters"
+operator = "swap"
+trace = "20261027T014838Z-ethereum-a0b86991.json"
+finding = 4
+replace = [["The blacklister getter returns 0x0A06BE16275B95a7d2567fBdAE118b36C7DA78F9, which has no code.", "The blacklister getter returns 0x...0001, which has no code."], ["The implementation's owner() returns 0x...0001, an address with no code.", "The implementation's owner() returns 0x0A06BE16275B95a7d2567fBdAE118b36C7DA78F9, an address with no code."]]
+catch = ["not_supported", "contradicted"]
+twin_tokens = ["0x0A06BE16275B95a7d2567fBdAE118b36C7DA78F9"]
+twin = false
+
+# ---- an absence claimed too strongly, and a rehearsal made universal -----------------------------
+
+[[planted]]
+id = "abs-seaport-scan"
+operator = "overclaim"
+trace = "20261027T015010Z-ethereum-00000000.json"
+finding = 2
+replace = [["These scans only show that capabilities exist and are not proof of safety.", "So the contract cannot be upgraded, drained or destroyed and is safe to approve."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["\"delegatecall_count\": 0"]
+
+[[planted]]
+id = "abs-meowe-scan"
+operator = "overclaim"
+trace = "20261027T025222Z-ethereum-63b218ca.json"
+finding = 3
+replace = [["This is not proof of safety, since only selector IDs were matched, without names.", "This proves the contract has no mint, blacklist or pause powers."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["unnamed_selectors"]
+
+[[planted]]
+id = "gen-usdc-sell"
+operator = "overclaim"
+trace = "20261027T030526Z-ethereum-a0b86991.json"
+finding = 4
+replace = [["and no tokens left over.", "and no tokens left over, so every holder can sell at any time."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["sellable"]
+
+[[planted]]
+id = "gen-milka-sell"
+operator = "overclaim"
+trace = "20261027T030617Z-ethereum-84e84bf4.json"
+finding = 4
+replace = [["A pass reflects only the current block, and the owner could change settings later.", "A pass guarantees that holders can always sell."]]
+catch = ["partly", "not_supported", "contradicted"]
+twin_tokens = ["sellable"]
+
+# ---- claims believed sound (more than the twins), read by the author ------------------------------
+
+[[sound]]
+id = "sound-usdc-proxy"
+trace = "20261027T014838Z-ethereum-a0b86991.json"
+finding = 0
+tokens = ["legacy_oz_slot"]
+
+[[sound]]
+id = "sound-usdc-upgrade"
+trace = "20261027T014838Z-ethereum-a0b86991.json"
+finding = 1
+tokens = ["changeAdmin(address)", "upgradeTo(address)"]
+
+[[sound]]
+id = "sound-usdc-v3"
+trace = "20261027T030526Z-ethereum-a0b86991.json"
+finding = 4
+tokens = ["\"round_trip_loss_bps\": 60"]
+
+[[sound]]
+id = "sound-milka-sell"
+trace = "20261027T030617Z-ethereum-84e84bf4.json"
+finding = 4
+tokens = ["\"buy_tax_bps\": 0", "\"sell_tax_bps\": 0"]
+
+[[sound]]
+id = "sound-milka-owner"
+trace = "20261027T030617Z-ethereum-84e84bf4.json"
+finding = 2
+tokens = ["0xC3610d02548cdB1a30eDE87c5dc0d2ffe5b9b99f"]
+
+[[sound]]
+id = "sound-milka-delegatecall"
+trace = "20261027T014922Z-ethereum-84e84bf4.json"
+finding = 7
+tokens = ["\"delegatecall_count\": 0", "\"selfdestruct_count\": 0"]
+
+[[sound]]
+id = "sound-groklet-sell"
+trace = "20261027T030648Z-ethereum-656bd1d7.json"
+finding = 0
+tokens = ["sell_blocked", "TRANSFER_FROM_FAILED"]
+
+[[sound]]
+id = "sound-groklet-owner"
+trace = "20261027T030648Z-ethereum-656bd1d7.json"
+finding = 4
+tokens = ["0x0000000000000000000000000000000000000000"]
+
+[[sound]]
+id = "sound-meowe-sell"
+trace = "20261027T025222Z-ethereum-63b218ca.json"
+finding = 0
+tokens = ["sell_blocked", "TRANSFER_FROM_FAILED"]
+
+[[sound]]
+id = "sound-asasar-setselltax"
+trace = "20261027T025245Z-ethereum-be2ab177.json"
+finding = 1
+tokens = ["setSellTax(uint256)", "0x8cd09d50"]
+
+[[sound]]
+id = "sound-pair-mint"
+trace = "20261027T030546Z-ethereum-b4e16d01.json"
+finding = 3
+tokens = ["mint(address)"]
+
+[[sound]]
+id = "sound-seaport-registry"
+trace = "20261027T030446Z-ethereum-00000000.json"
+finding = 4
+tokens = ["19442152"]
+
+# A model's claim whose "Circle" is in the evidence (a file path under a circlefin repository): the
+# judge must not flag every claim that names an issuer.
+[[sound]]
+id = "sound-usdc-circle-path"
+trace = "20261027T190100Z-ethereum-a0b86991.json"
+finding = 1
+tokens = ["circlefin", "FiatTokenV2_2"]
+
+# ---- real faults ----------------------------------------------------------------------------------
+
+[[real]]
+id = "real-seaport-opensea-pro"
+trace = "20261027T191544Z-ethereum-00000000.json"
+finding = 0
+catch = ["partly", "not_supported", "contradicted"]
+absent_tokens = ["OpenSea"]
+note = "deepseek-v4-pro: 'the OpenSea marketplace protocol'. No tool result names OpenSea; the explorer gave the contract name 'Seaport'. Found by the 2026-10-27 smoke-test reader."
+
+[[real]]
+id = "real-seaport-fallback-pro"
+trace = "20261027T191544Z-ethereum-00000000.json"
+finding = 4
+catch = ["partly", "not_supported", "contradicted"]
+note = "deepseek-v4-pro reads selector 0x00000000 as 'the fallback'; the selector database names it fulfillBasicOrder_efficient_6GL6yc, an ordinary function. Found by the smoke-test reader."
+
+[[real]]
+id = "real-seaport-opensea-qwen"
+trace = "20261027T191518Z-ethereum-00000000.json"
+finding = 0
+catch = ["partly", "not_supported", "contradicted"]
+absent_tokens = ["OpenSea"]
+note = "qwen3.7-plus: 'Seaport 1.6 (OpenSea's NFT marketplace)'. The version and OpenSea are in no evidence."
+
+[[real]]
+id = "real-seaport-fallback-qwen"
+trace = "20261027T191518Z-ethereum-00000000.json"
+finding = 5
+catch = ["partly", "not_supported", "contradicted"]
+note = "qwen3.7-plus: 'the actual function at that selector in Seaport is the payable fallback/receive'. Same misreading of selector 0x00000000."
+
+[[real]]
+id = "real-usdc-circle-context-pro"
+trace = "20261027T192131Z-ethereum-a0b86991.json"
+finding = 8
+catch = ["partly", "not_supported", "contradicted"]
+absent_tokens = ["Circle"]
+note = "deepseek-v4-pro, a context claim: 'its safety rests on Circle's key security'. The taxonomy records it cites do not name Circle."
+
+# ---- summaries ------------------------------------------------------------------------------------
+# A planted summary is a real Sonnet summary with one sentence inserted or edited. `fault` and `sound`
+# list the sentence numbers (from 1, after the edit) that are scored.
+
+[[summary]]
+id = "sum-usdc-orig"
+origin = "sound"
+trace = "20261027T014838Z-ethereum-a0b86991.json"
+sound = [2, 4, 5, 6, 7, 8]
+
+[[summary]]
+id = "sum-usdc-circle"
+origin = "planted"
+trace = "20261027T014838Z-ethereum-a0b86991.json"
+insert = [[2, "USDC is issued by Circle, a regulated financial company."]]
+fault = [2]
+sound = [3, 5, 6]
+
+[[summary]]
+id = "sum-pair-volume"
+origin = "planted"
+trace = "20261027T014856Z-ethereum-b4e16d01.json"
+insert = [[2, "The pair holds more than 100 million dollars of liquidity."]]
+fault = [2]
+sound = [1, 3, 4]
+
+[[summary]]
+id = "sum-groklet-deployer"
+origin = "planted"
+trace = "20261027T014944Z-ethereum-656bd1d7.json"
+insert = [[3, "The deployer has launched other honeypot tokens before."]]
+fault = [3]
+sound = [1, 4, 5]
+
+[[summary]]
+id = "sum-meowe-audit"
+origin = "planted"
+trace = "20261027T025222Z-ethereum-63b218ca.json"
+insert = [[2, "The contract was audited and the audit found no problems."]]
+fault = [2]
+sound = [1, 3, 4]
+
+[[summary]]
+id = "sum-seaport-official"
+origin = "planted"
+trace = "20261027T030446Z-ethereum-00000000.json"
+insert = [[2, "This is the official Seaport 1.6 deployment by OpenSea."]]
+fault = [2]
+sound = [1, 4, 5]
+
+[[summary]]
+id = "sum-usdc2-circulation"
+origin = "planted"
+trace = "20261027T030526Z-ethereum-a0b86991.json"
+insert = [[2, "More than 30 billion dollars of USDC are in circulation."]]
+fault = [2]
+sound = [3, 4]
+
+[[summary]]
+id = "sum-milka2-mint-used"
+origin = "planted"
+trace = "20261027T030617Z-ethereum-84e84bf4.json"
+insert = [[6, "The owner has already used the mint function several times."]]
+fault = [6]
+sound = [1, 2, 3, 4, 5]
+
+[[summary]]
+id = "sum-usdc2-flip"
+origin = "planted"
+trace = "20261027T030526Z-ethereum-a0b86991.json"
+replace = [["worked with 0% tax, so nothing blocks trading today", "failed with a 99% tax, so trading is blocked today"]]
+fault = [3]
+sound = [2]
+
+[[summary]]
+id = "sum-milka2-flip"
+origin = "planted"
+trace = "20261027T030617Z-ethereum-84e84bf4.json"
+replace = [["worked with 0% tax in both directions", "failed on the sell step"]]
+fault = [3]
+sound = [1, 2]
+
+[[summary]]
+id = "sum-pair2-orig"
+origin = "sound"
+trace = "20261027T030546Z-ethereum-b4e16d01.json"
+sound = [1, 2, 3, 4]
+
+[[summary]]
+id = "sum-groklet2-orig"
+origin = "sound"
+trace = "20261027T030648Z-ethereum-656bd1d7.json"
+sound = [1, 2, 4]
+
+# Real summary faults. The sentences listed under `fault` were found unsupported by the smoke-test
+# reader; the other sentences are judged but not scored.
+[[summary]]
+id = "real-sum-usdc-pro"
+origin = "real"
+trace = "20261027T190027Z-ethereum-a0b86991.json"
+fault = [1, 2, 4]
+note = "deepseek-v4-pro: 'Circle's regulated fiat-backed stablecoin', 'a legitimate, widely-used token', 'Approving it is standard practice'."
+
+[[summary]]
+id = "real-sum-milka-pro"
+origin = "real"
+trace = "20261027T190453Z-ethereum-84e84bf4.json"
+fault = [1]
+note = "deepseek-v4-pro: 'a reflection-style ERC-20 token'. Contested: one selector in the evidence is named reflectionThreshold(); the smoke-test reader judged the description unsupported."
+
+[[summary]]
+id = "real-sum-seaport-pro"
+origin = "real"
+trace = "20261027T191544Z-ethereum-00000000.json"
+fault = [1, 3, 4]
+note = "deepseek-v4-pro: 'the Seaport marketplace protocol (OpenSea's NFT exchange)'; 'a selector-name collision on the 0x00000000 fallback'; 'consistent with Seaport's permissionless design'."
+
+[[summary]]
+id = "real-sum-usdc-seed"
+origin = "real"
+trace = "20261027T190010Z-ethereum-a0b86991.json"
+fault = [1]
+note = "seed-2-1-turbo: 'a well-known centralized stablecoin issued by Circle'."
