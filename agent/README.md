@@ -129,8 +129,10 @@ evidence says what the claim says. A claim can cite a real `T3` and misread it (
 It does not check the `summary` text, only the findings; the prompt asks the summary to restate
 findings, and Component 6 measures whether it does. It cannot see what a report leaves out: a model
 that omits the mint finding from an otherwise well-cited report passes (a test pins this too).
-Those are faithfulness and completeness, measured in Component 6 with an LLM judge checked against
-Aryaan's labels.
+Those are faithfulness and completeness, measured in Component 6 (`evals/judge/`): faithfulness by an
+LLM judge, checked against faults the project planted, faults found by reading reports and a second
+judge from another company, NOT yet against Aryaan's own labels (it is a model's opinion, not truth);
+completeness against the contract cards, whose labels are computed by script and unreviewed.
 
 ## Untrusted data (injection)
 
@@ -315,7 +317,8 @@ contract, GROKLET's; the three above are not.
 - Source text is never read (only the file list and hashes); a model cannot check what the code
   does, so "who may call mint" stays unknown unless an owner or admin read shows it.
 - The extra honeypot candidates have not been rerun with the new tools.
-- Faithfulness, completeness and tool-use trajectories are not measured: Component 6.
+- Faithfulness, completeness and tool-use trajectories are measured offline by Component 6
+  (`evals/`, `make eval`), on script labels that nobody has reviewed yet.
 - No API, streaming, caching of analyses, model routing or dashboard: Component 7 (the per-run
   trace is the start).
 
