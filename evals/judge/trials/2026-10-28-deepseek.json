@@ -1,0 +1,817 @@
+{
+ "what": "Third-column test of deepseek/deepseek-v4.1-flash-1017 as a faithfulness judge on the committed check set (dev traces only), beside the stage 1 pair. It is the same company, and the same model, as the agent's eval tier, so shared blind spots and a taste for its own wording are possible; it is a comparison only, and the kept pair stays Alibaba + Z.ai. The faults are ours; the judge is a model's opinion, not truth, and was not checked against Aryaan's own labels.",
+ "date": "2026-10-28",
+ "approved": "Aryaan, via the side session: test deepseek flash as a third judge on the check set with its own hard cap of $0.20 for the whole command: one pass, at most one retry round for cut-off replies, no stability pass, no other model. Stage 1 ($0.2163) is a separate record and is not overwritten.",
+ "rubric_sha256": "faa679ebcf3c892732daf6f2f3c4f8af8c65ca041d911e698ae54cb2ed4dfa7e",
+ "check_set": {
+  "claims": 90,
+  "claim_faults": 44,
+  "planted": 39,
+  "real": 5,
+  "sound_claims": 46,
+  "summaries": 15,
+  "scored_units": 142,
+  "scored_faults": 58,
+  "calls_per_pass": 102
+ },
+ "settings": {
+  "temperature": 0,
+  "max_tokens": 6000,
+  "structured": "json_schema (strict, provider.require_parameters): accepted on the first call; no fallback to json_object was needed",
+  "listing": "OpenRouter's public endpoint listing read 2026-10-28: 38 providers, 0.015 to 0.45 USD/M in and 0.15 to 1.80 out; DeepSeek's own endpoint is 0.15 / 0.60 but lists response_format only, not structured_outputs, so a strict schema request is routed to other hosts",
+  "prices_used_for_the_cap": "0.45 in / 1.80 out per million (the dearest provider that accepts a JSON-schema request), so the cap's worst case per call is about $0.012 and the full-pass worst case $1.23",
+  "providers": "15 different providers were routed (OpenRouter chooses); Wafer served 31 of 102",
+  "command": "python -m evals.judge checkset run --judge deepseek/deepseek-v4.1-flash-1017 --max-spend CAP --workers N --go"
+ },
+ "spend_usd": {
+  "probe (23 calls, cap 0.02, 1 worker)": 0.0081,
+  "rest of the pass (79 calls, cap 0.19, 4 workers)": 0.0495,
+  "retry round for cut-off replies": 0.0,
+  "total": 0.0576,
+  "sum of the 102 per-call costs in the cache": 0.057521,
+  "approved cap": 0.2,
+  "unspent": 0.1425,
+  "stage 1 total": 0.2163,
+  "judge trial total, stage 1 + this": 0.2738,
+  "note": "The runner's two tallies (printed rounded to four places) add to 0.0576; the sum of the per-call costs OpenRouter reported is 0.057521, the same figure after rounding. Both are the cost OpenRouter reported on each reply; the balance of the OpenRouter account was not read, so the bill itself is not checked."
+ },
+ "report": {
+  "rubric_sha256": "faa679ebcf3c892732daf6f2f3c4f8af8c65ca041d911e698ae54cb2ed4dfa7e",
+  "judges": [
+   "deepseek/deepseek-v4.1-flash-1017"
+  ],
+  "per_judge": {
+   "deepseek/deepseek-v4.1-flash-1017": {
+    "claims": {
+     "faults": 44,
+     "faults_unlabelled": 0,
+     "catch": {
+      "k": 42,
+      "n": 44,
+      "rate": 0.9545,
+      "low": 0.8486,
+      "high": 0.9874
+     },
+     "catch_strict": {
+      "k": 23,
+      "n": 44,
+      "rate": 0.5227,
+      "low": 0.3794,
+      "high": 0.6625
+     },
+     "catch_by_origin": {
+      "planted": {
+       "k": 37,
+       "n": 39,
+       "rate": 0.9487,
+       "low": 0.8311,
+       "high": 0.9858
+      },
+      "real": {
+       "k": 5,
+       "n": 5,
+       "rate": 1.0,
+       "low": 0.5655,
+       "high": 1.0
+      }
+     },
+     "catch_by_operator": {
+      "citation": {
+       "k": 5,
+       "n": 6,
+       "rate": 0.8333,
+       "low": 0.4365,
+       "high": 0.9699
+      },
+      "flip": {
+       "k": 6,
+       "n": 6,
+       "rate": 1.0,
+       "low": 0.6097,
+       "high": 1.0
+      },
+      "invented": {
+       "k": 6,
+       "n": 6,
+       "rate": 1.0,
+       "low": 0.6097,
+       "high": 1.0
+      },
+      "number": {
+       "k": 6,
+       "n": 7,
+       "rate": 0.8571,
+       "low": 0.4869,
+       "high": 0.9743
+      },
+      "overclaim": {
+       "k": 4,
+       "n": 4,
+       "rate": 1.0,
+       "low": 0.5101,
+       "high": 1.0
+      },
+      "real": {
+       "k": 5,
+       "n": 5,
+       "rate": 1.0,
+       "low": 0.5655,
+       "high": 1.0
+      },
+      "strengthen": {
+       "k": 7,
+       "n": 7,
+       "rate": 1.0,
+       "low": 0.6457,
+       "high": 1.0
+      },
+      "swap": {
+       "k": 3,
+       "n": 3,
+       "rate": 1.0,
+       "low": 0.4385,
+       "high": 1.0
+      }
+     },
+     "sound": 46,
+     "sound_unlabelled": 0,
+     "false_alarm": {
+      "k": 0,
+      "n": 46,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0771
+     },
+     "downgraded": {
+      "k": 8,
+      "n": 46,
+      "rate": 0.1739,
+      "low": 0.0909,
+      "high": 0.3072
+     },
+     "missed": [
+      "cite-pair-identical",
+      "num-milka-block"
+     ],
+     "false_alarms": [],
+     "labels_on_faults": {
+      "contradicted": 15,
+      "partly": 21,
+      "not_supported": 8
+     },
+     "labels_on_sound": {
+      "supported": 38,
+      "partly": 8
+     }
+    },
+    "summary_sentences": {
+     "faults": 14,
+     "faults_unlabelled": 0,
+     "catch": {
+      "k": 14,
+      "n": 14,
+      "rate": 1.0,
+      "low": 0.7847,
+      "high": 1.0
+     },
+     "catch_strict": {
+      "k": 12,
+      "n": 14,
+      "rate": 0.8571,
+      "low": 0.6006,
+      "high": 0.9599
+     },
+     "catch_by_origin": {
+      "planted": {
+       "k": 9,
+       "n": 9,
+       "rate": 1.0,
+       "low": 0.7008,
+       "high": 1.0
+      },
+      "real": {
+       "k": 5,
+       "n": 5,
+       "rate": 1.0,
+       "low": 0.5655,
+       "high": 1.0
+      }
+     },
+     "catch_by_operator": {
+      "summary-insert": {
+       "k": 7,
+       "n": 7,
+       "rate": 1.0,
+       "low": 0.6457,
+       "high": 1.0
+      },
+      "summary-real": {
+       "k": 5,
+       "n": 5,
+       "rate": 1.0,
+       "low": 0.5655,
+       "high": 1.0
+      },
+      "summary-replace": {
+       "k": 2,
+       "n": 2,
+       "rate": 1.0,
+       "low": 0.3424,
+       "high": 1.0
+      }
+     },
+     "sound": 38,
+     "sound_unlabelled": 0,
+     "false_alarm": {
+      "k": 0,
+      "n": 38,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0918
+     },
+     "downgraded": {
+      "k": 3,
+      "n": 38,
+      "rate": 0.0789,
+      "low": 0.0272,
+      "high": 0.208
+     },
+     "missed": [],
+     "false_alarms": [],
+     "labels_on_faults": {
+      "not_supported": 10,
+      "contradicted": 2,
+      "partly": 2
+     },
+     "labels_on_sound": {
+      "supported": 35,
+      "partly": 3
+     }
+    },
+    "unlabelled": 0,
+    "cost": {
+     "calls": 102,
+     "usd": 0.057521,
+     "refused_replies": 0,
+     "quotes_not_found": 17
+    }
+   }
+  },
+  "agreement_with_qwen": {
+   "items": 142,
+   "left_out": 0,
+   "exact": {
+    "k": 115,
+    "n": 142,
+    "rate": 0.8099,
+    "low": 0.7375,
+    "high": 0.8659
+   },
+   "supported_or_not": {
+    "k": 126,
+    "n": 142,
+    "rate": 0.8873,
+    "low": 0.8248,
+    "high": 0.9294
+   },
+   "kappa_supported_or_not": 0.7745,
+   "disagreements": [
+    {
+     "id": "abs-seaport-scan",
+     "first": "contradicted",
+     "second": "partly"
+    },
+    {
+     "id": "inv-groklet-deployer",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "inv-pair-volume",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "num-groklet-extras",
+     "first": "partly",
+     "second": "contradicted"
+    },
+    {
+     "id": "num-milka-decimals",
+     "first": "partly",
+     "second": "contradicted"
+    },
+    {
+     "id": "num-milka-extras",
+     "first": "partly",
+     "second": "contradicted"
+    },
+    {
+     "id": "real-seaport-fallback-pro",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "real-seaport-fallback-qwen",
+     "first": "not_supported",
+     "second": "partly"
+    },
+    {
+     "id": "real-sum-milka-pro#1",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "real-sum-usdc-pro#2",
+     "first": "not_supported",
+     "second": "partly"
+    },
+    {
+     "id": "real-sum-usdc-pro#4",
+     "first": "supported",
+     "second": "not_supported"
+    },
+    {
+     "id": "real-sum-usdc-seed#1",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "sound-groklet-owner",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "sound-groklet-sell",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "sum-groklet2-orig#1",
+     "first": "not_supported",
+     "second": "supported"
+    },
+    {
+     "id": "sum-groklet2-orig#2",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "sum-meowe-audit#1",
+     "first": "not_supported",
+     "second": "supported"
+    },
+    {
+     "id": "sum-meowe-audit#2",
+     "first": "contradicted",
+     "second": "not_supported"
+    },
+    {
+     "id": "sum-milka2-mint-used#3",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "sum-milka2-mint-used#4",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "sum-usdc2-circulation#4",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "swap-pair-tokens",
+     "first": "supported",
+     "second": "contradicted"
+    },
+    {
+     "id": "twin:flip-milka-owner",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "twin:inv-usdc-circle",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:num-groklet-extras",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:num-meowe-solc",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "twin:str-milka2-powers",
+     "first": "partly",
+     "second": "supported"
+    }
+   ],
+   "by_pair": {
+    "partly / partly": 25,
+    "contradicted / partly": 1,
+    "not_supported / not_supported": 12,
+    "contradicted / contradicted": 13,
+    "partly / not_supported": 4,
+    "partly / contradicted": 3,
+    "supported / partly": 6,
+    "not_supported / partly": 2,
+    "supported / not_supported": 1,
+    "supported / supported": 65,
+    "partly / supported": 6,
+    "not_supported / supported": 2,
+    "contradicted / not_supported": 1,
+    "supported / contradicted": 1
+   }
+  },
+  "agreement_with_glm": {
+   "items": 139,
+   "left_out": 3,
+   "exact": {
+    "k": 121,
+    "n": 139,
+    "rate": 0.8705,
+    "low": 0.8046,
+    "high": 0.9165
+   },
+   "supported_or_not": {
+    "k": 133,
+    "n": 139,
+    "rate": 0.9568,
+    "low": 0.909,
+    "high": 0.9801
+   },
+   "kappa_supported_or_not": 0.9136,
+   "disagreements": [
+    {
+     "id": "cite-pair-identical",
+     "first": "not_supported",
+     "second": "partly"
+    },
+    {
+     "id": "flip-milka-owner",
+     "first": "partly",
+     "second": "contradicted"
+    },
+    {
+     "id": "flip-pair-proxy",
+     "first": "not_supported",
+     "second": "contradicted"
+    },
+    {
+     "id": "gen-milka-sell",
+     "first": "contradicted",
+     "second": "partly"
+    },
+    {
+     "id": "inv-groklet-deployer",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "inv-pair-audit",
+     "first": "not_supported",
+     "second": "partly"
+    },
+    {
+     "id": "inv-usdc-circle",
+     "first": "not_supported",
+     "second": "partly"
+    },
+    {
+     "id": "real-seaport-fallback-qwen",
+     "first": "not_supported",
+     "second": "partly"
+    },
+    {
+     "id": "real-sum-usdc-pro#1",
+     "first": "not_supported",
+     "second": "partly"
+    },
+    {
+     "id": "real-sum-usdc-pro#2",
+     "first": "not_supported",
+     "second": "partly"
+    },
+    {
+     "id": "real-sum-usdc-seed#1",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "sound-groklet-owner",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "sum-milka2-mint-used#4",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:cite-brick-tax",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "twin:cite-groklet-pool",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "twin:flip-usdc-paused",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "twin:num-groklet-extras",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:str-milka-blacklist",
+     "first": "not_supported",
+     "second": "partly"
+    }
+   ],
+   "by_pair": {
+    "partly / partly": 24,
+    "not_supported / not_supported": 16,
+    "not_supported / partly": 7,
+    "contradicted / contradicted": 12,
+    "partly / contradicted": 1,
+    "not_supported / contradicted": 1,
+    "contradicted / partly": 1,
+    "partly / not_supported": 2,
+    "supported / supported": 69,
+    "partly / supported": 4,
+    "supported / partly": 2
+   }
+  },
+  "agreement_qwen_glm_from_stage_1": {
+   "items": 139,
+   "left_out": 3,
+   "exact": {
+    "k": 110,
+    "n": 139,
+    "rate": 0.7914,
+    "low": 0.7164,
+    "high": 0.8506
+   },
+   "supported_or_not": {
+    "k": 124,
+    "n": 139,
+    "rate": 0.8921,
+    "low": 0.8296,
+    "high": 0.9335
+   },
+   "kappa_supported_or_not": 0.784
+  },
+  "agreement_with_qwen_on_the_139_items_glm_labelled": {
+   "items": 139,
+   "left_out": 0,
+   "exact": {
+    "k": 114,
+    "n": 139,
+    "rate": 0.8201,
+    "low": 0.748,
+    "high": 0.8751
+   },
+   "supported_or_not": {
+    "k": 124,
+    "n": 139,
+    "rate": 0.8921,
+    "low": 0.8296,
+    "high": 0.9335
+   },
+   "kappa_supported_or_not": 0.7838
+  },
+  "three_way": {
+   "items_all_three_labelled": 139,
+   "all_three_same_label": 103,
+   "all_three_same_supported_or_not": 121,
+   "deepseek_odd_one_out_exact": [
+    "twin:num-groklet-extras",
+    "inv-groklet-deployer",
+    "sound-groklet-owner",
+    "real-seaport-fallback-qwen",
+    "sum-milka2-mint-used#4",
+    "real-sum-usdc-pro#2",
+    "real-sum-usdc-seed#1"
+   ],
+   "deepseek_odd_one_out_supported_or_not": [
+    "twin:num-groklet-extras",
+    "sound-groklet-owner",
+    "sum-milka2-mint-used#4"
+   ],
+   "missed_by_all_three": [
+    "num-milka-block"
+   ]
+  }
+ },
+ "compared_with": {
+  "qwen/qwen3.7-flash": {
+   "claim_catch": {
+    "k": 37,
+    "n": 44,
+    "rate": 0.8409,
+    "low": 0.7063,
+    "high": 0.9207
+   },
+   "claim_catch_strict": {
+    "k": 19,
+    "n": 44,
+    "rate": 0.4318,
+    "low": 0.2968,
+    "high": 0.5778
+   },
+   "false_alarm": {
+    "k": 0,
+    "n": 46,
+    "rate": 0.0,
+    "low": 0.0,
+    "high": 0.0771
+   },
+   "downgraded": {
+    "k": 11,
+    "n": 46,
+    "rate": 0.2391,
+    "low": 0.1391,
+    "high": 0.3794
+   },
+   "summary_catch": {
+    "k": 13,
+    "n": 14,
+    "rate": 0.9286,
+    "low": 0.6853,
+    "high": 0.9873
+   },
+   "summary_false_alarm": {
+    "k": 2,
+    "n": 38,
+    "rate": 0.0526,
+    "low": 0.0146,
+    "high": 0.1729
+   },
+   "claims_missed": [
+    "cite-pair-identical",
+    "num-groklet-extras",
+    "num-milka-block",
+    "num-milka-decimals",
+    "num-milka-extras",
+    "real-seaport-fallback-pro",
+    "swap-pair-tokens"
+   ],
+   "unlabelled": 0
+  },
+  "z-ai/glm-5.3-flash": {
+   "claim_catch": {
+    "k": 39,
+    "n": 41,
+    "rate": 0.9512,
+    "low": 0.8386,
+    "high": 0.9865
+   },
+   "claim_catch_strict": {
+    "k": 23,
+    "n": 41,
+    "rate": 0.561,
+    "low": 0.4104,
+    "high": 0.7011
+   },
+   "false_alarm": {
+    "k": 1,
+    "n": 46,
+    "rate": 0.0217,
+    "low": 0.0038,
+    "high": 0.1134
+   },
+   "downgraded": {
+    "k": 10,
+    "n": 46,
+    "rate": 0.2174,
+    "low": 0.1226,
+    "high": 0.3557
+   },
+   "summary_catch": {
+    "k": 14,
+    "n": 14,
+    "rate": 1.0,
+    "low": 0.7847,
+    "high": 1.0
+   },
+   "summary_false_alarm": {
+    "k": 0,
+    "n": 38,
+    "rate": 0.0,
+    "low": 0.0,
+    "high": 0.0918
+   },
+   "claims_missed": [
+    "flip-milka-owner",
+    "num-milka-block"
+   ],
+   "unlabelled": 3
+  }
+ },
+ "note_on_compared_with": "Re-read from the cached labels of the stage 1 run (copied from the evals-harness worktree, not re-run); they match the numbers in 2026-10-28-stage1.json.",
+ "deepseek_written_items": {
+  "items": "3 claims (real-seaport-opensea-pro, real-seaport-fallback-pro, real-usdc-circle-context-pro) and 2 summaries (real-sum-usdc-pro, real-sum-milka-pro) = 4 scored sentences; all faults, none sound",
+  "scored_units": 7,
+  "labels": {
+   "real-seaport-opensea-pro": {
+    "qwen": "partly",
+    "glm": "partly",
+    "deepseek-flash": "partly"
+   },
+   "real-seaport-fallback-pro": {
+    "qwen": "supported",
+    "glm": "partly",
+    "deepseek-flash": "partly"
+   },
+   "real-usdc-circle-context-pro": {
+    "qwen": "not_supported",
+    "glm": "not_supported",
+    "deepseek-flash": "not_supported"
+   },
+   "real-sum-usdc-pro#1": {
+    "qwen": "partly",
+    "glm": "not_supported",
+    "deepseek-flash": "partly"
+   },
+   "real-sum-usdc-pro#2": {
+    "qwen": "not_supported",
+    "glm": "not_supported",
+    "deepseek-flash": "partly"
+   },
+   "real-sum-usdc-pro#4": {
+    "qwen": "supported",
+    "glm": "not_supported",
+    "deepseek-flash": "not_supported"
+   },
+   "real-sum-milka-pro#1": {
+    "qwen": "partly",
+    "glm": "not_supported",
+    "deepseek-flash": "not_supported"
+   }
+  },
+  "caught": {
+   "qwen": "5/7",
+   "glm": "7/7",
+   "deepseek-flash": "7/7"
+  },
+  "strict": {
+   "qwen": "2/7",
+   "glm": "5/7",
+   "deepseek-flash": "3/7"
+  },
+  "deepseek_flash_strict_on_the_other_summary_faults": "10/10"
+ },
+ "reply_stats": {
+  "calls": 102,
+  "claim_calls": 87,
+  "summary_calls": 15,
+  "finish_reasons": {
+   "stop": 102
+  },
+  "refused": 0,
+  "prompt_tokens": 245083,
+  "completion_tokens": 55470,
+  "reasoning_tokens": 43765,
+  "completion_tokens_median": [
+   233,
+   237
+  ],
+  "completion_tokens_max": 5189,
+  "calls_over_2500_completion_tokens": 3,
+  "providers_routed": {
+   "Wafer": 31,
+   "InferenceNet": 17,
+   "Ionstream": 10,
+   "DigitalOcean": 9,
+   "Morph": 7,
+   "Fireworks": 7,
+   "Relace": 7,
+   "Decart": 4,
+   "Crusoe": 2,
+   "Modal": 2,
+   "AtlasCloud": 2,
+   "SiliconFlow": 1,
+   "Makora": 1,
+   "Sail Research": 1,
+   "Parasail": 1
+  }
+ },
+ "reasons_quoting_evidence": {
+  "deepseek/deepseek-v4.1-flash-1017": {
+   "reasons": 202,
+   "with_a_quote": 170,
+   "quote_not_in_prompt": 17
+  }
+ }
+}

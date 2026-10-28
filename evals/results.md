@@ -81,7 +81,8 @@ spec asks for that) and it is not truth. Rubric draft `faa679eb…` (unapproved)
 Wilson 95% interval; "caught" means the label is one the fault should get (`partly` counts for a stretched
 claim, not for a flipped fact); "false alarm" is a sound item labelled `not_supported` or `contradicted`;
 "downgraded" is a sound item labelled `partly`. Items a judge did not label are in no denominator.
-The full record is `evals/judge/trials/2026-10-28-stage1.json`.
+The full records are `evals/judge/trials/2026-10-28-stage1.json` and, for the third column below,
+`evals/judge/trials/2026-10-28-deepseek.json`.
 
 | date | change | judge | what | n | caught | false alarm | notes |
 |---|---|---|---|---|---|---|---|
@@ -91,14 +92,37 @@ The full record is `evals/judge/trials/2026-10-28-stage1.json`.
 | 2026-10-28 | stage 1 | z-ai/glm-5.3-flash | summary sentences | 14 faults, 38 sound | 14/14 = 1.00 [0.78–1.00] | 0/38 = 0.00 [0.00–0.09] | strict 13/14 |
 | 2026-10-28 | two judges together (Alibaba, Z.ai) | both | all scored units | 139 both labelled | exact label 110/139 = 0.79 [0.72–0.85] | | supported-or-not 124/139 = 0.89 [0.83–0.93], kappa 0.78; 29 disagreements listed in the record. Agreement is consistency, not correctness |
 | 2026-10-28 | stability: the same inputs asked again | z-ai/glm-5.3-flash | all scored units | 133 both labelled | | | 7 labels changed (5%), 4 of them between supported and not (3%); 9 items unlabelled in one pass or the other. $0.072 |
+| 2026-10-28 | third column, own $0.20 cap (same company as the agent: not for the kept pair) | deepseek/deepseek-v4.1-flash-1017 | claims | 44 faults, 46 sound | 42/44 = 0.95 [0.85–0.99] | 0/46 = 0.00 [0.00–0.08] | strict 23/44. downgraded 8/46 (0.17). Missed: `cite-pair-identical`, `num-milka-block`. Changed numbers caught 6/7. 0 unlabelled, none cut off. $0.058 for the pass |
+| 2026-10-28 | third column | deepseek/deepseek-v4.1-flash-1017 | summary sentences | 14 faults, 38 sound | 14/14 = 1.00 [0.78–1.00] | 0/38 = 0.00 [0.00–0.09] | strict 12/14 |
+| 2026-10-28 | third column: agreement with Alibaba | deepseek flash, qwen | all scored units | 142 both labelled | exact label 115/142 = 0.81 [0.74–0.87] | | supported-or-not 126/142 = 0.89 [0.82–0.93], kappa 0.77; 27 disagreements listed in the record. On the 139 items glm also labelled: 114/139 and 124/139 |
+| 2026-10-28 | third column: agreement with Z.ai | deepseek flash, glm | all scored units | 139 both labelled | exact label 121/139 = 0.87 [0.80–0.92] | | supported-or-not 133/139 = 0.96 [0.91–0.98], kappa 0.91; 18 disagreements. Agreement is consistency, not correctness |
+| 2026-10-28 | third column: items from deepseek-v4-pro reports | deepseek flash (qwen, glm) | 3 claims + 4 summary sentences, all faults | 7 units from 5 items | 7/7 (qwen 5/7, glm 7/7) | | strict 3/7 (qwen 2/7, glm 5/7). n is tiny and none of the 7 is a sound item: see the paragraph below |
 
-Spend: $0.2163 of the approved $0.33. Two things found by the trial, both fixed in the open: a strict
+Spend: $0.2163 of the approved $0.33 for stage 1. Two things found by the trial, both fixed in the open: a strict
 JSON-schema request found no provider for qwen3.7-flash (HTTP 404, nothing charged), so it is asked
 for plain JSON and read strictly; and the answer key for one real summary (deepseek-v4-pro on Seaport)
 was wrong, because its unsupported phrases are repeated in the report's own findings, so the summary
 rule correctly calls it supported; it was removed after the first look (summary catch before the
 correction: qwen 13/17, glm 14/17). With 44 faults per judge, differences under about 10 points are
 not shown, so "glm catches more" is a lean, not a result.
+
+Third column, `deepseek-v4.1-flash` as a judge, at Aryaan's request and with its own hard cap of $0.20.
+It is the same company, and the same model, as the agent's eval tier, so shared blind spots and a taste
+for its own wording are possible; the kept pair stays Alibaba + Z.ai. Spend $0.0575 (a 23-call probe
+$0.0081, then the other 79 calls $0.0495; no cut-off replies, so no retry round); it equals the sum of the
+102 per-call costs OpenRouter reported, $0.057521. With stage 1 the judge trial has cost $0.274 of the
+$0.50 ceiling. A strict JSON-schema request was accepted on the first call. On this check set it does
+as well as or better than the other two on the headline counts (claim catch 0.95 against glm 0.95 and
+qwen 0.84, no false alarm, nothing unlabelled, fewer `partly` on sound claims, 0.17 against 0.22 and
+0.24; strict-label catch is level with glm, 23 of 44 against 23 of 41) and costs $0.00056 a call,
+between qwen and glm; the intervals overlap, so it is not shown to differ from glm. It agrees with glm
+more (supported-or-not 0.96, kappa 0.91) than qwen does (0.89, 0.78); all three missed
+`num-milka-block`. Self-preference cannot be tested here: the check set is mostly Sonnet-written,
+and the only DeepSeek-written items are 3 claims and 4 summary sentences from 2 `deepseek-v4-pro`
+reports, all faults. It flagged all 7 but gave a strict label to 3, glm to 5; elsewhere in the summaries
+it gave a strict label to 10 of 10 faults. That is a hint of leniency on its sibling's wording at n = 7
+from two reports; it is equally what two borderline sentences would give (two of the gaps with glm are
+sentences #1 and #2 of one USDC summary, true of the real USDC but not stated in the evidence).
 
 ## Retrieval rows
 

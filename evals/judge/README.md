@@ -4,7 +4,8 @@ The citation validator proves that every cited id exists and is of the right kin
 the evidence says what the claim says. This folder is the second check: a judge model reads each claim
 with the evidence it cites and gives one label. The code and the check set are built and tested
 offline; the only paid calls so far are the stage-1 trial on the check set (2026-10-28, $0.22 of an
-approved $0.33), below. Paid calls need `--go` and a `--max-spend` cap.
+approved $0.33) and the DeepSeek third-column test (the same day, $0.06 of its own $0.20), both below.
+Paid calls need `--go` and a `--max-spend` cap.
 
 ## What the judge is, and is not
 
@@ -104,7 +105,8 @@ denominator and are listed apart. Intervals are Wilson 95%; with about 45 items 
 
 **Choosing judges.** Run each candidate once on the check set (about $0.1 or less each, see
 `estimate`), keep the two with the highest catch rate and a low false-alarm rate from two different
-companies, neither the agent's vendor. Then run the winner a second time with `--repeat 1` to see how many
+companies, neither the agent's vendor (the one exception is the third-column test below, which does not
+change the kept pair). Then run the winner a second time with `--repeat 1` to see how many
 labels change. Changing the judge or the rubric restarts these checks.
 
 ## Commands
@@ -173,6 +175,72 @@ Full numbers and the list of disagreements are in `trials/2026-10-28-stage1.json
   is a lean. Next, if wanted: a stage 2 with `xiaomi/mimo-v2.6-pro` ($0.12–0.33 a pass), the rubric
   tweak below, and a re-run on a larger fault set.
 
+## Third column: `deepseek/deepseek-v4.1-flash-1017` (2026-10-28)
+
+Aryaan asked for DeepSeek to be tried as a judge anyway, with its own hard cap of $0.20, one pass over
+the check set and no stability pass. **It is the same company, and the same model, as the agent's eval
+tier** (`agent/models.toml`), so it can share the agent's blind spots and favour its own wording. It is
+therefore a comparison only: the kept pair stays Alibaba + Z.ai, and `judges.toml` marks the entry as an
+exception to the "not DeepSeek" rule (the judge-list test names that one slug). Same rubric (`faa679eb…`,
+untouched), same check set, temperature 0, `max_tokens` 6000. The record is
+`trials/2026-10-28-deepseek.json`; qwen's and glm's labels were read from the stage 1 cache (copied, not
+re-run) and match the stage 1 record.
+
+| | `qwen/qwen3.7-flash` | `z-ai/glm-5.3-flash` | `deepseek/deepseek-v4.1-flash-1017` |
+|---|---|---|---|
+| Claim faults caught | 37/44 = 0.84 [0.71–0.92] | 39/41 = 0.95 [0.84–0.99] | 42/44 = 0.95 [0.85–0.99] |
+| of those that must get a strict label (flip, number, citation, swap) | 16/22 | 17/19 | 20/22 |
+| Sound claims called `not_supported` or `contradicted` | 0/46 | 1/46 | 0/46 [0.00–0.08] |
+| Sound claims called `partly` ("downgraded") | 11/46 = 0.24 | 10/46 = 0.22 | 8/46 = 0.17 |
+| Summary-sentence faults caught / false alarms | 13/14 and 2/38 | 14/14 and 0/38 | 14/14 and 0/38 |
+| Replies left unlabelled | 0 | 3 of 103 (cut off) | 0 of 102 |
+| Cost of the check set | $0.046 | $0.098 | $0.058 |
+
+- **Spend and cap.** $0.0575 of the $0.20: a 23-call probe under a $0.02 cap ($0.0081), then the other
+  79 calls ($0.0495). No reply was cut off, so there was no retry round. The caps were set so that the
+  money already spent plus the next command's cap never passed $0.20. The runner's tally equals the sum of
+  the 102 per-call costs in the cache ($0.057521); both are the cost OpenRouter reported per reply. The
+  account balance was not read, so the bill itself is not checked. With stage 1 ($0.2163) the judge trial
+  has cost $0.274, under the $0.50 ceiling.
+- **Request and providers.** A strict JSON-schema request with `provider.require_parameters` was accepted
+  on the first call (no fallback to `json_object`). DeepSeek's own endpoint lists `response_format` only,
+  so OpenRouter routed to 15 other hosts (31 of 102 calls to Wafer), at fp4, fp8 and unstated precision.
+  The entry in `judges.toml` is priced at the dearest host that takes a schema request (0.45 in, 1.80 out
+  per million), which puts the worst case of the full pass at $1.23; that bound is why the cap, not the
+  price, stops a run early. At the prices actually charged a call cost $0.00056 on average (median
+  $0.00035, from $0.00009 to $0.0055).
+- **Hidden thinking is light.** Median 235 completion tokens, of which the median is 155 thinking
+  tokens; the longest reply used 5,189 of the 6,000, so 6,000 only just clears it (3 replies passed
+  2,500).
+- **Agreement.** With glm: the same label on 121 of 139 items (0.87 [0.80–0.92]), the same on "supported
+  or not" on 133 (0.96 [0.91–0.98]), kappa 0.91. With qwen: 115 of 142 (0.81 [0.74–0.87]), 126 (0.89),
+  kappa 0.77 (on the 139 items glm also labelled: 114 and 124, against 110 and 124 for qwen and glm).
+  All three give the same label on 103 of 139 items and the same supported-or-not on 121; DeepSeek is the
+  odd one out on 7 and 3. Agreement is consistency, not correctness. All three missed `num-milka-block`
+  (a changed block distance); DeepSeek's other miss was `cite-pair-identical`, which qwen missed too.
+- **Quotes.** 170 of its 202 reasons quote the evidence in backticks (glm 118, qwen 19), and 17 of those
+  are not found in what it was given (glm 15 of 118): a hint of paraphrase, not a finding.
+- **Self-preference cannot be tested here.** The check set is mostly Sonnet-written. Its only
+  DeepSeek-written items are 3 claims and 2 summaries (4 scored sentences) from `deepseek-v4-pro` reports
+  (the Pro model of the same company), all faults found by an earlier reader; there is no sound
+  DeepSeek-written item and no way to compare like faults in Sonnet and DeepSeek wording. What the 7 units
+  show: flash flagged all 7 (`partly` or worse; glm 7, qwen 5), so it did not wave its sibling's mistakes
+  through; a 7-of-7 result has a 95% interval of about 0.65 to 1.0, so a moderate blind spot is not
+  excluded. It gave a strict label (`not_supported` or `contradicted`) to 3 of 7 (glm 5, qwen 2), against
+  10 of 10 on the other summary faults. Two of the gaps with glm are sentences #1 ("Circle's regulated
+  fiat-backed stablecoin") and #2 ("a legitimate, widely-used token") of the same USDC summary, which flash
+  called `partly` and glm `not_supported`; both are true of the real USDC but not stated in the evidence,
+  so they are arguable. That could be a taste for DeepSeek's wording or two borderline sentences; at n = 7
+  from two reports it cannot be told apart. A real test needs sound and faulty claims written by DeepSeek
+  and by another model, judged by a judge from neither.
+- **What it changes.** Nothing in the kept pair. On this set DeepSeek flash does as well as glm (not shown
+  to differ: the intervals overlap), loses no replies and is a little cheaper, but a judge that shares
+  the agent's family is the case the pair rule was written to avoid. A full dev run of 120 reports would
+  cost about $0.48 (Sonnet reports, 7.1 calls) or $0.89 (flash reports, 13.1 calls) at $0.00056 a call:
+  a projection from 102 calls, not a measured run, and the host that serves a call moves it.
+- **Not checked.** A second pass (stability) was not run, as agreed. Whether the label depends on the
+  host (fp4 against fp8) was not tried. The sound claims are still read by one person.
+
 ## What judging a run set would cost (projected from the trial)
 
 Measured on 2026-10-28: `qwen3.7-flash` $0.00045 a call, `glm-5.3-flash` $0.00095 a call (money spent,
@@ -197,8 +265,8 @@ words without quote marks would remove that.
 
 ## Verified and not verified
 
-- **Verified by the trial:** `glm-5.3-flash` accepts a strict JSON-schema request with
-  `provider.require_parameters`; `qwen3.7-flash` is refused it (HTTP 404, no provider, nothing charged)
+- **Verified by the trial:** `glm-5.3-flash` and `deepseek-v4.1-flash-1017` accept a strict JSON-schema
+  request with `provider.require_parameters`; `qwen3.7-flash` is refused it (HTTP 404, no provider, nothing charged)
   and answers plain JSON (`structured = "json_object"`); the strict parser read every reply that was not
   cut off except one (not JSON, in the stability pass); the spend cap and the cost accounting work against the real API.
 - **Not verified:** that `reasoning = "off"` works (never sent); whether the other two candidates in
