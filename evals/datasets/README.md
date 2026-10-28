@@ -120,6 +120,14 @@ drained by its first liquidity provider is neither flagged nor benign, and a tra
 the early trading cannot be seen in Transfer events (groklet and meowe traded normally for about 36
 hours first): such a token is left out, not flagged.
 
+## Flagged is five contracts
+
+The outcome rules found no new flagged token in 555 measured, so `flagged` is the five existing
+cards, all dev only (decision 2026-10-28: keep them for now). Flagged recall is therefore a dev-only
+figure on five contracts, and for the four honeypots the verdict is forced to `high_risk` by the
+validator, so that part measures the tool and the rule, not the model. Every scoring result carries
+a note saying this while a split has fewer than ten flagged contracts.
+
 ## The split and the tool-use set
 
 Fixed by rule, reproduced by a test from the cards alone: within each class, units (a code family,

@@ -129,6 +129,10 @@ def _detection(pairs: list[Pair], resamples: int) -> dict[str, Any]:
     return out
 
 
+# Below this many flagged contracts a recall figure is a count, and the report says so.
+FEW_FLAGGED = 10
+
+
 def score(
     runs: Sequence[RunRecord],
     cards: CardSet | None = None,
@@ -160,6 +164,19 @@ def score(
             "Several models are pooled in these numbers, which is only a survey: score one model "
             "at a time (--model) for a result that can be quoted."
         )
+    if cards is not None:
+        flagged = sum(c.klass == "flagged" for c in (cards.in_split(split) if split else cards))
+        if flagged < FEW_FLAGGED:
+            notes.append(
+                "Recall rests on "
+                + (
+                    f"{flagged} flagged contract{'s' * (flagged != 1)}"
+                    if flagged
+                    else "no flagged contract"
+                )
+                + f" in this split (fewer than {FEW_FLAGGED}): read it as a count of contracts, "
+                "not a rate, and expect a very wide interval."
+            )
     manifest = {
         "label": label,
         "split": split or "all",

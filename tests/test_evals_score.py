@@ -565,6 +565,19 @@ def test_scoring_a_set_with_cards_gives_every_layer_and_says_the_labels_are_unre
     assert {c["id"] for c in results["per_contract"]} == {"honey", "plain", "usdc"}
 
 
+def test_few_flagged_contracts_are_called_out_in_the_notes_of_every_result(tmp_path):
+    cards_path, folder = write_set(tmp_path)
+    runs, _ = load_runs([folder])
+    cards = load_cards(cards_path)
+    notes = score_module.score(runs, cards, resamples=50)["manifest"]["notes"]
+    assert any("rests on 1 flagged contract " in n for n in notes)
+    held = score_module.score(runs, cards, split="heldout", declared="x", resamples=50)
+    assert any("rests on no flagged contract" in n for n in held["manifest"]["notes"])
+    assert not any(
+        "flagged contract" in n for n in score_module.score(runs, None)["manifest"]["notes"]
+    )
+
+
 def test_the_held_out_split_needs_a_declared_reason_and_leaves_out_per_contract_detail(tmp_path):
     cards_path, folder = write_set(tmp_path)
     runs, _ = load_runs([folder])

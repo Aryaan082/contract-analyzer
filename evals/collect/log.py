@@ -78,6 +78,10 @@ sell leaves no log, so "holders could not get out" is mostly invisible from hist
 existing honeypots (groklet, meowe, asasar, brick) are labelled by the two sources written on their
 cards, not by this method, and are dev only.
 
+Decision (Aryaan, 2026-10-28): keep the five existing flagged cards for now. Flagged recall is a
+dev-only figure on five contracts, four of them honeypots whose verdict the validator forces to
+high_risk; every results file says so in its notes (`evals/score.py`, `FEW_FLAGGED`).
+
 ## Limits worth remembering
 
 - Counts of buyers and sellers are of different wallets in Transfer logs; a wallet using a router
