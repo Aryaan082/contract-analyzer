@@ -1,0 +1,106 @@
+# Incidents for the beyond-reach class (Component 6, part C).
+#
+# Taken from the public DeFiHackLabs repository (https://github.com/SunWeb3Sec/DeFiHackLabs),
+# Apache License 2.0, Copyright 2022-2026 DeFiHackLabs. Its LICENSE was read first (copy in
+# evals/datasets/licenses/DeFiHackLabs-LICENSE, sha256 aa728951...a102bae) and allows copying and
+# using small parts with the notice kept. What was taken: the incident list in the README (names,
+# dates), and the first 5 KB of each of the proof-of-concept files below for the vulnerable
+# contract's address and the block of the drain transaction. The `reason` texts are our own
+# one-line description of the KIND of bug; no exploit code, call sequence or amount is copied. The
+# changes (selection, our wording, a pinned block one before the attack) are ours, not theirs.
+#
+# Every contract here is a real Ethereum contract whose logic had a bug. The agent's tools never
+# read logic, so these are not scored for detection; the question is whether the report says what
+# it did not check. All 10 were chosen because the header names the vulnerable contract's address
+# and the drain transaction on Ethereum mainnet; nothing was picked or dropped by what the agent
+# said about them (no agent has been run on them).
+
+[[incident]]
+name = "BalancerV1BPool"
+date = "2026-08-31"
+address = "0x2257aaac34bcb27900291f7b84ee2565a6cbac57"
+attack_block = 25872274
+taxonomy = ["arithmetic-and-rounding"]
+poc = "src/test/2026-08/BalancerV1BPool_exp.sol"
+reason = "A Balancer V1 pool whose pricing arithmetic rounds in the caller's favour for a low-decimal asset; a logic bug in the contract, not an admin or key problem."
+
+[[incident]]
+name = "ArrakisGUNI"
+date = "2026-08-23"
+address = "0x7c687f775a3b73bbab0e15832f24caab5d53bdde"
+attack_block = 25817966
+taxonomy = ["oracle-manipulation"]
+poc = "src/test/2026-08/ArrakisGUNI_exp.sol"
+reason = "A concentrated-liquidity vault that prices deposits and withdrawals from an instantaneous pool price with no time-weighted check; a logic bug in the contract."
+
+[[incident]]
+name = "USM"
+date = "2026-08-09"
+address = "0x2a7fff44c19f39468064ab5e5c304de01d591675"
+attack_block = 25716150
+taxonomy = ["arithmetic-and-rounding"]
+poc = "src/test/2026-08/USM_exp.sol"
+reason = "A stablecoin-minting contract with a rounding error in its pricing logic; a logic bug, not a price-feed problem."
+
+[[incident]]
+name = "AjnaFinance"
+date = "2026-08-28"
+address = "0xad24fc773e125edb223c38a39657cb64bc7c178e"
+attack_block = 25854888
+taxonomy = ["lending-liquidation-logic"]
+poc = "src/test/2026-08/AjnaFinance_exp.sol"
+reason = "A lending pool whose liquidation accounting can be used by the borrower's own accounts to take more than they should; a logic bug in the contract."
+
+[[incident]]
+name = "EtherFiAtomicQueue"
+date = "2026-09-09"
+address = "0xd45884b592e316eb816199615a95c182f75dea07"
+attack_block = 25952624
+taxonomy = ["unlimited-approval-exposure"]
+poc = "src/test/2026-09/EtherFiAtomicQueue_exp.sol"
+reason = "A queue contract that lets a caller name another address as the paying party, so standing token approvals given to the contract can be used by someone else; a logic bug in the contract."
+
+[[incident]]
+name = "ReflexerGEB"
+date = "2026-09-01"
+address = "0x84fe452d9fb495a335c74a225e6ad52c35eb8616"
+attack_block = 25883379
+taxonomy = ["missing-access-control"]
+poc = "src/test/2026-09/ReflexerGEB_exp.sol"
+reason = "A shared helper contract with an unauthenticated function that is itself the recorded owner of several positions in a protocol that is shut down; an access-control logic bug."
+
+[[incident]]
+name = "TermFinance"
+date = "2026-08-23"
+address = "0x26fcb50eec367ddab060ccf5e7394cecd95f7db2"
+attack_block = 25816049
+taxonomy = ["governance-takeover"]
+poc = "src/test/2026-08/TermFinance_exp.sol"
+reason = "A vault governed through a token-voting plugin whose voting power was cheap to acquire at the time; a governance-design bug, not code that the tools can read."
+
+[[incident]]
+name = "FloatProtocol"
+date = "2026-08-31"
+address = "0x85cbed523459b7f6f81c11e710df969703a8a70c"
+attack_block = 25874402
+taxonomy = ["oracle-manipulation"]
+poc = "src/test/2026-08/FloatProtocol_exp.sol"
+reason = "A concentrated-liquidity vault that prices its shares from an instantaneous pool price with no time-weighted check; a logic bug in the contract."
+
+[[incident]]
+name = "EnsoFinance"
+date = "2026-09-09"
+address = "0x890ed1ee6d435a35d51081ded97ff7ce53be5942"
+attack_block = 25934827
+taxonomy = ["oracle-manipulation"]
+poc = "src/test/2026-09/EnsoFinance_exp.sol"
+reason = "A strategy vault that mints deposit shares from a price source which a thin pool can skew; a logic bug in how value is estimated."
+
+[[incident]]
+name = "NotionalFinance"
+date = "2026-09-03"
+address = "0x9abd0b8868546105f6f48298eadc1d9c82f7f683"
+attack_block = 25900220
+taxonomy = ["arithmetic-and-rounding"]
+poc = "src/test/2026-09/NotionalFinance_exp.sol"
+reason = "An older lending escrow whose bookkeeping of transferred claims can overflow its own limits; a logic bug in the contract."

@@ -1,0 +1,149 @@
+# HELD-OUT cards. Dev tooling never loads this file.
+# Built 2026-10-28 by `python -m evals.collect build`. Do not edit by hand: rebuild.
+# Label rules: evals/datasets/label_rules.toml, sha256 d415c2b370e85dcfcf9658f1c11742046c7f03e19c8f486c5cd622979f96a91d
+# Cards in this file: 9 (benign 5, beyond_reach 3, grey 1).
+# Every label here is a script's reading of chain history under the written rules, or a
+# written rule applied to a named contract. Nobody has reviewed any of them
+# (`reviewed_by` is empty); "agrees" means "agrees with the script", not with a person.
+
+rules_sha256 = "d415c2b370e85dcfcf9658f1c11742046c7f03e19c8f486c5cd622979f96a91d"
+built = "2026-10-28"
+counts = { benign = 5, beyond_reach = 3, grey = 1 }
+
+[[contract]]
+id = "usdt"
+chain = "ethereum"
+address = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+block = 26280500
+class = "grey"
+split = "heldout"
+group = "grey"
+traits = ["token"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+facts = ["mint|issue", "blacklist|blocklist"]
+min_not_checked = 2
+label_source = "rule:well-known-powerful"
+reviewed_by = ""
+code_hash = "6dbf2cf4d934dcc7e5f16b7ac24c71966ede194ccd7d66c122a984ec437fbc5c"
+source = "chosen by the written class definition of grey (label_rules.toml)"
+reason = "A regulated stablecoin with issue, blacklist and fee functions held by an owner: powerful, not suspect."
+
+[[contract]]
+id = "tok-ccd8ba52"
+chain = "ethereum"
+address = "0xccd8ba52febad563b0a783923ac34df2985c961c"
+block = 25599116
+class = "benign"
+split = "heldout"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+code_hash = "2e0a1538afdb6f1d6ee06487b48dde41e62616096f68aa3249b036406c09d3a1"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25599116: 128 different wallets bought and 127 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-9b815200"
+chain = "ethereum"
+address = "0x9b81520008cdb9609fe3cc2ca3769a633402ca3e"
+block = 25462348
+class = "benign"
+split = "heldout"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+code_hash = "12f516e6a035d139e72812bcc836b6c6943880e8057c678a046201a43ed4b072"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25462348: 228 different wallets bought and 92 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-c0e9688d"
+chain = "ethereum"
+address = "0xc0e9688dc3b039269a7e440bb85bd49d926832e3"
+block = 25462921
+class = "benign"
+split = "heldout"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+code_hash = "861bf937779baf530df14d6013fd6b9fedf4f894e82ea5a94e62ce30cf5e71a5"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25462921: 463 different wallets bought and 273 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-7ad7bc2f"
+chain = "ethereum"
+address = "0x7ad7bc2f846c3af5d6f9de8fba0374b47c276c8b"
+block = 25602161
+class = "benign"
+split = "heldout"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+code_hash = "cd70de7d4dac53b8909a893d67c7acb9967414deb51394620f7ec714dc526467"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25602161: 615 different wallets bought and 460 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-2d1643a5"
+chain = "ethereum"
+address = "0x2d1643a5d14fb221521767f2405efbbe4d4603fd"
+block = 25857937
+class = "benign"
+split = "heldout"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+family_size = 2
+code_hash = "13aac0f9bb9d9e000466d263fc459792bb97abc011bf2d48fa2c13d3a44c2ce9"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25857937: 79 different wallets bought and 75 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "inc-arrakisguni"
+chain = "ethereum"
+address = "0x7c687f775a3b73bbab0e15832f24caab5d53bdde"
+block = 25817965
+class = "beyond_reach"
+split = "heldout"
+group = "incident"
+reasons = ["oracle-manipulation"]
+traits = ["proxy", "token"]
+implementation = "0xd68b055fb444d136e3ac4df023f4c42334f06395"
+min_not_checked = 2
+label_source = "incident-list"
+code_hash = "932ae41b956e91af7a2daae21304b6466e1a91e3e8be6be0c8db0eecf017fada"
+source = "DeFiHackLabs src/test/2026-08/ArrakisGUNI_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-08-23"
+reason = "A concentrated-liquidity vault that prices deposits and withdrawals from an instantaneous pool price with no time-weighted check; a logic bug in the contract."
+
+[[contract]]
+id = "inc-ajnafinance"
+chain = "ethereum"
+address = "0xad24fc773e125edb223c38a39657cb64bc7c178e"
+block = 25854887
+class = "beyond_reach"
+split = "heldout"
+group = "incident"
+reasons = ["lending-liquidation-logic"]
+traits = ["not_a_token"]
+min_not_checked = 2
+label_source = "incident-list"
+code_hash = "32bc29514207077f543c4c71dabb8149428f1d28dd494b8a8a21cdcbe2ef5f56"
+source = "DeFiHackLabs src/test/2026-08/AjnaFinance_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-08-28"
+reason = "A lending pool whose liquidation accounting can be used by the borrower's own accounts to take more than they should; a logic bug in the contract."
+
+[[contract]]
+id = "inc-floatprotocol"
+chain = "ethereum"
+address = "0x85cbed523459b7f6f81c11e710df969703a8a70c"
+block = 25874401
+class = "beyond_reach"
+split = "heldout"
+group = "incident"
+reasons = ["oracle-manipulation"]
+traits = ["token"]
+min_not_checked = 2
+label_source = "incident-list"
+code_hash = "f7d51394e3f9f988bd207a40fd5727729101f25a94fee8fce97c87560bce2420"
+source = "DeFiHackLabs src/test/2026-08/FloatProtocol_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-08-31"
+reason = "A concentrated-liquidity vault that prices its shares from an instantaneous pool price with no time-weighted check; a logic bug in the contract."

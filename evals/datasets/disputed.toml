@@ -1,0 +1,180 @@
+# Disputed tokens: honeypot.is and our rehearsal disagreed.
+# Built 2026-10-28 by `python -m evals.collect build`. Do not edit by hand: rebuild.
+# Label rules: evals/datasets/label_rules.toml, sha256 d415c2b370e85dcfcf9658f1c11742046c7f03e19c8f486c5cd622979f96a91d
+# Cards in this file: 13 (grey 13).
+# Every label here is a script's reading of chain history under the written rules, or a
+# written rule applied to a named contract. Nobody has reviewed any of them
+# (`reviewed_by` is empty); "agrees" means "agrees with the script", not with a person.
+
+rules_sha256 = "d415c2b370e85dcfcf9658f1c11742046c7f03e19c8f486c5cd622979f96a91d"
+built = "2026-10-28"
+counts = { grey = 13 }
+
+[[contract]]
+id = "disputed-aec30468"
+chain = "ethereum"
+address = "0xaec304685b81205910059b12ecba1597c47f729b"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 100%); our rehearsal said: no ERC-20 interface. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-74d5b276"
+chain = "ethereum"
+address = "0x74d5b2760277e1767683c6855f2a967f1fc8cf06"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 100%); our rehearsal said: no ERC-20 interface. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-4260fdbc"
+chain = "ethereum"
+address = "0x4260fdbc3b4e0c7dc144a7203de76aadfa7be11a"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 100%); our rehearsal said: sellable, no tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-dcd29c63"
+chain = "ethereum"
+address = "0xdcd29c63df9beef043524e05f15edc1aac6201d1"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 76.57%); our rehearsal said: sellable, 5% buy tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-aac22391"
+chain = "ethereum"
+address = "0xaac223917e50ead5d0589fd7c7a70449a14bac09"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 90.28%); our rehearsal said: sellable, 1% buy tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-d76e2942"
+chain = "ethereum"
+address = "0xd76e2942e3a71061ef010b1935eaa89e924ee807"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 99.89%); our rehearsal said: sellable, 5% buy tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-57d039e6"
+chain = "ethereum"
+address = "0x57d039e64bc40e13e14f44c69bce4310d92e28c8"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 100%); our rehearsal said: sellable, no tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-6c19714d"
+chain = "ethereum"
+address = "0x6c19714d8d1536faec2f71f8ba6d9617b0e38941"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 100%); our rehearsal said: sellable, no tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-83137aa9"
+chain = "ethereum"
+address = "0x83137aa9c4bbfaf30c8a30be90b0aba3ee110221"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 100%); our rehearsal said: sellable, no tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-aeaf4d8d"
+chain = "ethereum"
+address = "0xaeaf4d8da07986993925d229a4074a9dc1d87012"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 100%); our rehearsal said: sellable, no tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-4a4a792e"
+chain = "ethereum"
+address = "0x4a4a792eaca707308324b32f987fe1d6ad00e5b2"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 0%); our rehearsal said: sellable, no tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-1609d749"
+chain = "ethereum"
+address = "0x1609d74938f68c1227196577cc867da4018da6c9"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 0%); our rehearsal said: sellable, no tax. Neither opinion is the label; reported apart, not scored."
+
+[[contract]]
+id = "disputed-c039cbe2"
+chain = "ethereum"
+address = "0xc039cbe2018a1c39412843a43cc0ab963437419e"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "disputed"
+min_not_checked = 1
+label_source = "disagreement"
+source = "honeypot.is (queried once on 2026-10-26, not re-queried) against our own sell rehearsal at the pinned block"
+reason = "honeypot.is said honeypot (sell tax 0%); our rehearsal said: sellable, no tax. Neither opinion is the label; reported apart, not scored."

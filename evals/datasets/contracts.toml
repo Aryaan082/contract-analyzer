@@ -1,0 +1,514 @@
+# Detection and tool-use cards: the DEV split.
+# Built 2026-10-28 by `python -m evals.collect build`. Do not edit by hand: rebuild.
+# Label rules: evals/datasets/label_rules.toml, sha256 d415c2b370e85dcfcf9658f1c11742046c7f03e19c8f486c5cd622979f96a91d
+# Cards in this file: 29 (benign 12, beyond_reach 7, flagged 5, grey 5).
+# Every label here is a script's reading of chain history under the written rules, or a
+# written rule applied to a named contract. Nobody has reviewed any of them
+# (`reviewed_by` is empty); "agrees" means "agrees with the script", not with a person.
+
+rules_sha256 = "d415c2b370e85dcfcf9658f1c11742046c7f03e19c8f486c5cd622979f96a91d"
+built = "2026-10-28"
+counts = { benign = 12, beyond_reach = 7, flagged = 5, grey = 5 }
+
+[[contract]]
+id = "usdc"
+chain = "ethereum"
+address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "existing"
+reasons = ["upgradeable-implementation"]
+traits = ["proxy", "token"]
+implementation = "0x43506849d7c04f9138d1a2050bbf3a0c054402dd"
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+facts = ["proxy", "mint", "blacklist", "(?<!un)verified"]
+must_not_say = ["\\bCircle\\b"]
+min_not_checked = 2
+label_source = "smoke-test-part-1"
+reviewed_by = ""
+code_hash = "e9366aeff9df1803593d24b694ddd2f9d43c40202aafbda0382cd7958a9a5f8f"
+source = "agent/contracts.toml (usdc); smoke-test note Part 1"
+reason = "Legitimate regulated stablecoin with mint, blacklist and pause: powerful, not suspect. Scored on citations and what it must not say, not on the verdict."
+
+[[contract]]
+id = "uniswap-pair"
+chain = "ethereum"
+address = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc"
+block = 26280500
+class = "benign"
+split = "dev"
+group = "existing"
+traits = ["official"]
+acceptable_verdicts = ["no_red_flags_found"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+forbids = ["simulate_sell"]
+facts = ["official|listed by", "identical|exact (copy|match)|same code"]
+label_source = "smoke-test-part-1"
+reviewed_by = ""
+tool_use = true
+code_hash = "0b09ff20a879ebffb4348851a7a95117d3482e44a6791f8da3d72f91af3e9915"
+source = "agent/contracts.toml (uniswap-pair); smoke-test note Part 1"
+reason = "The official Uniswap V2 USDC/WETH pair: the factory lists it and its code is identical to the reference pair."
+
+[[contract]]
+id = "milka"
+chain = "ethereum"
+address = "0x84e84bf4ee5de75871b59e45369c1d1ade3cb3fb"
+block = 26280500
+class = "flagged"
+split = "dev"
+group = "existing"
+reasons = ["mutable-fees"]
+traits = ["token"]
+acceptable_verdicts = ["elevated_risk"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+facts = ["mint", "blacklist", "pause", "plain account|single (key|account|owner)|externally owned|no code|one key"]
+label_source = "smoke-test-part-1"
+reviewed_by = ""
+tool_use = true
+code_hash = "179ce3fbe9f3be24153bcecf4ac9ff49be1b8df301831852dcebde5837471d2b"
+source = "agent/contracts.toml (milka); smoke-test note Part 1"
+reason = "A template ERC-20 with about 50 extras (mint, blacklist, pause, fees, anti-whale) held by one plain account."
+
+[[contract]]
+id = "groklet"
+chain = "ethereum"
+address = "0x656bd1d70e24de09744b89ea0de468d831af5f55"
+block = 26280500
+class = "flagged"
+split = "dev"
+group = "existing"
+reasons = ["honeypot-sell-blocked"]
+traits = ["token"]
+acceptable_verdicts = ["high_risk"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+facts = ["sell_blocked|sell.{0,40}(revert|block|fail)|cannot sell|unable to sell", "(?<!un)verified"]
+label_source = "smoke-test-part-1"
+reviewed_by = ""
+tool_use = true
+code_hash = "3267faf356be932592809cd9d7bed7e6b7329a0b49f3dd5c25b491e8e758862f"
+source = "agent/contracts.toml (groklet); agent/honeypot_is_labels.json"
+reason = "Buys work and sells revert in our sell rehearsal at the pinned block; honeypot.is agreed (626 of 628 holders could not sell)."
+
+[[contract]]
+id = "meowe"
+chain = "ethereum"
+address = "0x63b218ca3f5049f670ae7a9466bd2ea8d3f9f7f5"
+block = 26280500
+class = "flagged"
+split = "dev"
+group = "existing"
+reasons = ["honeypot-sell-blocked"]
+traits = ["token"]
+acceptable_verdicts = ["high_risk"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+facts = ["sell_blocked|sell.{0,40}(revert|block|fail)|cannot sell|unable to sell", "(?<!un)verified"]
+label_source = "smoke-test-part-1"
+reviewed_by = ""
+tool_use = true
+code_hash = "92b47b2d48782289dcd1249230453c4d566a8a4ca47fc9c8110441ddd4f22a98"
+source = "agent/contracts.toml (meowe); agent/honeypot_is_labels.json"
+reason = "Sell blocked in our rehearsal; a small different contract from groklet's family."
+
+[[contract]]
+id = "asasar"
+chain = "ethereum"
+address = "0xbe2ab177599c6381c70725feee6663f9bcff2197"
+block = 26280500
+class = "flagged"
+split = "dev"
+group = "existing"
+reasons = ["honeypot-sell-blocked"]
+traits = ["token"]
+acceptable_verdicts = ["high_risk"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+facts = ["sell_blocked|sell.{0,40}(revert|block|fail)|cannot sell|unable to sell", "unverified|no verified source|not verified"]
+label_source = "smoke-test-part-1"
+reviewed_by = ""
+tool_use = true
+code_hash = "63c388cc3a353b0dd845e57b3c45bfb33bb2a79d2d9449ad50d998403a297204"
+source = "agent/contracts.toml (asasar); agent/honeypot_is_labels.json"
+reason = "Sell blocked in our rehearsal (revert inside the router); source unverified."
+
+[[contract]]
+id = "brick"
+chain = "ethereum"
+address = "0xfcb260fba59df4d1eaca89452571db17f2d3efaf"
+block = 26280500
+class = "flagged"
+split = "dev"
+group = "existing"
+reasons = ["hidden-transfer-tax"]
+traits = ["token"]
+acceptable_verdicts = ["high_risk", "elevated_risk"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+facts = ["85%|8500|85 percent"]
+label_source = "smoke-test-part-1"
+reviewed_by = ""
+tool_use = true
+code_hash = "d7d7f4187ea63130621a0663d2fe0c43ac97ac1244f1a6ebdd0162e5e6d384e6"
+source = "agent/contracts.toml (brick); agent/honeypot_is_labels.json"
+reason = "Sells work but our rehearsal measures an 85% sell tax; owner may set 99%."
+
+[[contract]]
+id = "seaport"
+chain = "ethereum"
+address = "0x0000000000000068f116a894984e2db1123eb395"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "existing"
+traits = ["not_a_token"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+forbids = ["simulate_sell"]
+facts = ["(?<!un)verified", "not listed|unrecogni[sz]ed|no registry|matches no reference|no reference"]
+must_not_say = ["\\bOpenSea\\b"]
+min_not_checked = 3
+label_source = "smoke-test-part-1"
+reviewed_by = ""
+code_hash = "1da6ac93de698a59db3b01c9fc2b78416cfa23a5d3cc8c34f4106a0dbaef4e36"
+source = "agent/contracts.toml (seaport); smoke-test note Part 1"
+reason = "A legitimate marketplace protocol the library and registry do not recognise: the right report says what it could not establish and does not name the protocol itself."
+
+[[contract]]
+id = "steth"
+chain = "ethereum"
+address = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "grey"
+traits = ["not_a_token"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+must_not_say = ["\\bLido\\b"]
+min_not_checked = 2
+label_source = "rule:well-known-powerful"
+reviewed_by = ""
+tool_use = true
+code_hash = "a64a321f586dfb53825d62159b6e7465393338042325b9c7fd334e31da2a2ec0"
+source = "chosen by the written class definition of grey (label_rules.toml)"
+reason = "A proxy token of a kind the tools do not resolve (identify_contract does not recognise it): a good report says where its code lives was not established. The name of the operator comes from outside the evidence."
+
+[[contract]]
+id = "dai"
+chain = "ethereum"
+address = "0x6b175474e89094c44da98b954eedeac495271d0f"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "grey"
+traits = ["token"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+must_not_say = ["\\bMakerDAO\\b"]
+min_not_checked = 2
+label_source = "rule:well-known-powerful"
+reviewed_by = ""
+code_hash = "464f392abbe23a93481b2e78b110470ca507bdc177b63f64a4402f6bba113d7c"
+source = "chosen by the written class definition of grey (label_rules.toml)"
+reason = "A stablecoin minted and burned by authorised modules: powerful, not suspect."
+
+[[contract]]
+id = "permit2"
+chain = "ethereum"
+address = "0x000000000022d473030f116ddee9f6b43ac78ba3"
+block = 26280500
+class = "grey"
+split = "dev"
+group = "grey"
+traits = ["not_a_token"]
+requires = ["identify_contract", "risk_scan", "get_verified_source"]
+forbids = ["simulate_sell"]
+must_not_say = ["\\bUniswap\\b"]
+min_not_checked = 3
+label_source = "rule:well-known-powerful"
+reviewed_by = ""
+tool_use = true
+code_hash = "0b434aa1947142b44d7be8ce4f5666791e2e5ac245ececaee398bd7bcc484c50"
+source = "chosen by the written class definition of grey (label_rules.toml)"
+reason = "A widely used approval-management contract that holds standing allowances: not an ERC-20, unfamiliar to the library, and its author is not shown by any tool."
+
+[[contract]]
+id = "famous-weth"
+chain = "ethereum"
+address = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+block = 26280500
+class = "benign"
+split = "dev"
+group = "famous"
+traits = ["token"]
+label_source = "script:famous-sample"
+reviewed_by = ""
+tool_use = true
+code_hash = "2ab50cdd315ae1c8b4ac649412e036ab20148757a7f715b7c9750b15e4eff905"
+source = "chosen by the written rule for famous tokens (label_rules.toml [famous])"
+reason = "A widely used token that hundreds of different wallets send within a few hours."
+
+[[contract]]
+id = "famous-wbtc"
+chain = "ethereum"
+address = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+block = 26280500
+class = "benign"
+split = "dev"
+group = "famous"
+traits = ["token"]
+label_source = "script:famous-sample"
+reviewed_by = ""
+code_hash = "a7007ec899e364c62c4b469f44aec391e17f89753d092ad989f46c022234b1f2"
+source = "chosen by the written rule for famous tokens (label_rules.toml [famous])"
+reason = "A widely used token that hundreds of different wallets send within a few hours."
+
+[[contract]]
+id = "tok-f2b36ba4"
+chain = "ethereum"
+address = "0xf2b36ba4a4438516b808049d5ae013ec5ddd849a"
+block = 25734386
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+tool_use = true
+family_size = 2
+code_hash = "a0097ab8f411260a9e5d60eaa0644ca378b47eebda4722bdf6846753d2750752"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25734386: 206 different wallets bought and 167 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-7427b616"
+chain = "ethereum"
+address = "0x7427b61606f94fe209517330a0d9ada90d1b0eb0"
+block = 25588080
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+code_hash = "7b3433e5232893262ab41377e5fb09044c5a02363c1f66a025adb7fe7bbd7833"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25588080: 212 different wallets bought and 189 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-432a8e9d"
+chain = "ethereum"
+address = "0x432a8e9d6606d609329390d71a033c32ae96b5c7"
+block = 26008051
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+code_hash = "da00d990e132f3081f4bb37dc30d5e3937d0123f02a5f73def5420653bdcbf61"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 26008051: 93 different wallets bought and 52 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-ff2f0388"
+chain = "ethereum"
+address = "0xff2f0388e84416db67219c8e88aadb28de30a93b"
+block = 25460711
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+code_hash = "6d80b68c2ed39e26129cc53dc294f03392c68edccc88b798fbae45f165152ebd"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25460711: 355 different wallets bought and 317 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-0c862c4a"
+chain = "ethereum"
+address = "0x0c862c4aff0c87f3b4e93350ecf2dd6ada0c5400"
+block = 25867499
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+code_hash = "47198b0c7601da4b0e0dc45a344f1f3d35dad5992805d5146ab62fc62ccd19c4"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25867499: 50 different wallets bought and 62 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-f7755634"
+chain = "ethereum"
+address = "0xf7755634115dddb1afa07879b589ffe84839a94d"
+block = 25460015
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+tool_use = true
+code_hash = "f11296823c82522b4ac7cbd86af77c4f315c5f5dbbc2d6d1faed8cd8ffcbe4e0"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25460015: 36 different wallets bought and 67 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-e2f2f46b"
+chain = "ethereum"
+address = "0xe2f2f46b5b6d5867620ad4968263ae007e6099f2"
+block = 25870238
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+tool_use = true
+code_hash = "852f90e32fe1d0a82afbe0dd761f1af5db1b440e22bfa750bbd0d650aa04c3e5"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25870238: 46 different wallets bought and 74 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-d170c582"
+chain = "ethereum"
+address = "0xd170c5828abfbdeeb17da3acaebfcd53cb37867c"
+block = 25735418
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+family_size = 5
+code_hash = "c1017101ed5952138ccaf435e47ccbab4429d29e474f8374188883f25b9f5e44"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25735418: 109 different wallets bought and 87 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "tok-5c36660f"
+chain = "ethereum"
+address = "0x5c36660fd54f1775234c95d8af2faed1c18cbeea"
+block = 25465937
+class = "benign"
+split = "dev"
+group = "obscure"
+traits = ["token"]
+label_source = "script:outcome-v1"
+tool_use = true
+code_hash = "8a8b198cc171fc57a71bac03263881f716f7ad723e51e89fc93304cf8a1b1677"
+source = "Uniswap V2 PairCreated (WETH pair) in a scan window; counts from Etherscan Transfer logs; see label_rules.toml"
+reason = "In the 30 days after block 25465937: 405 different wallets bought and 251 sold; a healthy share sold, the pool kept its liquidity, no supply growth or blacklist."
+
+[[contract]]
+id = "inc-balancerv1bpool"
+chain = "ethereum"
+address = "0x2257aaac34bcb27900291f7b84ee2565a6cbac57"
+block = 25872273
+class = "beyond_reach"
+split = "dev"
+group = "incident"
+reasons = ["arithmetic-and-rounding"]
+traits = ["token"]
+min_not_checked = 2
+label_source = "incident-list"
+tool_use = true
+code_hash = "0ece4ae71303e8e10e8d1964e3257a506114f49a48d6f10ee076ee4df6227eb6"
+source = "DeFiHackLabs src/test/2026-08/BalancerV1BPool_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-08-31"
+reason = "A Balancer V1 pool whose pricing arithmetic rounds in the caller's favour for a low-decimal asset; a logic bug in the contract, not an admin or key problem."
+
+[[contract]]
+id = "inc-usm"
+chain = "ethereum"
+address = "0x2a7fff44c19f39468064ab5e5c304de01d591675"
+block = 25716149
+class = "beyond_reach"
+split = "dev"
+group = "incident"
+reasons = ["arithmetic-and-rounding"]
+traits = ["token"]
+min_not_checked = 2
+label_source = "incident-list"
+tool_use = true
+code_hash = "99c21b85d4eac5eeb5a9b7af98e57c1164f4c01ae661a4c7038899fb9ee0f72d"
+source = "DeFiHackLabs src/test/2026-08/USM_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-08-09"
+reason = "A stablecoin-minting contract with a rounding error in its pricing logic; a logic bug, not a price-feed problem."
+
+[[contract]]
+id = "inc-etherfiatomicqueue"
+chain = "ethereum"
+address = "0xd45884b592e316eb816199615a95c182f75dea07"
+block = 25952623
+class = "beyond_reach"
+split = "dev"
+group = "incident"
+reasons = ["unlimited-approval-exposure"]
+traits = ["not_a_token"]
+min_not_checked = 2
+label_source = "incident-list"
+tool_use = true
+code_hash = "33ee4c421317ef548e37a1f70d94ef5d90e6cfdcd6feff4bc67e8494bda5d4a1"
+source = "DeFiHackLabs src/test/2026-09/EtherFiAtomicQueue_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-09-09"
+reason = "A queue contract that lets a caller name another address as the paying party, so standing token approvals given to the contract can be used by someone else; a logic bug in the contract."
+
+[[contract]]
+id = "inc-reflexergeb"
+chain = "ethereum"
+address = "0x84fe452d9fb495a335c74a225e6ad52c35eb8616"
+block = 25883378
+class = "beyond_reach"
+split = "dev"
+group = "incident"
+reasons = ["missing-access-control"]
+traits = ["not_a_token"]
+min_not_checked = 2
+label_source = "incident-list"
+tool_use = true
+code_hash = "6791866ca3b89c4370b26297eb8b316750479c9715c668faf426d7159d8c4fd1"
+source = "DeFiHackLabs src/test/2026-09/ReflexerGEB_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-09-01"
+reason = "A shared helper contract with an unauthenticated function that is itself the recorded owner of several positions in a protocol that is shut down; an access-control logic bug."
+
+[[contract]]
+id = "inc-termfinance"
+chain = "ethereum"
+address = "0x26fcb50eec367ddab060ccf5e7394cecd95f7db2"
+block = 25816048
+class = "beyond_reach"
+split = "dev"
+group = "incident"
+reasons = ["governance-takeover"]
+traits = ["proxy", "not_a_token"]
+implementation = "0xd8063123bba3b480569244ae66bfe72b6c84b00d"
+min_not_checked = 2
+label_source = "incident-list"
+tool_use = true
+code_hash = "35a309506cb6e18120a4dddfb30b528e9147ec790e6d18c5dc011d11499527a2"
+source = "DeFiHackLabs src/test/2026-08/TermFinance_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-08-23"
+reason = "A vault governed through a token-voting plugin whose voting power was cheap to acquire at the time; a governance-design bug, not code that the tools can read."
+
+[[contract]]
+id = "inc-ensofinance"
+chain = "ethereum"
+address = "0x890ed1ee6d435a35d51081ded97ff7ce53be5942"
+block = 25934826
+class = "beyond_reach"
+split = "dev"
+group = "incident"
+reasons = ["oracle-manipulation"]
+traits = ["proxy", "token"]
+implementation = "0xbe90d1bae4a0cff0f90bb0567bacf7106687cc78"
+min_not_checked = 2
+label_source = "incident-list"
+tool_use = true
+code_hash = "c9f5d1b339563f0ef19294e874dc55a9617a75c385cbed9a08d61a1f8bd961fc"
+source = "DeFiHackLabs src/test/2026-09/EnsoFinance_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-09-09"
+reason = "A strategy vault that mints deposit shares from a price source which a thin pool can skew; a logic bug in how value is estimated."
+
+[[contract]]
+id = "inc-notionalfinance"
+chain = "ethereum"
+address = "0x9abd0b8868546105f6f48298eadc1d9c82f7f683"
+block = 25900219
+class = "beyond_reach"
+split = "dev"
+group = "incident"
+reasons = ["arithmetic-and-rounding"]
+traits = ["proxy", "not_a_token"]
+implementation = "0x8a134e651432a902041643668940c9a9cd270633"
+min_not_checked = 2
+label_source = "incident-list"
+tool_use = true
+code_hash = "e63e81f51a4572f5a14e7f648cec869acb06f24289370855daf6c8a5c784a2a5"
+source = "DeFiHackLabs src/test/2026-09/NotionalFinance_exp.sol (Apache-2.0, Copyright 2022-2026 DeFiHackLabs); incident of 2026-09-03"
+reason = "An older lending escrow whose bookkeeping of transferred claims can overflow its own limits; a logic bug in the contract."
