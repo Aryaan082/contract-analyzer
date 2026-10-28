@@ -21,3 +21,4 @@ retrieval/index/
 evals/last_run.json
 agent/runs/
 evals/collect/cache/
+evals/judge/cache/

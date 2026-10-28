@@ -89,6 +89,9 @@ class RunRecord:
     metrics: dict[str, Any] = field(default_factory=dict)
     environment: dict[str, Any] = field(default_factory=dict)
     tags: dict[str, Any] = field(default_factory=dict)
+    # Evidence id -> the tool message exactly as the model was shown it (the first one that carries
+    # the id; a repeated call's "already run" note is not it). The faithfulness judge reads these.
+    tool_texts: dict[str, str] = field(default_factory=dict)
 
     @property
     def key(self) -> str:
@@ -172,6 +175,21 @@ def _calls(
     return tuple(calls), tuple(submissions)
 
 
+def _tool_texts(messages: list[dict[str, Any]]) -> dict[str, str]:
+    """What each evidence id looked like to the model: the content of the tool message that first
+    carries it. A repeated call answers with a short "already run" note naming the earlier id,
+    which is not the evidence."""
+    out: dict[str, str] = {}
+    for message in messages:
+        if message.get("role") != "tool" or not isinstance(message.get("content"), str):
+            continue
+        shown = _loads(message["content"])
+        evidence_id = shown.get("evidence_id")
+        if isinstance(evidence_id, str) and not shown.get("duplicate"):
+            out.setdefault(evidence_id, message["content"])
+    return out
+
+
 def parse_trace(data: dict[str, Any], path: str | None = None) -> RunRecord:
     report, info = data["report"], data["report"]["run"]
     recorded = {str(c.get("call_id")): c for c in data.get("calls") or []}
@@ -221,6 +239,7 @@ def parse_trace(data: dict[str, Any], path: str | None = None) -> RunRecord:
         metrics=dict(data.get("metrics") or {}),
         environment=dict(data.get("environment") or {}),
         tags=dict(data.get("tags") or {}),
+        tool_texts=_tool_texts(data.get("messages") or []),
     )
 
 

@@ -8,8 +8,10 @@
 Without cards only the metrics that need no label are computed (hygiene rules, citation validity,
 time, cost). With cards, runs are matched to their card by chain, address and block and the
 tool-use,
-detection and reason checks are added. Faithfulness (the LLM judge) is not here: it is judged apart
-and its cached verdicts are merged in by a later part.
+detection and reason checks are added. Faithfulness (the LLM judge) is judged apart, with
+`python -m evals.judge run`, and counted here from the judge's cache with `--judge-cache DIR --judge
+SLUG` (twice for two judges): nothing is sent, and a claim that was not judged is counted as such.
+Without those flags faithfulness stays null.
 
 The held-out split is only scored with `--held-out --declare "<why>"`, prints totals and never
 writes
@@ -31,6 +33,7 @@ from evals.detection import (
     by_reason,
     confusion,
     f1_of,
+    fact_share,
     facts_stated,
     grey_check,
     precision_of,
@@ -38,6 +41,9 @@ from evals.detection import (
     verdict_right,
     verdicts_by_class,
 )
+from evals.judge.cache import JudgeCache
+from evals.judge.faithfulness import faithfulness as count_faithfulness
+from evals.judge.rubric import load_rubric
 from evals.repeats import cluster_bootstrap, contract_rates, flips
 from evals.results_file import RESULTS_DIR, build_results, write_results
 from evals.runs import RunRecord, load_runs
@@ -63,6 +69,10 @@ def pair_up(runs: Sequence[RunRecord], cards: CardSet | None) -> tuple[list[Pair
 
 
 def _share(items: list[bool]) -> float:
+    return sum(items) / len(items) if items else float("nan")
+
+
+def _mean(items: list[float]) -> float:
     return sum(items) / len(items) if items else float("nan")
 
 
@@ -116,6 +126,17 @@ def _detection(pairs: list[Pair], resamples: int) -> dict[str, Any]:
     out["flips"] = parts(flips(verdicts))
     stated = [s for run, card in pairs if (s := facts_stated(run, card)) is not None]
     out["facts_stated"] = {"runs": len(stated), "share": _share(stated)}
+    shares: dict[str, list[float]] = defaultdict(list)
+    for run, card in pairs:
+        if (share := fact_share(run, card)) is not None:
+            shares[card.id].append(share)
+    out["reason_recall"] = {
+        "runs": sum(len(v) for v in shares.values()),
+        "contracts": len(shares),
+        "mean": (
+            cluster_bootstrap(list(shares.values()), _mean, resamples=resamples) if shares else None
+        ),
+    }
     grey: dict[str, dict[str, Any]] = {}
     for run, card in pairs:
         if card.klass != "grey":
@@ -142,8 +163,11 @@ def score(
     label: str = "",
     declared: str | None = None,
     resamples: int = 10_000,
+    judge_cache: JudgeCache | None = None,
+    judges: Sequence[str] = (),
 ) -> dict[str, Any]:
-    """Every layer that can be scored offline, as a results document (see `results_file`)."""
+    """Every layer that can be scored offline, as a results document (see `results_file`).
+    `judge_cache` and `judges` bring in faithfulness from judgements already made."""
     if split == "heldout" and not declared:
         raise ValueError("the held-out split is only scored with a declared reason")
     if model:
@@ -201,12 +225,28 @@ def score(
             ),
         ],
     }
+    judged = None
+    if judge_cache is not None and judges:
+        judged = count_faithfulness(
+            in_scope,
+            judge_cache,
+            judges,
+            load_rubric().sha256,
+            detail=split != "heldout",
+            resamples=resamples,
+        )
+        manifest["notes"].append(
+            "Faithfulness is a judge model's opinion of whether the cited evidence supports each "
+            "claim. It is checked against faults we planted, faults found by reading reports and a "
+            "second judge from another company; it is NOT checked against Aryaan's own labels "
+            "(the spec asks for that), and it is not truth."
+        )
     layers: dict[str, Any] = {
         "tool_use": _tool_use(pairs, in_scope, resamples),
         "detection": _detection(pairs, resamples) if pairs else None,
         "answer_quality": {
             "citations": parts(citation_summary(in_scope, resamples=resamples)),
-            "faithfulness": None,  # the judge: a later part
+            "faithfulness": judged,  # None until judgements are brought in
         },
         "time": time_summary(in_scope),
         "cost": cost_summary(in_scope),
@@ -239,6 +279,29 @@ def _iv(value: dict[str, Any] | None) -> str:
 
 def _num(value: float | None) -> str:
     return "n/a" if value is None else f"{value:.2f}"
+
+
+def _faithfulness_lines(block: dict[str, Any] | None) -> list[str]:
+    if not block:
+        return ["                faithfulness: not judged yet"]
+    lines = [f"                faithfulness (rubric {block['rubric_sha256'][:12]}):"]
+    for judge, found in block["per_judge"].items():
+        claims, summary = found["claims"], found["summary"]
+        lines.append(
+            f"                  judge {judge}: claims supported {_iv(claims['item_level'])} of "
+            f"{claims['labelled']} labelled ({claims['unlabelled']} without a label); reports "
+            f"with no unsupported claim {_iv(claims['report_level'])} "
+            f"({claims['reports_clean']} clean, {claims['reports_failed']} failed, "
+            f"{claims['reports_unknown']} unknown); summary sentences supported "
+            f"{_iv(summary['item_level'])}; judge cost ${found['cost']['cost_usd']:.4f}"
+        )
+    both = block.get("agreement")
+    if both:
+        lines.append(
+            f"                  the two judges agree on {both['exact']['rate']} of "
+            f"{both['items']} claims (supported or not: {both['supported_or_not']['rate']})"
+        )
+    return lines
 
 
 def format_report(results: dict[str, Any]) -> str:
@@ -293,8 +356,9 @@ def format_report(results: dict[str, Any]) -> str:
         f"\nanswer quality  first submission accepted {_iv(cites['first_attempt_accepted'])}, "
         f"claim validity {_iv(cites['claim_validity'])} "
         f"({cites['claims_failing_first']} of {cites['claims_first']} claims failed); "
-        f"codes {cites['problem_codes']}; faithfulness: not judged yet"
+        f"codes {cites['problem_codes']}"
     )
+    lines.extend(_faithfulness_lines(results["answer_quality"]["faithfulness"]))
     for model, t in results["time"].items():
         e = t["end_to_end_s"]
         shown = (
@@ -327,6 +391,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--write", action="store_true", help=f"save into {RESULTS_DIR.name}/")
     parser.add_argument("--out", type=Path, help="save into this folder instead")
     parser.add_argument("--resamples", type=int, default=10_000)
+    parser.add_argument("--judge-cache", type=Path, help="folder of cached judgements")
+    parser.add_argument("--judge", action="append", default=[], help="a judge model slug")
     args = parser.parse_args(argv)
 
     split = "heldout" if args.held_out else args.split
@@ -351,6 +417,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         label=args.label,
         declared=args.declare,
         resamples=args.resamples,
+        judge_cache=JudgeCache(args.judge_cache) if args.judge_cache else None,
+        judges=args.judge,
     )
     print(format_report(results))
     if args.write or args.out:

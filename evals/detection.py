@@ -127,6 +127,14 @@ def facts_stated(run: RunRecord, card: Card) -> bool | None:
     return all(_matches(p, run.report_text) for p in card.facts)
 
 
+def fact_share(run: RunRecord, card: Card) -> float | None:
+    """Reason recall: the share of the card's required facts that the report states; None if the
+    card lists none. `facts_stated` is the all-or-nothing version of the same check."""
+    if not card.facts:
+        return None
+    return sum(_matches(p, run.report_text) for p in card.facts) / len(card.facts)
+
+
 def forbidden_said(run: RunRecord, card: Card) -> list[str]:
     """The card's `must_not_say` patterns the report matches."""
     return [p for p in card.must_not_say if _matches(p, run.report_text)]

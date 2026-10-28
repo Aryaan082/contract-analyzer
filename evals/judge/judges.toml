@@ -1,0 +1,43 @@
+# Candidate judge models for the faithfulness judge (Component 6, part D).
+#
+# NOTHING HERE HAS BEEN CALLED. Prices were read on 2026-10-28 from OpenRouter's public
+# per-model endpoint listings (https://openrouter.ai/api/v1/models/<slug>/endpoints), USD per
+# million tokens. A model is served by several providers at different prices, and the run is routed
+# to a provider that accepts a JSON-schema request, so `input_per_mtok` and `output_per_mtok` are the
+# DEAREST such provider's prices: they bound the worst case the spend cap reserves for a call. What
+# the run counts afterwards is the cost OpenRouter reports for each reply. Re-read the listing before
+# a paid run: prices and providers move.
+#
+# Rules for a judge: not American (the eval-model rule), not DeepSeek (the agent's eval model) and not
+# Anthropic (the product model), and the two judges that are kept come from two different companies.
+# `max_tokens` leaves room for hidden thinking: every candidate accepts a `reasoning` parameter, and
+# a model that thinks first spends part of it before it writes the JSON. A reply cut off by the limit is
+# recorded as refused (`cut_off`), not guessed.
+
+[[judge]]
+slug = "qwen/qwen3.7-flash"            # Alibaba. Cheapest candidate.
+input_per_mtok = 0.115                 # listed 0.03 to 0.0345; 0.115 is its price for prompts over 32k tokens
+output_per_mtok = 0.46                 # listed 0.13 to 0.15; 0.46 likewise
+max_tokens = 2500
+note = "Alibaba; listed with response_format, not structured_outputs. Prices read 2026-10-28."
+
+[[judge]]
+slug = "z-ai/glm-5.3-flash"            # Z.ai. Cheap candidate.
+input_per_mtok = 0.281                 # providers range 0.045 to 0.281; the dearest is the bound
+output_per_mtok = 0.75
+max_tokens = 2500
+note = "Z.ai; 38 providers, most accept response_format and structured outputs. Prices read 2026-10-28."
+
+[[judge]]
+slug = "xiaomi/mimo-v2.6-pro"          # Xiaomi. Mid-priced; a thinking model in the smoke test.
+input_per_mtok = 0.522
+output_per_mtok = 1.044
+max_tokens = 3000
+note = "Xiaomi; providers 0.37 to 0.52 in, 0.74 to 1.04 out. Hidden thinking averaged about 4,700 tokens per agent run in the smoke test. Prices read 2026-10-28."
+
+[[judge]]
+slug = "minimax/minimax-m3"             # MiniMax. Mid-priced; a thinking model in the smoke test.
+input_per_mtok = 0.60
+output_per_mtok = 2.40
+max_tokens = 3000
+note = "MiniMax; 13 providers, 0.22 to 0.60 in, 0.88 to 2.40 out, only some accept JSON-schema output. Prices read 2026-10-28."

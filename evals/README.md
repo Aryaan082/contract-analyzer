@@ -2,7 +2,8 @@
 
 The retrieval layer is run by `evals.run` (below). The agent layers (tool use, detection, answer
 quality, time and cost) are scored offline from stored agent traces by `evals.score` (section
-"Scoring agent runs"); generating the runs (`make eval-run`) and the judge come in later parts.
+"Scoring agent runs"); the faithfulness judge is in `judge/` (section "The faithfulness judge");
+generating the runs (`make eval-run`) comes in a later part.
 
 ```text
 make eval                                                    dev questions, core variants, small models
@@ -49,7 +50,7 @@ python -m evals.score runs/ --cards ... --held-out --declare "why"  held-out: to
 | `runs.py` | reads a trace (old or new) into a `RunRecord`: tools in order, arguments, seconds, attempts |
 | `cards.py` | the labels: one `[[contract]]` per test contract (class, reasons, split, acceptable verdicts); `reviewed_by` empty until a person has read it |
 | `trajectory.py` | tool-use rules: hygiene for every run, plus rules from the card's traits and reasons; per-rule failure counts |
-| `detection.py` | verdict to warn/clear/abstain; precision, recall, F1 (strict: an abstain on a flagged contract is a miss), coverage, recall by reason; grey cards judged on their not-checked list |
+| `detection.py` | verdict to warn/clear/abstain; precision, recall, F1 (strict: an abstain on a flagged contract is a miss), coverage, recall by reason; reason recall (the share of a card's required facts the report states, next to the all-or-nothing check); grey cards judged on their not-checked list |
 | `repeats.py` | single-run, majority and all-correct rates over repeats; verdict flips; the cluster bootstrap (resamples contracts, not runs) |
 | `citations.py` | citation validity on the FIRST `submit_report` (the final report is valid by construction); older traces are rebuilt with the validator |
 | `timing.py` | median, p95 (only from 40 runs), max and n, per model; leaves out runs without timing, run alongside others, or slept through; cost per report |
@@ -60,7 +61,8 @@ Rules that matter when reading the numbers:
   "N of M labels unreviewed". The numbers mean "agrees with the script and the written rules", not
   "agrees with Aryaan".
 - A claim is only valid here if its evidence exists and is of the right kind. Whether the evidence
-  says what the claim says (faithfulness) is the judge's job, not done yet (`faithfulness: null`).
+  says what the claim says (faithfulness) is the judge's job (`judge/`); `faithfulness` is `null`
+  until judgements are brought in with `--judge-cache` and `--judge`.
 - `honeypot-sell-blocked` recall is decided by the sell rehearsal and the validator's floor rather than
   by the model's judgement; read it as such.
 - Time: never one number, never mixed models, never from runs that shared the machine or slept.
@@ -91,3 +93,19 @@ python -m evals.collect build                         label, pick one token per 
 `build` refuses to run if `label_rules.toml` no longer matches its recorded hash. To change a rule:
 edit the file, say why in its version history, replace the hash on purpose, rebuild, and log the
 change in `results.md`.
+
+## The faithfulness judge (`python -m evals.judge`)
+
+Part D of Component 6. A judge model reads each claim with the evidence it cites and gives one label
+(`supported`, `partly`, `not_supported`, `contradicted`); the summary is checked sentence by sentence.
+Built and tested offline; **nothing has been sent to a model yet**. Everything about it, including what
+it is not (a model's opinion, not Aryaan's labels, not truth), the rubric, the check set and the
+spend cap, is in [`judge/README.md`](judge/README.md).
+
+```text
+python -m evals.judge checkset estimate --judge z-ai/glm-5.3-flash     calls, tokens, cost; nothing sent
+python -m evals.judge checkset run --judge SLUG --max-spend 0.1 --go   PAID, hard cap
+python -m evals.judge checkset report --judge A --judge B              catch rate, false-alarm rate, agreement
+python -m evals.judge run RUNS --judge A --judge B --max-spend 1 --go  judge agent traces (PAID)
+python -m evals.score RUNS --judge-cache evals/judge/cache --judge A --judge B   count them into the results file
+```
