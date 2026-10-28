@@ -142,8 +142,10 @@ first and prints it. It then does nothing unless all of these hold (`evals/spend
 2. `--max-spend` covers the estimate. The default cap is $4 for a dev run and $2 for held-out;
 3. a model dearer than $0.02 a run (Sonnet) also has `--allow-expensive`;
 4. a judge only runs if one is asked for on purpose: `--judge-mode quick|milestone`, or `--judge SLUG`
-   for an extra. There is no default. The rubric is still a draft, not approved by Aryaan, and the
-   estimate and the results file say so (see "Who judges" below).
+   for an extra. There is no default. Aryaan approved the rubric as written on 2026-10-28
+   (`approved = true` in `evals/judge/policy.toml`, rubric hash `faa679eb...`); run-sets made before
+   that keep the "rubric draft" notice they were made with, and a changed rubric needs a new
+   approval (see "Who judges" below).
 
 While it runs, each agent run first reserves its ceiling (the per-run cap handed to the agent loop:
 $0.05 for the eval tier, $0.25 for Sonnet) from a `SpendCap`, and does not start if that would pass

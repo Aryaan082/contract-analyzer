@@ -64,8 +64,8 @@ JUDGE_MODE_HELP = (
     "judge the reports afterwards: quick = one judge (z-ai/glm-5.3-flash, results labelled 'single "
     "judge, not for quoting'); milestone = two judges from two companies (z-ai/glm-5.3-flash and "
     "qwen/qwen3.7-flash) for milestone runs, the held-out look, the transfer check, the final run "
-    "and any number that will be quoted. There is no default: no mode, no judge. The rubric is a "
-    "draft, not approved by Aryaan (evals/judge/policy.toml)"
+    "and any number that will be quoted. There is no default: no mode, no judge. Aryaan approved "
+    "the rubric on 2026-10-28 (evals/judge/policy.toml); a changed rubric needs a new approval"
 )
 JUDGE_HELP = (
     "an extra judge on top of --judge-mode (or alone); only deepseek/deepseek-v4.1-flash-1017 is "

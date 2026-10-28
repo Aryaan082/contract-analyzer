@@ -4,6 +4,7 @@ company. Scripted agent runs and judges; no network, no money."""
 
 import json
 import math
+from dataclasses import replace
 
 import pytest
 
@@ -44,6 +45,14 @@ def where(tmp_path):
     return make_where(tmp_path)
 
 
+@pytest.fixture
+def draft_rubric(monkeypatch):
+    """The policy before Aryaan approved the rubric, so the draft notice stays tested."""
+    draft = replace(POLICY, rubric_approved=False)
+    monkeypatch.setattr("evals.pipeline.load_policy", lambda *a, **k: draft)
+    return draft
+
+
 def two_judges(glm_says=None, qwen_says=None):
     """A make_judge whose two judges answer by their own dictionaries."""
     made = {
@@ -73,9 +82,26 @@ def test_the_modes_are_the_ones_aryaan_decided():
     assert POLICY.extra_allowed == (DEEPSEEK,)
 
 
-def test_the_rubric_is_not_approved_and_the_policy_says_so():
-    assert POLICY.rubric_approved is False
-    assert POLICY.rubric_notice == "rubric draft, not approved by Aryaan"
+APPROVED_RUBRIC_SHA256 = "faa679ebcf3c892732daf6f2f3c4f8af8c65ca041d911e698ae54cb2ed4dfa7e"
+
+
+def test_aryaan_approved_exactly_this_rubric():
+    """He approved the rubric with this hash on 2026-10-28. A changed rubric is a different rubric:
+    set `approved` back to false in policy.toml, get a new approval, then change this constant."""
+    assert POLICY.rubric_approved is True
+    assert load_rubric().sha256 == APPROVED_RUBRIC_SHA256
+
+
+def test_the_draft_notice_is_kept_for_an_unapproved_rubric(draft_rubric):
+    assert draft_rubric.rubric_approved is False
+    assert draft_rubric.rubric_notice == "rubric draft, not approved by Aryaan"
+
+
+def test_an_approved_rubric_carries_no_draft_notice(where, capsys):
+    pipeline.main(where.argv("generate", "--judge-mode", "quick"), make_runner=forbidden_runner)
+    assert "rubric draft" not in capsys.readouterr().out
+    block = policy_block([GLM], mode="quick", rubric_approved=POLICY.rubric_approved)
+    assert block["rubric_approved"] is True and block["rubric_notice"] is None
 
 
 def test_every_judge_the_policy_names_is_priced_and_listed():
@@ -213,7 +239,7 @@ def test_with_no_judge_mode_nothing_is_judged_and_the_estimate_says_so(where, ca
     assert "--judge-mode quick|milestone" in shown
 
 
-def test_the_estimate_prices_one_judge_or_two_and_says_how(where, capsys):
+def test_the_estimate_prices_one_judge_or_two_and_says_how(where, capsys, draft_rubric):
     pipeline.main(where.argv("generate", "--judge-mode", "quick"), make_runner=forbidden_runner)
     quick = capsys.readouterr().out
     pipeline.main(where.argv("generate", "--judge-mode", "milestone"), make_runner=forbidden_runner)
@@ -245,7 +271,9 @@ def test_the_quick_estimate_is_cheaper_than_the_milestone_estimate():
     )
 
 
-def test_a_quick_run_is_labelled_single_judge_not_for_quoting_in_the_results(where, capsys):
+def test_a_quick_run_is_labelled_single_judge_not_for_quoting_in_the_results(
+    where, capsys, draft_rubric
+):
     make, made = two_judges()
     assert sonnet_run(where, "--judge-mode", "quick", make_judge=make) == 0
     [runset] = list_runsets(where.runsets)
@@ -346,13 +374,15 @@ def test_a_held_out_milestone_judgement_is_labelled_and_has_no_per_claim_list(wh
     assert "disagreements" not in block["agreement"] and block["agreement"]["items"] > 0
 
 
-def test_approving_the_rubric_later_does_not_change_a_committed_result(where, monkeypatch):
+def test_approving_the_rubric_later_does_not_change_a_committed_result(
+    where, monkeypatch, draft_rubric
+):
     make, _ = two_judges()
-    sonnet_run(where, "--judge-mode", "milestone", make_judge=make)
+    sonnet_run(where, "--judge-mode", "milestone", make_judge=make)  # made while it was a draft
     assert pipeline.main(where.argv("all", "--no-retrieval", "--write-summary")) == 0
     assert pipeline.main(where.argv("check-summaries")) == 0
-    approved = POLICY.__class__(**{**POLICY.__dict__, "rubric_approved": True, "rubric_notice": ""})
-    monkeypatch.setattr("evals.judge.policy.load_policy", lambda *a, **k: approved)
+    approved = replace(POLICY, rubric_approved=True, rubric_notice="")
+    monkeypatch.setattr("evals.pipeline.load_policy", lambda *a, **k: approved)
     assert pipeline.main(where.argv("check-summaries")) == 0  # still the value recorded then
     [written] = list(where.results.glob("*.json"))
     notes = json.loads(written.read_text())["manifest"]["notes"]

@@ -44,5 +44,7 @@ single_label = "single judge, not for quoting"
 [rubric]
 # Flip to true only when Aryaan approves evals/judge/rubric.toml (its hash is in rubric.sha256). A
 # run-set records the value that held when it was made, so approving later does not change old results.
-approved = false
+# Aryaan approved the rubric as written on 2026-10-28 (hash faa679ebcf3c892732daf6f2f3c4f8af8c65ca041d911e698ae54cb2ed4dfa7e).
+# A changed rubric has a new hash and needs a new approval: set this back to false until he gives it.
+approved = true
 notice = "rubric draft, not approved by Aryaan"

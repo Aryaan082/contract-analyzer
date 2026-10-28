@@ -135,7 +135,8 @@ listed price could exceed it.
 Two judges from two companies, each asked once about the check set (102 calls: 87 claims and 15
 summaries after the correction below), then the stability pass of the one with the higher catch rate.
 Full numbers and the list of disagreements are in `trials/2026-10-28-stage1.json` and a table in
-`../results.md`. Spend $0.2163 of the approved $0.33. Rubric draft `faa679eb…`, unapproved.
+`../results.md`. Spend $0.2163 of the approved $0.33. Rubric draft `faa679eb…`, unapproved at the time
+(Aryaan approved this exact rubric, hash unchanged, on 2026-10-28, after the trial).
 
 | | `qwen/qwen3.7-flash` (Alibaba) | `z-ai/glm-5.3-flash` (Z.ai) |
 |---|---|---|

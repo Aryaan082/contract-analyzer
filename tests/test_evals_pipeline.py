@@ -160,7 +160,8 @@ def test_the_help_names_the_two_judge_modes_and_says_there_is_no_default():
     text = pipeline.build_parser()._subparsers._group_actions[0].choices["generate"].format_help()
     flat = " ".join(text.split())
     assert "quick" in flat and "milestone" in flat and "z-ai/glm-5.3-flash" in flat
-    assert "qwen/qwen3.7-flash" in flat and "no default" in flat and "not approved" in flat
+    assert "qwen/qwen3.7-flash" in flat and "no default" in flat
+    assert "approved the rubric on 2026-10-28" in flat and "needs a new approval" in flat
 
 
 def test_a_judge_that_is_not_listed_is_refused_before_anything_runs(where, capsys):
@@ -262,8 +263,8 @@ def test_a_named_judge_runs_after_the_agent_inside_the_same_cap(where):
         "mode": "custom",
         "label": "single judge, not for quoting",
         "quotable": False,
-        "rubric_approved": False,
-        "rubric_notice": "rubric draft, not approved by Aryaan",
+        "rubric_approved": True,  # Aryaan approved the rubric on 2026-10-28
+        "rubric_notice": None,
     }
     assert runset.manifest["spend"]["spent_usd"] == pytest.approx(
         9 * 0.004 + len(judge.calls) * 0.0004
