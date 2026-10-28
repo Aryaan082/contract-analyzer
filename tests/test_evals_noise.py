@@ -138,6 +138,105 @@ def _with_duplicate(run):
     return trace
 
 
+def run_showing(name, verdict, repeat, tool, arguments, sha, body, *, evidence=True):
+    """A run of one call, whose recorded fingerprint is `sha` and whose tool message says `body`.
+    A knowledge result carries no evidence id (`evidence=False`), as in a real trace."""
+    trace = make_trace(
+        address=ADDRS[name],
+        block=100,
+        verdict=verdict,
+        tools=[(tool, arguments)],
+        tags={"repeat": repeat, "cache_state": "warm"},
+    )
+    trace["calls"][0]["result_sha"] = sha
+    if not evidence:
+        trace["calls"][0]["evidence_id"] = None
+    for message in trace["messages"]:
+        if message.get("tool_call_id") == "call_1":
+            ids = {"evidence_id": "T1"} if evidence else {}
+            message["content"] = body if isinstance(body, str) else json.dumps({**ids, **body})
+    return parse_trace(trace, path=f"{name}-{repeat}.json")
+
+
+def lookup(asked, cached, names=("transfer",)):
+    return {
+        "tool": "lookup_selector",
+        "ok": True,
+        "data": {"asked_database": asked, "from_cache": cached, "names": list(names)},
+    }
+
+
+def test_where_a_selector_answer_came_from_is_not_part_of_the_answer():
+    cold = run_showing("a", "high_risk", 1, "lookup_selector", {"address": "x"}, "h1", lookup(6, 0))
+    warm = run_showing("a", "high_risk", 2, "lookup_selector", {"address": "x"}, "h2", lookup(0, 6))
+    assert classify(call_results(cold), call_results(warm)) == "same_inputs"
+    other = run_showing(
+        "a", "high_risk", 3, "lookup_selector", {"address": "x"}, "h3", lookup(0, 6, ("mint",))
+    )
+    assert classify(call_results(warm), call_results(other)) == "results_differ"
+
+
+def taxonomy(signals, material="three records"):
+    return {"tool": "taxonomy_lookup", "ok": True, "signals_used": signals, "material": material}
+
+
+def test_a_taxonomy_lookup_is_a_different_question_when_the_evidence_it_read_differs():
+    args = {}
+    one = run_showing(
+        "a", "high_risk", 1, "taxonomy_lookup", args, "h1", taxonomy(["a", "b"]), evidence=False
+    )
+    two = run_showing(
+        "a",
+        "high_risk",
+        2,
+        "taxonomy_lookup",
+        args,
+        "h2",
+        taxonomy(["a", "b", "pair"], "four"),
+        evidence=False,
+    )
+    assert classify(call_results(one), call_results(two)) == "calls_differ"  # the model's order
+    same = run_showing(
+        "a", "high_risk", 3, "taxonomy_lookup", args, "h3", taxonomy(["a", "b"]), evidence=False
+    )
+    assert classify(call_results(one), call_results(same)) == "same_inputs"
+    drift = run_showing(
+        "a",
+        "high_risk",
+        4,
+        "taxonomy_lookup",
+        args,
+        "h4",
+        taxonomy(["a", "b"], "another text"),
+        evidence=False,
+    )
+    assert classify(call_results(one), call_results(drift)) == "results_differ"  # real
+
+
+def test_without_the_tool_message_the_recorded_fingerprint_is_used():
+    args = {"address": "x"}
+    a = run_showing("a", "high_risk", 1, "lookup_selector", args, "h1", "not json at all")
+    b = run_showing("a", "high_risk", 2, "lookup_selector", args, "h2", "not json at all")
+    assert classify(call_results(a), call_results(b)) == "results_differ"
+    c = run_showing("a", "high_risk", 3, "lookup_selector", args, "h1", "not json at all")
+    assert classify(call_results(a), call_results(c)) == "same_inputs"
+
+
+def test_other_tools_keep_their_recorded_fingerprint_whatever_the_message_says():
+    args = {"address": "x"}
+    a = run_showing("a", "high_risk", 1, "risk_scan", args, "h1", {"tool": "risk_scan", "n": 1})
+    b = run_showing("a", "high_risk", 2, "risk_scan", args, "h1", {"tool": "risk_scan", "n": 2})
+    assert classify(call_results(a), call_results(b)) == "same_inputs"
+
+
+def test_a_run_keeps_every_tool_message_by_call_id_even_one_without_an_evidence_id():
+    run = run_showing(
+        "a", "high_risk", 1, "taxonomy_lookup", {}, "h1", taxonomy(["a"]), evidence=False
+    )
+    assert json.loads(run.tool_messages["call_1"])["signals_used"] == ["a"]
+    assert run.tool_texts == {}  # nothing to cite, so nothing under an evidence id
+
+
 def test_pairs_are_the_model_when_the_calls_and_results_match_and_the_tools_when_they_do_not():
     a = {("t1", "{}"): "x", ("t2", "{}"): "y"}
     assert classify(a, dict(a)) == "same_inputs"

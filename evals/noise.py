@@ -12,13 +12,17 @@ Everything compares runs of ONE contract with each other, and every figure carri
   are compared by the fingerprint of their results. The same calls and results -> the model
   (`same_inputs`); different calls, but every shared call returned the same -> the model chose
   differently from the same facts (`calls_differ`); a shared call returned a different result -> the
-  tools (`results_differ`). Set-based: the order of the calls is not used.
+  tools (`results_differ`). Set-based: the order of the calls is not used. Two tools need care
+  (found in the first real run, see `call_results`): `lookup_selector` reports where its answer came
+  from (`asked_database`, `from_cache`), which is not part of the answer; `taxonomy_lookup` without
+  arguments reads the evidence the run had gathered so far, so its question includes `signals_used`.
 
 Shares of contracts come with the cluster bootstrap that `repeats.py` uses (it resamples contracts,
 not runs) and with the exact binomial interval, because the bootstrap of a share of ten contracts
 collapses to a point at zero or ten.
 """
 
+import hashlib
 import json
 import math
 from collections import Counter, defaultdict
@@ -228,17 +232,52 @@ def stability_block(
 # ---- attribution ---------------------------------------------------------------------------------
 
 
+# What the recorded fingerprint of a tool result gets wrong for two tools (found by diffing the
+# results of identical calls in the first noise run-set):
+# - `lookup_selector` says in its data how many names came from the cache and how many from the
+#   selector database. That is bookkeeping about the run's stores, so the first run of a contract
+#   (cold) and the next ones (warm) got different fingerprints for the same names.
+# - `taxonomy_lookup` called without arguments looks at the evidence recorded so far, so the same
+#   call is a different question after a different earlier call. Its question includes the
+#   signals it used (`signals_used`), and a result that differs for the same signals is real.
+BOOKKEEPING = {"lookup_selector": ("asked_database", "from_cache")}  # keys under "data"
+DERIVED_INPUT = {"taxonomy_lookup": "signals_used"}  # a top-level key of the message
+
+
+def _shown(run: RunRecord, call_id: str) -> dict[str, Any] | None:
+    text = run.tool_messages.get(call_id)
+    try:
+        shown = json.loads(text) if text else None
+    except ValueError:
+        return None
+    return shown if isinstance(shown, dict) else None
+
+
 def call_results(run: RunRecord) -> dict[tuple[str, str], str] | None:
-    """The calls a run made (a tool and its arguments) with the fingerprint of each result; None
-    if the run has no fingerprints (an older trace)."""
+    """The calls a run made, each a tool and its arguments (and, for a tool that reads the run's
+    own evidence, what it read), with the fingerprint of its result. The recorded fingerprint is
+    used, except for the tools above, which are read again from the tool message the model was
+    shown. None if the run has no fingerprints (an older trace)."""
     out: dict[tuple[str, str], str] = {}
     for call in run.ran_calls:
         if call.duplicate:
             continue
         if call.result_sha is None:
             return None
-        key = (call.tool, json.dumps(call.arguments, sort_keys=True, default=str))
-        out.setdefault(key, call.result_sha)
+        arguments = json.dumps(call.arguments, sort_keys=True, default=str)
+        sha = call.result_sha
+        if call.tool in BOOKKEEPING or call.tool in DERIVED_INPUT:
+            shown = _shown(run, call.call_id)
+            if shown is not None:
+                shown.pop("evidence_id", None)
+                data = shown.get("data")
+                if isinstance(data, dict):
+                    for key in BOOKKEEPING.get(call.tool, ()):
+                        data.pop(key, None)
+                sha = hashlib.sha256(json.dumps(shown, sort_keys=True).encode()).hexdigest()[:16]
+                if call.tool in DERIVED_INPUT:
+                    arguments += json.dumps(shown.get(DERIVED_INPUT[call.tool]), sort_keys=True)
+        out.setdefault((call.tool, arguments), sha)
     return out
 
 

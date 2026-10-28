@@ -215,6 +215,13 @@ and the repeats come from the study file and cannot be changed on the command li
 `cache_state` (`cold`, `warm`, `mixed`, `no_store`) from what its own stores answered; the tag is put
 on every run the live runner makes, so the timing statistics split cold from warm.
 
+Attribution compares the fingerprints of results for identical calls, with two corrections found in
+the first real run (they are not in the registered note, which is left as it was written):
+`lookup_selector` says where its names came from (`asked_database`, `from_cache`), which is not part
+of the answer and made the first run of a contract differ from the next ones; and `taxonomy_lookup`
+without arguments reads the evidence gathered so far, so its question includes the signals it used.
+With both, no tool gave a different answer to an identical question in those 50 runs.
+
 ### CI
 
 `.github/workflows-disabled/evals.yml` is the one parked workflow (it replaces the retrieval-only one);

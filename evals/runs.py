@@ -92,6 +92,9 @@ class RunRecord:
     # Evidence id -> the tool message exactly as the model was shown it (the first one that carries
     # the id; a repeated call's "already run" note is not it). The faithfulness judge reads these.
     tool_texts: dict[str, str] = field(default_factory=dict)
+    # Tool call id -> the tool message as the model was shown it, for every call (a knowledge
+    # result carries no evidence id, so `tool_texts` does not hold it). Not kept in a summary.
+    tool_messages: dict[str, str] = field(default_factory=dict)
 
     @property
     def key(self) -> str:
@@ -240,6 +243,13 @@ def parse_trace(data: dict[str, Any], path: str | None = None) -> RunRecord:
         environment=dict(data.get("environment") or {}),
         tags=dict(data.get("tags") or {}),
         tool_texts=_tool_texts(data.get("messages") or []),
+        tool_messages={
+            str(m["tool_call_id"]): m["content"]
+            for m in data.get("messages") or []
+            if m.get("role") == "tool"
+            and m.get("tool_call_id") is not None
+            and isinstance(m.get("content"), str)
+        },
     )
 
 
