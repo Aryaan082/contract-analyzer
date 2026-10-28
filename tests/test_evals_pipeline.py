@@ -608,4 +608,33 @@ def test_a_bare_make_eval_run_has_no_go_in_it_and_make_eval_has_no_paid_command(
         ).stdout
         assert "--go" not in out and "--max-spend" not in out
     makefile = (ROOT / "Makefile").read_text()
-    assert "eval-run:\n\t$(UV) python -m evals.run generate $(ARGS)" in makefile
+    assert "eval-run:\n\t$(KEEPAWAKE) $(UV) python -m evals.run generate $(ARGS)" in makefile
+
+
+@pytest.mark.skipif(shutil.which("make") is None, reason="make is not installed")
+def test_the_paid_targets_stay_awake_where_caffeinate_exists_and_run_plain_elsewhere(tmp_path):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    for tool in ("make", "uv"):
+        found = shutil.which(tool)
+        if found:
+            (bin_dir / tool).symlink_to(found)
+
+    def dry(path_dirs, target):
+        return subprocess.run(
+            [str(bin_dir / "make"), "-n", target, "DECLARE=x"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+            env={"PATH": path_dirs},
+        ).stdout
+
+    plain = dry(str(bin_dir), "eval-noise")
+    assert "caffeinate" not in plain and "evals.run noise" in plain
+    (bin_dir / "caffeinate").write_text('#!/bin/sh\nexec "$@"\n')
+    (bin_dir / "caffeinate").chmod(0o755)
+    for target in ("eval-run", "eval-noise", "eval-heldout"):
+        assert "caffeinate -i uv run python -m evals.run" in dry(str(bin_dir), target)
+    for target in ("eval", "eval-noise-report"):
+        assert "caffeinate" not in dry(str(bin_dir), target)

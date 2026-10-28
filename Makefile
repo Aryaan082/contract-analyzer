@@ -19,6 +19,11 @@
 # make test    ruff and the offline tests
 # Details: evals/README.md ("make eval, make eval-run, make eval-heldout").
 UV = uv run
+# The paid targets run under `caffeinate -i` where it exists (macOS), so the Mac does not go to
+# sleep on its own while a run is going (a sleeping laptop freezes the run in flight and spoils its
+# timing). It does NOT stop a manual sleep, a closed lid or a dead battery. Elsewhere (CI is Linux)
+# the variable is empty and the command runs as before.
+KEEPAWAKE := $(shell command -v caffeinate >/dev/null 2>&1 && echo caffeinate -i)
 ARGS ?=
 DECLARE ?=
 HELDOUT_CARDS = evals/datasets/contracts_heldout.toml
@@ -42,13 +47,13 @@ eval:
 	$(UV) python -m evals.run all $(ARGS)
 
 eval-run:
-	$(UV) python -m evals.run generate $(ARGS)
+	$(KEEPAWAKE) $(UV) python -m evals.run generate $(ARGS)
 
 eval-heldout:
-	$(UV) python -m evals.run heldout --cards $(HELDOUT_CARDS) --declare "$(DECLARE)" $(ARGS)
+	$(KEEPAWAKE) $(UV) python -m evals.run heldout --cards $(HELDOUT_CARDS) --declare "$(DECLARE)" $(ARGS)
 
 eval-noise:
-	$(UV) python -m evals.run noise $(ARGS)
+	$(KEEPAWAKE) $(UV) python -m evals.run noise $(ARGS)
 
 eval-noise-report:
 	$(UV) python -m evals.run noise-report $(ARGS)
