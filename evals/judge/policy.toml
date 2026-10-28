@@ -1,0 +1,48 @@
+# Who judges, and when (Component 6). Decided by Aryaan on 2026-10-28:
+#   "use one judge (Z.ai glm) for quick runs and two independent judges (Z.ai and Alibaba) for
+#    milestone runs and any numbers I will quote. DeepSeek only judges agents from other companies."
+#
+# This file only says which judge slugs make up a mode and which rules apply. The models, their prices
+# and settings are in judges.toml, the rubric in rubric.toml. The code that reads this file is
+# evals/judge/policy.py; the rules are enforced there and tested.
+
+# A judge never grades an agent from its own company, whatever the mode. The company of a model is its
+# slug's prefix (the part before the "/"); prefixes in one group below are the same company.
+company_groups = [
+  ["qwen", "alibaba"],
+  ["z-ai", "zhipu", "zai"],
+  ["moonshotai", "moonshot"],
+  ["bytedance-seed", "bytedance"],
+  ["deepseek"],
+  ["anthropic"],
+  ["xiaomi"],
+  ["minimax"],
+  ["tencent"],
+  ["openai"],
+  ["google"],
+]
+
+[modes]
+# quick: a development run. One judge, so its numbers are labelled "not for quoting".
+quick = ["z-ai/glm-5.3-flash"]
+# milestone: a milestone run, the held-out look, the transfer check, the final Sonnet run, and any number
+# that will be quoted. Two judges from two companies; every disagreement is listed for Aryaan to review.
+milestone = ["z-ai/glm-5.3-flash", "qwen/qwen3.7-flash"]
+
+[extra]
+# Judges that may be added with --judge SLUG on top of a mode (or alone). Nothing else may be named:
+# a new judge is added here on purpose. DeepSeek is the agent's own eval-tier company, so the
+# self-grading rule above keeps it away from the eval-tier agent; it can judge Sonnet and others.
+allowed = ["deepseek/deepseek-v4.1-flash-1017"]
+
+[quote]
+# A result may be quoted only if it was judged by at least this many different companies.
+min_companies = 2
+quotable_label = "two or more independent judges (different companies)"
+single_label = "single judge, not for quoting"
+
+[rubric]
+# Flip to true only when Aryaan approves evals/judge/rubric.toml (its hash is in rubric.sha256). A
+# run-set records the value that held when it was made, so approving later does not change old results.
+approved = false
+notice = "rubric draft, not approved by Aryaan"

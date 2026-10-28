@@ -7,7 +7,8 @@
 #              With no run-set yet it says so and still runs retrieval.
 # make eval-run  PAID, but only an estimate unless you add --go: make eval-run ARGS="--go --max-spend 1"
 #              Generates a run-set (the agent on the dev contracts, R repeats). Never spends by
-#              accident: no --go, no spend. A judge only if you name one with --judge SLUG.
+#              accident: no --go, no spend. A judge only if you ask: --judge-mode quick (one judge) or
+#              milestone (two); a judge never grades an agent from its own company.
 # make eval-heldout DECLARE="why"  MILESTONES ONLY. Held-out retrieval and the newest held-out
 #              run-set, totals only; refuses without DECLARE. ARGS="--generate --go" makes a
 #              held-out run-set first (paid, cap $2).

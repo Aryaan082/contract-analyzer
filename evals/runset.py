@@ -77,6 +77,7 @@ def new_manifest(
     max_spend_usd: float,
     declared: str | None = None,
     workers: int = 1,
+    judge_policy: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
@@ -99,7 +100,21 @@ def new_manifest(
         "planned_runs": dataset["contracts"] * repeats,
         "completed_runs": 0,
         "concurrent": workers > 1,
-        "judges": {"slugs": list(judges), "rubric_sha256": rubric_sha256 if judges else None},
+        "judges": {
+            "slugs": list(judges),
+            "rubric_sha256": rubric_sha256 if judges else None,
+            # how it was judged, as the policy stood when the run-set was made (so approving the
+            # rubric later does not change a committed result): the mode, the label, the rubric flag
+            **(
+                {
+                    k: judge_policy[k]
+                    for k in ("mode", "label", "quotable", "rubric_approved", "rubric_notice")
+                    if judge_policy
+                }
+                if judges
+                else {}
+            ),
+        },
         "spend": {
             "estimated_usd": round(estimated_usd, 6),
             "max_usd": max_spend_usd,

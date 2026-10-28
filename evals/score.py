@@ -43,6 +43,7 @@ from evals.detection import (
 )
 from evals.judge.cache import JudgeCache
 from evals.judge.faithfulness import collect_labels, faithfulness_from_labels
+from evals.judge.policy import policy_block
 from evals.judge.rubric import load_rubric
 from evals.repeats import cluster_bootstrap, contract_rates, flips
 from evals.results_file import RESULTS_DIR, build_results, write_results
@@ -253,6 +254,20 @@ def score(
         judged = faithfulness_from_labels(
             judge_labels, in_scope, detail=split != "heldout", resamples=resamples
         )
+        recorded = (runset or {}).get("judges") or {}
+        # the policy as it stood when the run-set was made, if it was judged by the judges it names
+        same = set(recorded.get("slugs", ())) == set(judged["judges"])
+        judged["policy"] = policy_block(
+            judged["judges"],
+            mode=recorded.get("mode"),
+            rubric_approved=recorded.get("rubric_approved"),
+            recorded=recorded if same else None,
+        )
+        manifest["notes"].append(
+            f"Faithfulness judged as '{judged['policy']['mode']}': {judged['policy']['label']}."
+        )
+        if judged["policy"]["rubric_notice"]:
+            manifest["notes"].append(f"Note: {judged['policy']['rubric_notice']}.")
         manifest["notes"].append(
             "Faithfulness is a judge model's opinion of whether the cited evidence supports each "
             "claim. It is checked against faults we planted, faults found by reading reports and a "
@@ -313,6 +328,11 @@ def _faithfulness_lines(block: dict[str, Any] | None) -> list[str]:
             f"{claims['reports_unknown']} unknown); summary sentences supported "
             f"{_iv(summary['item_level'])}; judge cost ${found['cost']['cost_usd']:.4f}"
         )
+    label = block.get("policy")
+    if label:
+        lines.append(f"                  judged as '{label['mode']}': {label['label']}")
+        if label["rubric_notice"]:
+            lines.append(f"                  note: {label['rubric_notice']}")
     both = block.get("agreement")
     if both:
         lines.append(

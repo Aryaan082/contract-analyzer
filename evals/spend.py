@@ -5,7 +5,8 @@ it, and does nothing else unless ALL of these hold:
 - `--go` was given (without it the command only prints the estimate and what to add);
 - `--max-spend` covers the estimate (the default is $4 for a dev run and $2 for held-out);
 - a model that costs more than EXPENSIVE_ABOVE per run (Sonnet) also has `--allow-expensive`;
-- a judge was named on purpose with `--judge SLUG` (there is no default judge).
+- a judge runs only if asked for: `--judge-mode quick|milestone` or `--judge SLUG` (no default; the
+  policy is evals/judge/policy.toml, and a judge never grades an agent from its own company).
 While it runs, the money is counted with the judge's `SpendCap`: before each agent run the most
 that run may cost (its ceiling, which is also the per-run cap handed to the agent loop) is
 reserved, and the run does not start if that would pass `--max-spend`. What is counted afterwards
@@ -57,12 +58,18 @@ AGENT_COSTS: dict[str, AgentCost] = {
     ),
 }  # fmt: skip
 
-# What one judge call cost in the stage 1 trial (2026-10-28): the money spent over the 103 calls of
-# the check set, retries of cut-off replies included (evals/judge/trials/2026-10-28-stage1.json).
-JUDGE_CALL_USD: dict[str, float] = {
-    "qwen/qwen3.7-flash": 0.00045,
-    "z-ai/glm-5.3-flash": 0.00095,
+# What one pass of a judge over the check set cost, and how many calls that was: the money actually
+# spent (retries of cut-off replies included). The cost of one call is the pass cost over its calls,
+# and a run-set is priced as (claims in a report + 1) calls a report, so the figure scales with the
+# claims. glm and qwen: the stage 1 trial of 2026-10-28 (evals/judge/trials/2026-10-28-stage1.json).
+# deepseek: the separate judge-deepseek session reported $0.0575 for one pass (102 calls); that
+# figure comes from its report, not from a file in this branch.
+JUDGE_PASS: dict[str, tuple[float, int]] = {
+    "z-ai/glm-5.3-flash": (0.098, 103),
+    "qwen/qwen3.7-flash": (0.046, 103),
+    "deepseek/deepseek-v4.1-flash-1017": (0.0575, 102),
 }
+JUDGE_CALL_USD: dict[str, float] = {slug: usd / calls for slug, (usd, calls) in JUDGE_PASS.items()}
 
 
 class UnknownCost(ValueError):
@@ -145,9 +152,27 @@ def describe(est: Estimate, cap: float) -> list[str]:
         )
         + f", total ${est.total:.3f}; about {est.seconds / 60:.0f} minutes one run at a time",
         f"spend cap: ${cap:.2f}; the most one run may spend: ${est.ceiling:.2f}",
+        *judge_pricing_line(est),
         *est.notes,
     ]
     return lines
+
+
+def judge_pricing_line(est: Estimate) -> list[str]:
+    """How the judge part of an estimate was priced (empty when no judge was named)."""
+    if not est.judges:
+        return []
+    parts = []
+    for slug in est.judges:
+        if slug in JUDGE_PASS:
+            usd, calls = JUDGE_PASS[slug]
+            parts.append(f"{slug} ${usd} / {calls} calls = ${usd / calls:.5f} a call")
+        else:
+            parts.append(f"{slug} (price given on the command line)")
+    return [
+        "judge pricing: (claims in a report + 1) calls per report per judge, each at the cost per "
+        "call measured on one pass of the check set: " + "; ".join(parts)
+    ]
 
 
 @dataclass(frozen=True)

@@ -11,7 +11,7 @@
 
 What each does and does not do is in evals/README.md. In short: only `generate` (and `heldout
 --generate`) can spend money, only with `--go`, only up to `--max-spend`, and a judge only when
-`--judge` names one.
+`--judge-mode` or `--judge` asks for one.
 """
 
 import argparse
@@ -26,9 +26,12 @@ from agent.config import load_config
 from agent.runmeta import environment
 from evals import spend
 from evals.cards import CardSet, load_cards
+from evals.disagreements import list_disagreements, render
+from evals.disagreements import write as write_text
 from evals.generate import AgentRunner, generate, judge_runset, live_agent_runner, plan_runs
 from evals.judge.cache import CACHE_DIR, JudgeCache
 from evals.judge.client import JudgeClient, JudgeSpec, OpenRouterJudge, load_judges
+from evals.judge.policy import load_policy, policy_block, resolve_judges, self_grading
 from evals.judge.rubric import load_rubric
 from evals.judge.runner import SpendCap
 from evals.results_file import RESULTS_DIR, write_results
@@ -57,11 +60,17 @@ DATASETS = Path(__file__).resolve().parent / "datasets"
 DEV_CARDS = DATASETS / "contracts.toml"
 RetrievalFn = Callable[[argparse.Namespace, list], int]
 
-TRIAL_JUDGES = "qwen/qwen3.7-flash, z-ai/glm-5.3-flash"
+JUDGE_MODE_HELP = (
+    "judge the reports afterwards: quick = one judge (z-ai/glm-5.3-flash, results labelled 'single "
+    "judge, not for quoting'); milestone = two judges from two companies (z-ai/glm-5.3-flash and "
+    "qwen/qwen3.7-flash) for milestone runs, the held-out look, the transfer check, the final run "
+    "and any number that will be quoted. There is no default: no mode, no judge. The rubric is a "
+    "draft, not approved by Aryaan (evals/judge/policy.toml)"
+)
 JUDGE_HELP = (
-    "name a judge model to run over the reports afterwards (repeat for two). There is no default: "
-    f"the rubric and the judge pair are not approved. Candidates tried in the 2026-10-28 trial: "
-    f"{TRIAL_JUDGES} (see evals/judge/README.md)"
+    "an extra judge on top of --judge-mode (or alone); only deepseek/deepseek-v4.1-flash-1017 is "
+    "allowed, and only for agents from other companies. A judge never grades an agent from its own "
+    "company: deepseek cannot judge the eval-tier agent, which is DeepSeek"
 )
 
 
@@ -90,6 +99,16 @@ def _default_retrieval(args: argparse.Namespace, collect: list) -> int:
 # ---- scoring a run-set ---------------------------------------------------------------------------
 
 
+def usable_judges(manifest: dict[str, Any]) -> tuple[tuple[str, ...], list[str]]:
+    """The run-set's judges that may count: a judge from the agent's own company is left out (with a
+    plain line saying so), however its judgements got into the cache."""
+    policy = load_policy()
+    named = tuple(manifest["judges"]["slugs"])
+    refused = self_grading(named, manifest["model"]["slug"], policy)
+    skipped = {j for j in named if any(j in line for line in refused)}
+    return tuple(j for j in named if j not in skipped), refused
+
+
 def score_runset(
     runset: RunSet,
     cards: CardSet,
@@ -112,7 +131,9 @@ def score_runset(
         _out(f"skipped: {note}")
     if not runs:
         return None, [], f"run-set {runset.name} has no readable traces"
-    slugs = tuple(manifest["judges"]["slugs"])
+    slugs, refused = usable_judges(manifest)
+    for line in refused:
+        _out(f"not counted: {line}")
     results = score(
         runs,
         cards,
@@ -174,18 +195,18 @@ def _score_command(
         return status
     _out()
     _out(format_report(results))
+    if kind == "dev":
+        _disagreement_hint(runset, runs, JudgeCache(args.judge_cache))
     path = write_results(results, runset.name, args.results_dir)
     _out(f"\nsaved {path}")
     if kind == "dev" and args.write_summary:
         labels = None
-        if runset.manifest["judges"]["slugs"]:
+        counted, _ = usable_judges(runset.manifest)
+        if counted:
             from evals.judge.faithfulness import collect_labels
 
             labels = collect_labels(
-                runs,
-                JudgeCache(args.judge_cache),
-                runset.manifest["judges"]["slugs"],
-                load_rubric().sha256,
+                runs, JudgeCache(args.judge_cache), counted, load_rubric().sha256
             )
             results = score(
                 runs,
@@ -200,6 +221,47 @@ def _score_command(
         summary = build_summary(runset.manifest, runs, labels, path.name)
         _out(f"saved {write_summary(summary, args.summaries_dir)} (commit it with {path.name})")
     return status
+
+
+def _disagreement_hint(runset: RunSet, runs: list[Any], cache: JudgeCache) -> None:
+    """For a run-set judged by two judges: how many claims they split on, and how to read them."""
+    judges, _ = usable_judges(runset.manifest)
+    if len(judges) != 2 or runset.kind != "dev":
+        return
+    found = list_disagreements(runs, cache, judges, load_rubric().sha256)
+    _out(
+        f"the two judges disagree on {len(found)} claims or summary sentences; to review them: "
+        f"python -m evals.run disagreements --runset {runset.path}"
+    )
+
+
+def cmd_disagreements(args: argparse.Namespace, **_: Any) -> int:
+    runset = (
+        load_runset(Path(args.runset)) if args.runset else latest_runset(args.runsets_dir, "dev")
+    )
+    if runset is None:
+        _out("no dev run-set yet")
+        return 0
+    if runset.kind != "dev":
+        _out("error: held-out has totals only; there is no per-claim list to show")
+        return 2
+    judges, refused = usable_judges(runset.manifest)
+    for line in refused:
+        _out(f"not counted: {line}")
+    if len(judges) != 2:
+        _out(f"this run-set has {len(judges)} usable judge(s); disagreements need two")
+        return 0
+    runs, _ = read_runs(runset)
+    rubric = load_rubric().sha256
+    text = render(
+        list_disagreements(runs, JudgeCache(args.judge_cache), judges, rubric), judges, rubric
+    )
+    if args.out:
+        write_text(Path(args.out), text)
+        _out(f"written to {args.out}")
+    else:
+        _out(text)
+    return 0
 
 
 def cmd_all(args: argparse.Namespace, retrieval: RetrievalFn | None = None, **_: Any) -> int:
@@ -241,7 +303,17 @@ def cmd_generate(
         return 2
     config = load_config()
     slug = config.resolve_model(args.model).name
-    judges = tuple(args.judge)
+    policy = load_policy()
+    try:
+        judges, judge_mode = resolve_judges(getattr(args, "judge_mode", None), args.judge, policy)
+    except ValueError as err:
+        _out(f"error: {err}")
+        return 2
+    refused = self_grading(judges, slug, policy)
+    if refused:
+        for line in refused:
+            _out(line)
+        return 2
     cap_default = spend.HELDOUT_CAP_USD if kind == "heldout" else spend.DEV_CAP_USD
     max_spend = args.max_spend if args.max_spend is not None else cap_default
     try:
@@ -263,6 +335,11 @@ def cmd_generate(
     _out(f"{kind} run-set: {len(chosen)} contracts x {args.repeats} repeats, model {slug}")
     for line in spend.describe(est, max_spend):
         _out(line)
+    judge_policy = policy_block(judges, mode=judge_mode, policy=policy) if judges else None
+    if judge_policy:
+        _out(f"judging: {judge_mode or 'custom'} ({', '.join(judges)}): {judge_policy['label']}")
+        if judge_policy["rubric_notice"]:
+            _out(f"note: {judge_policy['rubric_notice']}")
     decision = spend.decide(
         est,
         go=args.go,
@@ -276,7 +353,9 @@ def cmd_generate(
     if not decision.proceed:
         if decision.lines[0].startswith("nothing was spent"):
             target = "eval-heldout" if kind == "heldout" else "eval-run"
-            _out(f'with make: make {target} ARGS="--go" (add --judge SLUG only if you want one)')
+            _out(
+                f'with make: make {target} ARGS="--go" (add --judge-mode quick|milestone to judge)'
+            )
             return 0
         return 2
 
@@ -300,6 +379,7 @@ def cmd_generate(
         max_spend_usd=max_spend,
         declared=getattr(args, "declare", None),
         workers=args.workers,
+        judge_policy=judge_policy,
     )
     runset = create_runset(args.runsets_dir, manifest)
     if make_runner is not None:
@@ -335,6 +415,8 @@ def cmd_generate(
             make_judge or OpenRouterJudge,
             workers=args.workers if args.workers > 1 else 4,
         )
+    if judges and done.done and kind == "dev":
+        _disagreement_hint(runset, read_runs(runset)[0], JudgeCache(args.judge_cache))
     traces = runset.trace_files()
     first = _first_metrics(traces)
     manifest["completed_runs"] = len(traces)
@@ -358,6 +440,7 @@ def cmd_generate(
             "spent_usd": round(cap.spent, 6),
             "agent_usd": round(agent_spent, 6),
             "judges": list(judges),
+            "judge_mode": judge_mode,
             "stopped": manifest["stopped_because"],
         },
     )
@@ -493,6 +576,9 @@ def _generate_args(p: argparse.ArgumentParser, *, heldout: bool) -> None:
     p.add_argument("--contracts", help="only these card ids, comma separated")
     p.add_argument("--tool-use", action="store_true", help="only the tool-use set (a quick run)")
     p.add_argument("--name", help="name of the run-set (default: from the commit and model)")
+    p.add_argument(
+        "--judge-mode", choices=sorted(load_policy().modes), default=None, help=JUDGE_MODE_HELP
+    )
     p.add_argument("--judge", action="append", default=[], help=JUDGE_HELP)
     cap = spend.HELDOUT_CAP_USD if heldout else spend.DEV_CAP_USD
     p.add_argument(
@@ -550,6 +636,12 @@ def build_parser() -> argparse.ArgumentParser:
     five = sub.add_parser("check-summaries", help="score the committed summaries again and compare")
     _common(five)
     five.set_defaults(run=cmd_check_summaries)
+
+    six = sub.add_parser("disagreements", help="where a run-set's two judges differ, with reasons")
+    _common(six)
+    six.add_argument("--runset", help="a dev run-set folder (default: the newest)")
+    six.add_argument("--out", help="write the list (Markdown) to this file")
+    six.set_defaults(run=cmd_disagreements)
     return parser
 
 

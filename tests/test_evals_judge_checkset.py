@@ -210,6 +210,6 @@ def test_judging_traces_needs_go_too(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(cli, "OpenRouterJudge", Forbidden)
     trace = tmp_path / "one.json"
     trace.write_text(json.dumps(make_trace()))
-    argv = ["run", str(trace), "--judge", "vendor/judge", "--price-in", "1", "--price-out", "1"]
+    argv = ["run", str(trace), "--judge", "other/judge", "--price-in", "1", "--price-out", "1"]
     assert cli.main([*argv, "--cache", str(tmp_path / "c")]) == 0
     assert "nothing sent" in capsys.readouterr().out

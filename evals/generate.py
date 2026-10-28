@@ -22,6 +22,7 @@ from evals.cards import Card
 from evals.judge.cache import JudgeCache
 from evals.judge.client import JudgeClient, JudgeSpec, load_judges
 from evals.judge.inputs import claim_inputs, judgeable, summary_input
+from evals.judge.policy import load_policy, self_grading
 from evals.judge.rubric import load_rubric
 from evals.judge.runner import Job, Price, SpendCap, claim_job, run_jobs, summary_job
 from evals.runset import RunSet, read_runs
@@ -181,6 +182,9 @@ def judge_runset(
 ) -> list[Judged]:
     """Each named judge over every claim and summary of the run-set's accepted reports. Only judges
     listed in judges.toml (which holds their prices) can be used; there is no default."""
+    refused = self_grading(judges, runset.manifest["model"]["slug"], load_policy())
+    if refused:  # also checked before any money is spent; this is the second lock
+        raise ValueError("; ".join(refused))
     specs = specs if specs is not None else load_judges()
     rubric = load_rubric()
     runs, _ = read_runs(runset)

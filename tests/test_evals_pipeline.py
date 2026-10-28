@@ -7,7 +7,6 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -24,132 +23,23 @@ from evals.runset import (
     run_to_dict,
 )
 from evals.table import NO_RUNSET
-from tests.evals_support import make_trace
+from tests.evals_pipeline_support import (
+    ADDRESSES,
+    EVAL_MODEL,
+    forbidden_runner,
+    generate_run_set,
+    make_where,
+    retrieval_spy,
+    scripted_runner,
+)
 from tests.judge_support import FakeJudge, oracle
 
 ROOT = Path(__file__).resolve().parent.parent
-EVAL_MODEL = "deepseek/deepseek-v4.1-flash-1017"
-ADDRESSES = {"c1": "0x" + "11" * 20, "c2": "0x" + "22" * 20, "c3": "0x" + "33" * 20}
-CARD = """
-[[contract]]
-id = "{id}"
-address = "{address}"
-block = 100
-class = "{klass}"
-split = "{split}"
-source = "a test"
-reason = "a test"
-"""
-
-
-def write_cards(path: Path, split: str = "dev") -> Path:
-    classes = {"c1": "benign", "c2": "flagged", "c3": "grey"}
-    path.write_text(
-        "".join(
-            CARD.format(id=i, address=a, klass=classes[i], split=split)
-            for i, a in ADDRESSES.items()
-        )
-    )
-    return path
 
 
 @pytest.fixture
 def where(tmp_path):
-    """Folders for one test: cards, run-sets, results, summaries and the judge cache."""
-    dirs = SimpleNamespace(
-        cards=write_cards(tmp_path / "cards.toml"),
-        held=write_cards(tmp_path / "held.toml", split="heldout"),
-        runsets=tmp_path / "runsets",
-        results=tmp_path / "results",
-        summaries=tmp_path / "summaries",
-        cache=tmp_path / "cache",
-    )
-
-    def argv(command: str, *rest: str, cards: Path | None = None) -> list[str]:
-        return [
-            command,
-            "--cards",
-            str(cards or dirs.cards),
-            "--runsets-dir",
-            str(dirs.runsets),
-            "--results-dir",
-            str(dirs.results),
-            "--summaries-dir",
-            str(dirs.summaries),
-            "--judge-cache",
-            str(dirs.cache),
-            "--resamples",
-            "50",
-            *rest,
-        ]
-
-    dirs.argv = argv
-    return dirs
-
-
-def scripted_runner(cost: float = 0.004, verdicts: dict[str, str] | None = None):
-    """A make_runner: each run writes a trace the way a real run does, at `cost` dollars."""
-    verdicts = verdicts or {"c1": "no_red_flags_found", "c2": "high_risk", "c3": "elevated_risk"}
-    by_address = {a: i for i, a in ADDRESSES.items()}
-    calls = []
-
-    def make(traces: Path):
-        def run(card, ceiling, tags):
-            calls.append((card.id, ceiling, tags))
-            trace = make_trace(
-                address=card.address,
-                block=card.block,
-                model=EVAL_MODEL,
-                verdict=verdicts[by_address[card.address]],
-                cost=cost,
-                tags=tags,
-                tools=[
-                    ("identify_contract", {"address": card.address}),
-                    ("simulate_sell", {"address": card.address}),
-                ],
-            )
-            path = traces / f"r{tags['repeat']}-{card.id}.json"
-            path.write_text(json.dumps(trace))
-            return RunResult(path, cost, accepted=True)
-
-        return run
-
-    make.calls = calls
-    return make
-
-
-def forbidden_runner(*_):
-    raise AssertionError("an agent run was started")
-
-
-def forbidden_judge(_spec):
-    raise AssertionError("a judge was started")
-
-
-def retrieval_spy():
-    seen = []
-
-    def run(ns, rows):
-        seen.append(ns)
-        rows.append(
-            (
-                "dense-small",
-                "held-out" if ns.held_out else "dev",
-                SimpleNamespace(n=87, recall="0.84 [0.76-0.92]", mrr="0.80 [0.72-0.88]"),
-            )
-        )
-        return 0
-
-    run.seen = seen
-    return run
-
-
-def generate_run_set(where, *rest, make=None, **kw):
-    return pipeline.main(
-        where.argv("generate", "--go", "--max-spend", "1", *rest),
-        make_runner=make or scripted_runner(),
-        make_judge=kw.get("make_judge", forbidden_judge),
-    )
+    return make_where(tmp_path)
 
 
 # -- the estimate -------------------------------------------------------------------------------
@@ -166,7 +56,7 @@ def test_a_judge_adds_one_call_per_claim_and_one_per_summary_at_its_measured_pri
     est = spend.estimate_generation(EVAL_MODEL, 10, ("qwen/qwen3.7-flash", "z-ai/glm-5.3-flash"))
     calls = -(-10 * (12.1 + 1) // 1)  # 131 calls for each judge
     assert est.judge_calls == 2 * calls
-    assert est.judge_usd == pytest.approx(calls * (0.00045 + 0.00095))
+    assert est.judge_usd == pytest.approx(calls * (0.046 / 103 + 0.098 / 103))
     assert est.total == pytest.approx(est.agent_usd + est.judge_usd)
 
 
@@ -188,7 +78,9 @@ def test_sonnet_is_expensive_and_the_eval_tier_is_not():
 
 def test_every_cost_figure_says_where_it_comes_from():
     assert all(c.source and c.typical < c.ceiling for c in spend.AGENT_COSTS.values())
-    assert set(spend.JUDGE_CALL_USD) == {"qwen/qwen3.7-flash", "z-ai/glm-5.3-flash"}
+    assert set(spend.JUDGE_CALL_USD) == set(spend.JUDGE_PASS)
+    assert {"qwen/qwen3.7-flash", "z-ai/glm-5.3-flash"} <= set(spend.JUDGE_PASS)
+    assert spend.JUDGE_CALL_USD["z-ai/glm-5.3-flash"] == pytest.approx(0.098 / 103)
 
 
 # -- the rules before any spending --------------------------------------------------------------
@@ -264,12 +156,11 @@ def test_a_judge_is_never_started_unless_it_is_named(where):
     assert list(where.cache.glob("*")) == []  # forbidden_judge would have raised
 
 
-def test_the_help_lists_the_trial_pair_as_candidates_and_says_there_is_no_default():
-    help_text = pipeline.build_parser().parse_args(["generate"]).__class__  # noqa: F841
+def test_the_help_names_the_two_judge_modes_and_says_there_is_no_default():
     text = pipeline.build_parser()._subparsers._group_actions[0].choices["generate"].format_help()
     flat = " ".join(text.split())
-    assert "qwen/qwen3.7-flash" in flat and "z-ai/glm-5.3-flash" in flat
-    assert "no default" in flat and "not approved" in flat
+    assert "quick" in flat and "milestone" in flat and "z-ai/glm-5.3-flash" in flat
+    assert "qwen/qwen3.7-flash" in flat and "no default" in flat and "not approved" in flat
 
 
 def test_a_judge_that_is_not_listed_is_refused_before_anything_runs(where, capsys):
@@ -286,7 +177,7 @@ def test_a_judge_that_is_not_listed_is_refused_before_anything_runs(where, capsy
         ),
         make_runner=forbidden_runner,
     )
-    assert code == 2 and "not in judges.toml" in capsys.readouterr().out
+    assert code == 2 and "not in the judge policy" in capsys.readouterr().out
 
 
 # -- a run-set is made, within the cap ----------------------------------------------------------
@@ -368,6 +259,11 @@ def test_a_named_judge_runs_after_the_agent_inside_the_same_cap(where):
     assert runset.manifest["judges"] == {
         "slugs": ["qwen/qwen3.7-flash"],
         "rubric_sha256": load_rubric().sha256,
+        "mode": "custom",
+        "label": "single judge, not for quoting",
+        "quotable": False,
+        "rubric_approved": False,
+        "rubric_notice": "rubric draft, not approved by Aryaan",
     }
     assert runset.manifest["spend"]["spent_usd"] == pytest.approx(
         9 * 0.004 + len(judge.calls) * 0.0004

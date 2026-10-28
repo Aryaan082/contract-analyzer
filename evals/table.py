@@ -110,6 +110,10 @@ def agent_rows(results: dict[str, Any] | None) -> list[Row]:
                     f"{iv(claims['item_level'])} / {iv(claims['report_level'])}",
                 )
             )
+        label = faith.get("policy")
+        if label:
+            tail = f"; {label['rubric_notice']}" if label["rubric_notice"] else ""
+            rows.append(("", "-", "judged as", f"{label['mode']}: {label['label']}{tail}"))
     else:
         judges = (runset.get("judges") or {}).get("slugs")
         rows.append(

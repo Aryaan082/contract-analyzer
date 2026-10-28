@@ -22,6 +22,7 @@ from evals.judge import checkset as cs
 from evals.judge.cache import CACHE_DIR, JudgeCache
 from evals.judge.client import JudgeSpec, ModelUnavailable, OpenRouterJudge, load_judges
 from evals.judge.inputs import claim_inputs, judgeable, summary_input
+from evals.judge.policy import load_policy, self_grading
 from evals.judge.rubric import load_rubric, recorded_hash
 from evals.judge.runner import (
     Job,
@@ -212,6 +213,12 @@ def cmd_run(args: argparse.Namespace) -> int:
     runs, skipped = load_runs(args.traces)
     for note in skipped:
         _out(f"skipped: {note}")
+    policy = load_policy()
+    refused = sorted({line for r in runs for line in self_grading(args.judge, r.model, policy)})
+    if refused:  # a judge never grades an agent from its own company
+        for line in refused:
+            _out(line)
+        return 2
     jobs: dict[str, list[Job]] = {slug: [] for slug in args.judge}
     for run in runs:
         if not judgeable(run):

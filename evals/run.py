@@ -203,7 +203,7 @@ def _check_baseline(runner: RetrievalRunner, runs: dict[str, Run]) -> int:
 LAYERS: dict[str, Callable[[argparse.Namespace], int]] = {"retrieval": run_retrieval}
 
 
-COMMANDS = ("all", "generate", "heldout", "ledger", "check-summaries")
+COMMANDS = ("all", "generate", "heldout", "ledger", "check-summaries", "disagreements")
 
 
 def main(argv: Sequence[str] | None = None) -> int:

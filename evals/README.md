@@ -141,9 +141,9 @@ first and prints it. It then does nothing unless all of these hold (`evals/spend
    `make eval-run` does);
 2. `--max-spend` covers the estimate. The default cap is $4 for a dev run and $2 for held-out;
 3. a model dearer than $0.02 a run (Sonnet) also has `--allow-expensive`;
-4. a judge only runs if `--judge SLUG` names one. There is no default judge: the rubric and the judge
-   pair are not approved. The trial pair (`qwen/qwen3.7-flash`, `z-ai/glm-5.3-flash`) is listed in
-   `--help` as candidates.
+4. a judge only runs if one is asked for on purpose: `--judge-mode quick|milestone`, or `--judge SLUG`
+   for an extra. There is no default. The rubric is still a draft, not approved by Aryaan, and the
+   estimate and the results file say so (see "Who judges" below).
 
 While it runs, each agent run first reserves its ceiling (the per-run cap handed to the agent loop:
 $0.05 for the eval tier, $0.25 for Sonnet) from a `SpendCap`, and does not start if that would pass
@@ -153,6 +153,28 @@ judges' per-call costs from the stage 1 trial. An unknown model or judge has no 
 `--per-run-usd` or `--judge-call-usd` is given. Every paid command appends to a git-ignored ledger
 (`evals/runsets/ledger.jsonl`); `python -m evals.run ledger` sums it against the roughly $25 envelope. The
 ledger starts empty: the smoke test ($1.64) and the judge trial ($0.2163) were spent before it existed.
+
+**Who judges** (Aryaan's decision of 2026-10-28; `evals/judge/policy.toml`, read by
+`evals/judge/policy.py`):
+
+| `--judge-mode` | Judges | Use | Results are labelled |
+|---|---|---|---|
+| `quick` | `z-ai/glm-5.3-flash` | development runs | "single judge, not for quoting" |
+| `milestone` | `z-ai/glm-5.3-flash` and `qwen/qwen3.7-flash` (two companies) | milestone runs, the held-out look, the transfer check, the final Sonnet run, any number that will be quoted | "two or more independent judges (different companies)" |
+
+`--judge deepseek/deepseek-v4.1-flash-1017` may be added as an optional extra, but only for agents from
+other companies. **A judge never grades an agent from its own company**: the vendor prefix of the
+judge's slug is compared with the agent's, and the command refuses before it spends anything (and the
+judge step, the judge command on traces, and the scoring each check it again). So DeepSeek cannot judge
+the eval-tier agent, which is DeepSeek, and an Anthropic judge could never grade Sonnet. Only the judges
+named in the policy can be used. The estimate prices the chosen mode from the measured cost of one pass
+over the check set (glm $0.098, qwen $0.046, 103 calls each), as (claims in a report + 1) calls a report
+per judge, and says so. The run-set manifest and the results file record the mode, the judge slugs, the
+rubric hash, the label, and whether the rubric was approved **when the run-set was made** (approving it
+later does not change a committed result). A two-judge run lists every disagreement:
+`python -m evals.run disagreements --runset PATH [--out FILE]` shows each claim or summary sentence
+the two judges labelled differently, with both reasons (dev run-sets only; held-out has totals only). The
+results file keeps the ids and labels.
 
 **A run-set** is `evals/runsets/<name>/` (git-ignored): `traces/*.json` and `manifest.json`. The manifest
 has the git commit and dirty flag, the model tier and slug, hashes (settings file, system prompt, tool
