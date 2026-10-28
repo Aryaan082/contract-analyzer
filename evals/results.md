@@ -71,6 +71,37 @@ meaning search it moves code from 0.67 to 0.69 and the total by +0.01 [-0.03..+0
 earlier gain was with hybrid. The CI baseline is now `dense-small`. Qwen latency in these runs was
 2.0 s median and 8.8 s at the 95th percentile (slower than on the 25th).
 
+## Faithfulness judge: check-set trials
+
+Component 6, part D. Each row is one judge asked about the committed check set (`evals/judge/checkset/`,
+dev traces only; the faults are **ours**: 39 planted edits of real Sonnet claims and 5 claims found
+unsupported by an earlier reader, against 46 sound claims believed to follow from their evidence, plus
+15 summaries). The judge is a model's opinion; it was **not** checked against Aryaan's own labels (the
+spec asks for that) and it is not truth. Rubric draft `faa679eb…` (unapproved). Rates are k/n with a
+Wilson 95% interval; "caught" means the label is one the fault should get (`partly` counts for a stretched
+claim, not for a flipped fact); "false alarm" is a sound item labelled `not_supported` or `contradicted`;
+"downgraded" is a sound item labelled `partly`. Items a judge did not label are in no denominator.
+The full record is `evals/judge/trials/2026-10-28-stage1.json`.
+
+| date | change | judge | what | n | caught | false alarm | notes |
+|---|---|---|---|---|---|---|---|
+| 2026-10-28 | stage 1, first look at the check set | qwen/qwen3.7-flash | claims | 44 faults, 46 sound | 37/44 = 0.84 [0.71–0.92] | 0/46 = 0.00 [0.00–0.08] | downgraded 11/46 (0.24). Changed numbers caught 3/7. Thinks first: 27 of 103 replies were cut off at 2,500 tokens, so the retry used 6,000 (then 0 refused). $0.046 |
+| 2026-10-28 | stage 1 | qwen/qwen3.7-flash | summary sentences | 14 faults, 38 sound | 13/14 = 0.93 [0.69–0.99] | 2/38 = 0.05 [0.01–0.17] | strict (`not_supported`/`contradicted`) 10/14 |
+| 2026-10-28 | stage 1 | z-ai/glm-5.3-flash | claims | 41 faults, 46 sound | 39/41 = 0.95 [0.84–0.99] | 1/46 = 0.02 [0.00–0.11] | 3 faults unlabelled (reply cut off, even at 12,000 tokens). downgraded 10/46 (0.22). Missed: `flip-milka-owner`, `num-milka-block`. $0.098 |
+| 2026-10-28 | stage 1 | z-ai/glm-5.3-flash | summary sentences | 14 faults, 38 sound | 14/14 = 1.00 [0.78–1.00] | 0/38 = 0.00 [0.00–0.09] | strict 13/14 |
+| 2026-10-28 | two judges together (Alibaba, Z.ai) | both | all scored units | 139 both labelled | exact label 110/139 = 0.79 [0.72–0.85] | | supported-or-not 124/139 = 0.89 [0.83–0.93], kappa 0.78; 29 disagreements listed in the record. Agreement is consistency, not correctness |
+| 2026-10-28 | stability: the same inputs asked again | z-ai/glm-5.3-flash | all scored units | 133 both labelled | | | 7 labels changed (5%), 4 of them between supported and not (3%); 9 items unlabelled in one pass or the other. $0.072 |
+
+Spend: $0.2163 of the approved $0.33. Two things found by the trial, both fixed in the open: a strict
+JSON-schema request found no provider for qwen3.7-flash (HTTP 404, nothing charged), so it is asked
+for plain JSON and read strictly; and the answer key for one real summary (deepseek-v4-pro on Seaport)
+was wrong, because its unsupported phrases are repeated in the report's own findings, so the summary
+rule correctly calls it supported; it was removed after the first look (summary catch before the
+correction: qwen 13/17, glm 14/17). With 44 faults per judge, differences under about 10 points are
+not shown, so "glm catches more" is a lean, not a result.
+
+## Retrieval rows
+
 | date | change | variant | split | n | recall@5 [95% CI] | MRR [95% CI] | p50 / p95 ms | notes |
 |---|---|---|---|---|---|---|---|---|
 | 2026-10-25 | baselines: random, keyword search (plain vs identifier-aware tokenizer), dense-only (bge-small) | random | dev | 69 | 0.18 [0.10–0.26] | 0.15 [0.09–0.21] | 0.0 / 0.0 |  |

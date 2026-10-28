@@ -116,4 +116,6 @@ def quotes_found(reason: str, texts: list[str]) -> bool | None:
 
 
 def _squash(text: str) -> str:
-    return re.sub(r"\s+", " ", text.replace('\\"', '"')).lower()
+    """Lower case, one space between words, and no quote marks or backslashes: a judge writes
+    `verdict: sell_blocked` for the evidence's `"verdict": "sell_blocked"`."""
+    return re.sub(r"\s+", " ", re.sub(r"[\\\"']", "", text)).lower()

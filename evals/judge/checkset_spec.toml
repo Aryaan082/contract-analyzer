@@ -634,12 +634,12 @@ trace = "20261027T190453Z-ethereum-84e84bf4.json"
 fault = [1]
 note = "deepseek-v4-pro: 'a reflection-style ERC-20 token'. Contested: one selector in the evidence is named reflectionThreshold(); the smoke-test reader judged the description unsupported."
 
-[[summary]]
-id = "real-sum-seaport-pro"
-origin = "real"
-trace = "20261027T191544Z-ethereum-00000000.json"
-fault = [1, 3, 4]
-note = "deepseek-v4-pro: 'the Seaport marketplace protocol (OpenSea's NFT exchange)'; 'a selector-name collision on the 0x00000000 fallback'; 'consistent with Seaport's permissionless design'."
+# Left out after the first judge run (2026-10-28): the deepseek-v4-pro Seaport summary. Its unsupported
+# phrases ("OpenSea's NFT exchange", "the 0x00000000 fallback", "consistent with Seaport's
+# permissionless design") are repeated in that report's own findings, and the summary check asks
+# whether the summary follows the findings, so a summary that faithfully repeats an unsupported
+# finding is `supported` by that rule. The error was in this answer key, not in the judges; the
+# same two claims are checked at claim level (real-seaport-opensea-pro, real-seaport-fallback-pro).
 
 [[summary]]
 id = "real-sum-usdc-seed"

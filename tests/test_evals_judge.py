@@ -351,6 +351,7 @@ def test_quotes_are_checked_against_the_text_the_judge_was_given():
     assert quotes_found('the field `"verdict": "sell_blocked"` says so', texts) is True
     assert quotes_found("the field `verdict: sell_allowed` says so", texts) is False
     assert quotes_found("no quote at all", texts) is None
+    assert quotes_found("it says `verdict: sell_blocked`", texts) is True  # marks do not matter
 
 
 # -- the cache ----------------------------------------------------------------------------------
@@ -576,6 +577,14 @@ def test_a_judge_marked_unstructured_sends_no_response_format():
     judge.judge(claim_input().prompt(RUBRIC), CLAIM_SCHEMA, max_tokens=300)
     body = json.loads(opener.requests[0].data)
     assert "response_format" not in body and "provider" not in body
+
+
+def test_a_judge_marked_json_object_asks_for_json_without_a_schema():
+    judge, opener = judge_with(reply_payload(), structured="json_object")
+    judge.judge(claim_input().prompt(RUBRIC), CLAIM_SCHEMA, max_tokens=300)
+    body = json.loads(opener.requests[0].data)
+    assert body["response_format"] == {"type": "json_object"}
+    assert body["provider"] == {"require_parameters": True}
 
 
 def test_reasoning_is_switched_off_only_when_the_judge_is_listed_that_way():

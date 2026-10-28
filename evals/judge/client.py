@@ -66,7 +66,7 @@ class JudgeSpec:
     input_per_mtok: float
     output_per_mtok: float
     max_tokens: int = 800
-    structured: str = "json_schema"  # "json_schema" | "none"
+    structured: str = "json_schema"  # "json_schema" | "json_object" | "none"
     reasoning: str = ""  # "off" asks the model not to think first; "" leaves its default
     note: str = ""
 
@@ -108,6 +108,11 @@ class OpenRouterJudge(OpenRouterModel):
                 "type": "json_schema",
                 "json_schema": {"name": "judgement", "strict": True, "schema": schema},
             }
+            body["provider"] = {"require_parameters": True}
+        elif self._structured == "json_object":
+            # for a model listed with `response_format` but not `structured_outputs`: the reply is
+            # asked to be JSON, the prompt gives its shape, the parser checks it
+            body["response_format"] = {"type": "json_object"}
             body["provider"] = {"require_parameters": True}
         if self._reasoning == "off":
             body["reasoning"] = {"enabled": False}

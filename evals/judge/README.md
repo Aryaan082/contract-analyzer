@@ -2,8 +2,9 @@
 
 The citation validator proves that every cited id exists and is of the right kind. It does not prove
 the evidence says what the claim says. This folder is the second check: a judge model reads each claim
-with the evidence it cites and gives one label. **Nothing here has been sent to any model yet.** The
-build is offline; paid calls need `--go` and a `--max-spend` cap.
+with the evidence it cites and gives one label. The code and the check set are built and tested
+offline; the only paid calls so far are the stage-1 trial on the check set (2026-10-28, $0.22 of an
+approved $0.33), below. Paid calls need `--go` and a `--max-spend` cap.
 
 ## What the judge is, and is not
 
@@ -15,7 +16,7 @@ build is offline; paid calls need `--go` and a `--max-spend` cap.
   Aryaan has time, 20 hand-labelled claims would add the check the spec asks for (19 of 20 agreeing
   has a 95% interval of about 76% to 99%: enough to reveal a bad judge, not to rank good ones).
 - **The faults are ours.** The 39 planted faults were written by the session that built the judge, as
-  small edits to real Sonnet claims. The 5 real claim faults and 4 real summaries were found by an
+  small edits to real Sonnet claims. The 5 real claim faults and 3 real summaries were found by an
   earlier reader (the 2026-10-27 smoke-test session) by eye. A judge that catches them has shown it
   catches the kinds of fault we thought of, not the ones we did not.
 - It sees only what a claim cites. It cannot tell that a claim should have cited something else.
@@ -89,7 +90,7 @@ never used.
 | Their twins | the unedited claims, as sound items |
 | More sound claims | 13 real claims believed to follow from the evidence, read by the author |
 | Real faults | 5 claims written by DeepSeek-pro and Qwen that an earlier reader found unsupported (Seaport as "the OpenSea marketplace protocol", selector `0x00000000` read as "the fallback", a context claim naming Circle) |
-| Summaries | 16 summaries: real Sonnet summaries with one sentence inserted or changed, the originals, and 4 real summaries with the faults the earlier reader found (USDC "Circle's regulated fiat-backed stablecoin", MILKA "a reflection-style ERC-20", Seaport "OpenSea's NFT exchange") |
+| Summaries | 15 summaries: real Sonnet summaries with one sentence inserted or changed, the originals, and 3 real summaries with faults the earlier reader found (USDC "Circle's regulated fiat-backed stablecoin" twice, MILKA "a reflection-style ERC-20"). A fourth, Seaport's "OpenSea's NFT exchange", was removed after the first run: see the trial results |
 
 Every planted claim must pass the project's own citation validator, so each is a fault the validator
 accepts. The build also checks that the sound claims' key facts really occur in the cited evidence
@@ -127,14 +128,70 @@ finished is in the cache. With several workers a call that cannot yet be reserve
 which is conservative. Prices in `judges.toml` bound the worst case; a provider that charges more than its
 listed price could exceed it.
 
-## Not verified
+## Trial results (2026-10-28, stage 1)
 
-- **No request has been sent**, so these are untested against the live API: that each candidate model
-  accepts `response_format` with a JSON schema and `provider.require_parameters`; that thinking models
-  leave room for the JSON inside `max_tokens`; what a call really costs. The first paid trial is the
-  test. A model that refuses the request format can be set to `structured = "none"` in `judges.toml`.
-- The prices in `judges.toml` are what was read on the date written there, not a guarantee.
+Two judges from two companies, each asked once about the check set (102 calls: 87 claims and 15
+summaries after the correction below), then the stability pass of the one with the higher catch rate.
+Full numbers and the list of disagreements are in `trials/2026-10-28-stage1.json` and a table in
+`../results.md`. Spend $0.2163 of the approved $0.33. Rubric draft `faa679eb…`, unapproved.
+
+| | `qwen/qwen3.7-flash` (Alibaba) | `z-ai/glm-5.3-flash` (Z.ai) |
+|---|---|---|
+| Claim faults caught | 37/44 = 0.84 [0.71–0.92] | 39/41 = 0.95 [0.84–0.99] |
+| of those that must get a strict label (flip, number, citation, swap) | 16/22 | 17/19 |
+| Sound claims called `not_supported` or `contradicted` | 0/46 | 1/46 |
+| Sound claims called `partly` ("downgraded") | 11/46 = 0.24 | 10/46 = 0.22 |
+| Summary-sentence faults caught / false alarms | 13/14 and 2/38 | 14/14 and 0/38 |
+| Replies left unlabelled | 0 | 3 of 103 (cut off) |
+| Cost of the check set | $0.046 | $0.098 |
+
+- **Agreement.** The two judges give the same label on 110 of 139 items (0.79 [0.72–0.85]) and agree
+  on "supported or not" on 124 (0.89); kappa 0.78. Agreement is consistency, not correctness.
+- **Stability.** `glm-5.3-flash` asked twice about the same inputs changed 7 of 133 labels (5%), 4 of
+  them between supported and not (3%).
+- **Both judges are strict about hedged inferences.** About a quarter of the sound claims came back
+  `partly`. They are inferences such as "no code at this address, so a single key". That lowers the
+  claim-level share and does not fail a report; expect claim-level faithfulness to read low even for a
+  good report.
+- **Changed numbers are the hardest fault.** `qwen3.7-flash` caught 3 of 7 (an extra-function count, a
+  block distance, decimals); `glm-5.3-flash` 5 of 6. Both missed `num-milka-block`.
+- **Hidden thinking.** Both models think before they answer and bill it as output. At 2,500 tokens 27 of
+  qwen's 103 replies (all 16 summaries among them) were used up by thinking and cut off, so qwen uses
+  6,000 and none was refused after that. glm at 6,000 had 12 cut off; at 12,000, 3 still were. One of
+  them was a loop of whitespace after an opening quote. Cut-off replies are recorded as refused and
+  counted as unlabelled, never guessed, and are retried with `--retry-unparsed`.
+- **Quotes.** The rubric asks for a backticked quote of the evidence field. `qwen3.7-flash` seldom
+  does (19 of 205 reasons); `glm-5.3-flash` does in 118 of 202, and 15 of those are not found in what it
+  was given. That is a hint of paraphrase or invention, not a finding.
+- **A wrong answer key, corrected after the first look.** Both judges missed the same three sentences
+  in one real summary (deepseek-v4-pro on Seaport: "OpenSea's NFT exchange", "the 0x00000000
+  fallback", "consistent with Seaport's permissionless design"). Those phrases are repeated in that
+  report's own findings, and the summary check asks whether the summary follows the findings, so the
+  judges were right and the key was wrong. The item was removed from the summary check; the same
+  claims are checked at claim level. Before the correction the summary catch was 13/17 and 14/17.
+- **Sizes.** With 44 faults, differences under about 10 points are not shown, so "glm catches more"
+  is a lean. Next, if wanted: a stage 2 with `xiaomi/mimo-v2.6-pro` ($0.12–0.33 a pass), the rubric
+  tweak below, and a re-run on a larger fault set.
+
+**Rubric change worth considering before approval** (it would give a new hash and restart these
+checks, about $0.15 for the two judges): the reason asks for a quote that contains JSON quote marks
+(`"verdict": "sell_blocked"`), which has to be escaped inside a JSON string. Asking for the quoted
+words without quote marks would remove that.
+
+## Verified and not verified
+
+- **Verified by the trial:** `glm-5.3-flash` accepts a strict JSON-schema request with
+  `provider.require_parameters`; `qwen3.7-flash` is refused it (HTTP 404, no provider, nothing charged)
+  and answers plain JSON (`structured = "json_object"`); the strict parser read every reply that was not
+  cut off except one (not JSON, in the stability pass); the spend cap and the cost accounting work against the real API.
+- **Not verified:** that `reasoning = "off"` works (never sent); whether the other two candidates in
+  `judges.toml` (`xiaomi/mimo-v2.6-pro`, `minimax/minimax-m3`) accept the request; judging full agent
+  runs (`python -m evals.judge run`), which is tested only with a scripted judge.
+- Prices in `judges.toml` are what was read on the date written there. A cost the cache records for a
+  call is the one OpenRouter reported; a cut-off reply that was retried costs twice, and only the later
+  row stays in the cache, so the cache's own total is lower than the money spent (the table above
+  uses the money spent).
 - The sound claims and the sentences marked sound were read by one person (the author). Some may be
   arguable; `partly` on a sound claim is reported as a downgrade for that reason.
-- The check set is small (about 45 claims of each kind, 16 summaries). Differences between judges of
+- The check set is small (44 claim faults, 46 sound claims, 15 summaries). Differences between judges of
   a few items are not shown.

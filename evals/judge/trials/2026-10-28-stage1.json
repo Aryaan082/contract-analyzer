@@ -1,0 +1,729 @@
+{
+ "what": "Stage 1 of the faithfulness-judge trial on the committed check set (dev traces only). The faults are ours; the judge is a model's opinion, not truth, and was not checked against Aryaan's own labels.",
+ "date": "2026-10-28",
+ "approved": "Aryaan, via the side session: hard cap $0.33 in total; stage 1 = qwen/qwen3.7-flash and z-ai/glm-5.3-flash, then the stability pass of the better one",
+ "rubric_sha256": "faa679ebcf3c892732daf6f2f3c4f8af8c65ca041d911e698ae54cb2ed4dfa7e",
+ "check_set": {
+  "claims": 90,
+  "claim_faults": 44,
+  "planted": 39,
+  "real": 5,
+  "sound_claims": 46,
+  "summaries": 15,
+  "scored_units": 142,
+  "scored_faults": 58,
+  "calls_per_pass": 102
+ },
+ "settings": {
+  "temperature": 0,
+  "qwen/qwen3.7-flash": {
+   "structured": "json_object (a strict JSON-schema request found no provider: HTTP 404, nothing charged)",
+   "max_tokens": "2500 for the first pass (27 of 103 replies, all 16 summaries among them, were cut off by hidden thinking), 6000 for the retry of those 27"
+  },
+  "z-ai/glm-5.3-flash": {
+   "structured": "json_schema",
+   "max_tokens": "6000; 12 replies cut off, retried at 12000, 3 still cut off"
+  },
+  "providers": "qwen: Alibaba; glm: 14 different providers (OpenRouter routes)"
+ },
+ "spend_usd": {
+  "qwen first pass": 0.0328,
+  "qwen retry of 27 cut-off replies": 0.0133,
+  "glm first pass": 0.0788,
+  "glm retry of 12 cut-off replies": 0.0195,
+  "glm stability pass": 0.0719,
+  "total": 0.2163,
+  "approved cap": 0.33
+ },
+ "answer_key_correction": "After the first run the answer key was corrected: the deepseek-v4-pro Seaport summary was removed from the summary check. Its unsupported phrases are repeated in that report's own findings, so a summary that follows them is supported by the summary rule; the same claims are checked at claim level. Before the correction the summary catch was qwen 13/17 and glm 14/17; both judges had missed the same three sentences.",
+ "reasons_quoting_evidence": {
+  "qwen/qwen3.7-flash": {
+   "reasons": 205,
+   "with_a_quote": 19,
+   "quote_not_in_prompt": 4
+  },
+  "z-ai/glm-5.3-flash": {
+   "reasons": 202,
+   "with_a_quote": 118,
+   "quote_not_in_prompt": 15
+  }
+ },
+ "report": {
+  "rubric_sha256": "faa679ebcf3c892732daf6f2f3c4f8af8c65ca041d911e698ae54cb2ed4dfa7e",
+  "judges": [
+   "qwen/qwen3.7-flash",
+   "z-ai/glm-5.3-flash"
+  ],
+  "per_judge": {
+   "qwen/qwen3.7-flash": {
+    "claims": {
+     "faults": 44,
+     "faults_unlabelled": 0,
+     "catch": {
+      "k": 37,
+      "n": 44,
+      "rate": 0.8409,
+      "low": 0.7063,
+      "high": 0.9207
+     },
+     "catch_strict": {
+      "k": 19,
+      "n": 44,
+      "rate": 0.4318,
+      "low": 0.2968,
+      "high": 0.5778
+     },
+     "catch_by_origin": {
+      "planted": {
+       "k": 33,
+       "n": 39,
+       "rate": 0.8462,
+       "low": 0.7027,
+       "high": 0.9275
+      },
+      "real": {
+       "k": 4,
+       "n": 5,
+       "rate": 0.8,
+       "low": 0.3755,
+       "high": 0.9638
+      }
+     },
+     "catch_by_operator": {
+      "citation": {
+       "k": 5,
+       "n": 6,
+       "rate": 0.8333,
+       "low": 0.4365,
+       "high": 0.9699
+      },
+      "flip": {
+       "k": 6,
+       "n": 6,
+       "rate": 1.0,
+       "low": 0.6097,
+       "high": 1.0
+      },
+      "invented": {
+       "k": 6,
+       "n": 6,
+       "rate": 1.0,
+       "low": 0.6097,
+       "high": 1.0
+      },
+      "number": {
+       "k": 3,
+       "n": 7,
+       "rate": 0.4286,
+       "low": 0.1582,
+       "high": 0.7495
+      },
+      "overclaim": {
+       "k": 4,
+       "n": 4,
+       "rate": 1.0,
+       "low": 0.5101,
+       "high": 1.0
+      },
+      "real": {
+       "k": 4,
+       "n": 5,
+       "rate": 0.8,
+       "low": 0.3755,
+       "high": 0.9638
+      },
+      "strengthen": {
+       "k": 7,
+       "n": 7,
+       "rate": 1.0,
+       "low": 0.6457,
+       "high": 1.0
+      },
+      "swap": {
+       "k": 2,
+       "n": 3,
+       "rate": 0.6667,
+       "low": 0.2077,
+       "high": 0.9385
+      }
+     },
+     "sound": 46,
+     "sound_unlabelled": 0,
+     "false_alarm": {
+      "k": 0,
+      "n": 46,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0771
+     },
+     "downgraded": {
+      "k": 11,
+      "n": 46,
+      "rate": 0.2391,
+      "low": 0.1391,
+      "high": 0.3794
+     },
+     "missed": [
+      "cite-pair-identical",
+      "num-groklet-extras",
+      "num-milka-block",
+      "num-milka-decimals",
+      "num-milka-extras",
+      "real-seaport-fallback-pro",
+      "swap-pair-tokens"
+     ],
+     "false_alarms": [],
+     "labels_on_faults": {
+      "contradicted": 12,
+      "partly": 23,
+      "not_supported": 7,
+      "supported": 2
+     },
+     "labels_on_sound": {
+      "supported": 35,
+      "partly": 11
+     }
+    },
+    "summary_sentences": {
+     "faults": 14,
+     "faults_unlabelled": 0,
+     "catch": {
+      "k": 13,
+      "n": 14,
+      "rate": 0.9286,
+      "low": 0.6853,
+      "high": 0.9873
+     },
+     "catch_strict": {
+      "k": 10,
+      "n": 14,
+      "rate": 0.7143,
+      "low": 0.4535,
+      "high": 0.8828
+     },
+     "catch_by_origin": {
+      "planted": {
+       "k": 9,
+       "n": 9,
+       "rate": 1.0,
+       "low": 0.7008,
+       "high": 1.0
+      },
+      "real": {
+       "k": 4,
+       "n": 5,
+       "rate": 0.8,
+       "low": 0.3755,
+       "high": 0.9638
+      }
+     },
+     "catch_by_operator": {
+      "summary-insert": {
+       "k": 7,
+       "n": 7,
+       "rate": 1.0,
+       "low": 0.6457,
+       "high": 1.0
+      },
+      "summary-real": {
+       "k": 4,
+       "n": 5,
+       "rate": 0.8,
+       "low": 0.3755,
+       "high": 0.9638
+      },
+      "summary-replace": {
+       "k": 2,
+       "n": 2,
+       "rate": 1.0,
+       "low": 0.3424,
+       "high": 1.0
+      }
+     },
+     "sound": 38,
+     "sound_unlabelled": 0,
+     "false_alarm": {
+      "k": 2,
+      "n": 38,
+      "rate": 0.0526,
+      "low": 0.0146,
+      "high": 0.1729
+     },
+     "downgraded": {
+      "k": 1,
+      "n": 38,
+      "rate": 0.0263,
+      "low": 0.0047,
+      "high": 0.135
+     },
+     "missed": [
+      "real-sum-usdc-pro#4"
+     ],
+     "false_alarms": [
+      "sum-groklet2-orig#1",
+      "sum-meowe-audit#1"
+     ],
+     "labels_on_faults": {
+      "not_supported": 7,
+      "contradicted": 3,
+      "partly": 3,
+      "supported": 1
+     },
+     "labels_on_sound": {
+      "supported": 35,
+      "not_supported": 2,
+      "partly": 1
+     }
+    },
+    "unlabelled": 0,
+    "cost": {
+     "calls": 103,
+     "usd": 0.034835,
+     "refused_replies": 0
+    }
+   },
+   "z-ai/glm-5.3-flash": {
+    "claims": {
+     "faults": 44,
+     "faults_unlabelled": 3,
+     "catch": {
+      "k": 39,
+      "n": 41,
+      "rate": 0.9512,
+      "low": 0.8386,
+      "high": 0.9865
+     },
+     "catch_strict": {
+      "k": 23,
+      "n": 41,
+      "rate": 0.561,
+      "low": 0.4104,
+      "high": 0.7011
+     },
+     "catch_by_origin": {
+      "planted": {
+       "k": 34,
+       "n": 36,
+       "rate": 0.9444,
+       "low": 0.8186,
+       "high": 0.9846
+      },
+      "real": {
+       "k": 5,
+       "n": 5,
+       "rate": 1.0,
+       "low": 0.5655,
+       "high": 1.0
+      }
+     },
+     "catch_by_operator": {
+      "citation": {
+       "k": 6,
+       "n": 6,
+       "rate": 1.0,
+       "low": 0.6097,
+       "high": 1.0
+      },
+      "flip": {
+       "k": 4,
+       "n": 5,
+       "rate": 0.8,
+       "low": 0.3755,
+       "high": 0.9638
+      },
+      "invented": {
+       "k": 6,
+       "n": 6,
+       "rate": 1.0,
+       "low": 0.6097,
+       "high": 1.0
+      },
+      "number": {
+       "k": 5,
+       "n": 6,
+       "rate": 0.8333,
+       "low": 0.4365,
+       "high": 0.9699
+      },
+      "overclaim": {
+       "k": 4,
+       "n": 4,
+       "rate": 1.0,
+       "low": 0.5101,
+       "high": 1.0
+      },
+      "real": {
+       "k": 5,
+       "n": 5,
+       "rate": 1.0,
+       "low": 0.5655,
+       "high": 1.0
+      },
+      "strengthen": {
+       "k": 7,
+       "n": 7,
+       "rate": 1.0,
+       "low": 0.6457,
+       "high": 1.0
+      },
+      "swap": {
+       "k": 2,
+       "n": 2,
+       "rate": 1.0,
+       "low": 0.3424,
+       "high": 1.0
+      }
+     },
+     "sound": 46,
+     "sound_unlabelled": 0,
+     "false_alarm": {
+      "k": 1,
+      "n": 46,
+      "rate": 0.0217,
+      "low": 0.0038,
+      "high": 0.1134
+     },
+     "downgraded": {
+      "k": 10,
+      "n": 46,
+      "rate": 0.2174,
+      "low": 0.1226,
+      "high": 0.3557
+     },
+     "missed": [
+      "flip-milka-owner",
+      "num-milka-block"
+     ],
+     "false_alarms": [
+      "twin:str-milka-blacklist"
+     ],
+     "labels_on_faults": {
+      "contradicted": 11,
+      "partly": 18,
+      "not_supported": 12
+     },
+     "labels_on_sound": {
+      "supported": 35,
+      "partly": 10,
+      "not_supported": 1
+     }
+    },
+    "summary_sentences": {
+     "faults": 14,
+     "faults_unlabelled": 0,
+     "catch": {
+      "k": 14,
+      "n": 14,
+      "rate": 1.0,
+      "low": 0.7847,
+      "high": 1.0
+     },
+     "catch_strict": {
+      "k": 13,
+      "n": 14,
+      "rate": 0.9286,
+      "low": 0.6853,
+      "high": 0.9873
+     },
+     "catch_by_origin": {
+      "planted": {
+       "k": 9,
+       "n": 9,
+       "rate": 1.0,
+       "low": 0.7008,
+       "high": 1.0
+      },
+      "real": {
+       "k": 5,
+       "n": 5,
+       "rate": 1.0,
+       "low": 0.5655,
+       "high": 1.0
+      }
+     },
+     "catch_by_operator": {
+      "summary-insert": {
+       "k": 7,
+       "n": 7,
+       "rate": 1.0,
+       "low": 0.6457,
+       "high": 1.0
+      },
+      "summary-real": {
+       "k": 5,
+       "n": 5,
+       "rate": 1.0,
+       "low": 0.5655,
+       "high": 1.0
+      },
+      "summary-replace": {
+       "k": 2,
+       "n": 2,
+       "rate": 1.0,
+       "low": 0.3424,
+       "high": 1.0
+      }
+     },
+     "sound": 38,
+     "sound_unlabelled": 0,
+     "false_alarm": {
+      "k": 0,
+      "n": 38,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0918
+     },
+     "downgraded": {
+      "k": 2,
+      "n": 38,
+      "rate": 0.0526,
+      "low": 0.0146,
+      "high": 0.1729
+     },
+     "missed": [],
+     "false_alarms": [],
+     "labels_on_faults": {
+      "not_supported": 11,
+      "contradicted": 2,
+      "partly": 1
+     },
+     "labels_on_sound": {
+      "supported": 36,
+      "partly": 2
+     }
+    },
+    "unlabelled": 3,
+    "cost": {
+     "calls": 205,
+     "usd": 0.143623,
+     "refused_replies": 10
+    }
+   }
+  },
+  "agreement": {
+   "items": 139,
+   "left_out": 3,
+   "exact": {
+    "k": 110,
+    "n": 139,
+    "rate": 0.7914,
+    "low": 0.7164,
+    "high": 0.8506
+   },
+   "supported_or_not": {
+    "k": 124,
+    "n": 139,
+    "rate": 0.8921,
+    "low": 0.8296,
+    "high": 0.9335
+   },
+   "kappa_supported_or_not": 0.784,
+   "disagreements": [
+    {
+     "id": "abs-seaport-scan",
+     "first": "contradicted",
+     "second": "partly"
+    },
+    {
+     "id": "cite-pair-identical",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "flip-milka-owner",
+     "first": "contradicted",
+     "second": "partly"
+    },
+    {
+     "id": "flip-pair-proxy",
+     "first": "contradicted",
+     "second": "not_supported"
+    },
+    {
+     "id": "gen-milka-sell",
+     "first": "partly",
+     "second": "contradicted"
+    },
+    {
+     "id": "inv-pair-audit",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "inv-pair-volume",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "inv-usdc-circle",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "num-groklet-extras",
+     "first": "partly",
+     "second": "contradicted"
+    },
+    {
+     "id": "num-milka-decimals",
+     "first": "partly",
+     "second": "contradicted"
+    },
+    {
+     "id": "real-seaport-fallback-pro",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "real-sum-milka-pro#1",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "real-sum-usdc-pro#1",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "real-sum-usdc-pro#4",
+     "first": "supported",
+     "second": "not_supported"
+    },
+    {
+     "id": "sound-groklet-sell",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "sum-groklet2-orig#1",
+     "first": "not_supported",
+     "second": "supported"
+    },
+    {
+     "id": "sum-groklet2-orig#2",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "sum-meowe-audit#1",
+     "first": "not_supported",
+     "second": "supported"
+    },
+    {
+     "id": "sum-meowe-audit#2",
+     "first": "contradicted",
+     "second": "not_supported"
+    },
+    {
+     "id": "sum-milka2-mint-used#3",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "sum-usdc2-circulation#4",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:cite-brick-tax",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:cite-groklet-pool",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:flip-milka-owner",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "twin:flip-usdc-paused",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:inv-usdc-circle",
+     "first": "supported",
+     "second": "partly"
+    },
+    {
+     "id": "twin:num-meowe-solc",
+     "first": "partly",
+     "second": "supported"
+    },
+    {
+     "id": "twin:str-milka-blacklist",
+     "first": "partly",
+     "second": "not_supported"
+    },
+    {
+     "id": "twin:str-milka2-powers",
+     "first": "partly",
+     "second": "supported"
+    }
+   ],
+   "by_pair": {
+    "partly / partly": 22,
+    "contradicted / partly": 2,
+    "not_supported / not_supported": 14,
+    "partly / not_supported": 7,
+    "contradicted / contradicted": 10,
+    "contradicted / not_supported": 2,
+    "partly / contradicted": 3,
+    "supported / partly": 7,
+    "supported / not_supported": 1,
+    "supported / supported": 64,
+    "partly / supported": 5,
+    "not_supported / supported": 2
+   }
+  },
+  "stability": {
+   "z-ai/glm-5.3-flash": {
+    "items": 133,
+    "left_out": 9,
+    "changed": 7,
+    "changed_supported_or_not": 4,
+    "changes": [
+     {
+      "id": "flip-pair-proxy",
+      "first": "not_supported",
+      "second": "contradicted"
+     },
+     {
+      "id": "real-sum-usdc-pro#4",
+      "first": "not_supported",
+      "second": "supported"
+     },
+     {
+      "id": "sum-meowe-audit#2",
+      "first": "not_supported",
+      "second": "contradicted"
+     },
+     {
+      "id": "sum-meowe-audit#4",
+      "first": "supported",
+      "second": "partly"
+     },
+     {
+      "id": "swap-usdc-getters",
+      "first": "contradicted",
+      "second": "partly"
+     },
+     {
+      "id": "twin:cite-groklet-pool",
+      "first": "partly",
+      "second": "supported"
+     },
+     {
+      "id": "twin:flip-pair-proxy",
+      "first": "supported",
+      "second": "partly"
+     }
+    ]
+   }
+  }
+ }
+}

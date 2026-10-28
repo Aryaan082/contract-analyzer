@@ -98,7 +98,7 @@ change in `results.md`.
 
 Part D of Component 6. A judge model reads each claim with the evidence it cites and gives one label
 (`supported`, `partly`, `not_supported`, `contradicted`); the summary is checked sentence by sentence.
-Built and tested offline; **nothing has been sent to a model yet**. Everything about it, including what
+Built and tested offline; the only paid calls so far are the stage-1 trial on its check set (2026-10-28, $0.22). Everything about it, including what
 it is not (a model's opinion, not Aryaan's labels, not truth), the rubric, the check set and the
 spend cap, is in [`judge/README.md`](judge/README.md).
 
