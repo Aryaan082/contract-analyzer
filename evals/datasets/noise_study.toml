@@ -1,0 +1,44 @@
+# The noise study, registered before any run. What it is and why: evals/noise-study.md.
+#
+# The contracts are not chosen by hand. `evals/noise_select.py` applies the rule below to the dev
+# cards and a test recomputes the list; a list that is not what the rule gives is refused.
+# The rule: pool = dev cards in the tool-use set + the named cards; named cards first; every
+# trajectory trait (proxy, official, not_a_token, token) covered once; each class filled to its
+# quota, preferring a trait mix not yet chosen in that class; "best-ranked" = smallest
+# SHA-256 of "<salt>:<card id>". The salt was fixed once and the rule was applied once.
+
+version = 1
+salt = "noise-study-v1"
+repeats = 5                  # 10 contracts x 5 repeats = 50 runs, one at a time
+named = ["seaport"]          # the contract whose verdict was seen to flip: why the study exists
+
+[quota]                      # contracts per class; the order is the order the classes are filled
+flagged = 3
+benign = 3
+grey = 2
+beyond_reach = 2
+
+# What the result leads to (the table is in evals/noise-study.md, section "Decision rule for R").
+# Counts are of the study's ten contracts, or of its fifty runs where it says so.
+[decision]
+calm_direction_max = 0       # calm: no contract flips between warning and clear ...
+calm_exact_max = 3           # ... and at most 3 contracts differ in any verdict
+noisy_direction_min = 3      # noisy: 3 or more contracts flip between warning and clear ...
+noisy_exact_min = 7          # ... or 7 or more differ in any verdict
+abstain_max = 5              # more abstaining runs than this (of 50): find the cause first
+tools_share = 0.5            # this share of differing-verdict pairs with differing tool results
+
+[registered]
+population_sha256 = "cfe037e728c25dd92bff4e40c4da6ab1251e30054169f7eca432d7fb142ee6f8"
+ids = [
+  "uniswap-pair",
+  "milka",
+  "groklet",
+  "meowe",
+  "seaport",
+  "steth",
+  "tok-f7755634",
+  "tok-e2f2f46b",
+  "inc-etherfiatomicqueue",
+  "inc-termfinance",
+]
