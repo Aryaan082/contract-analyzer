@@ -384,7 +384,7 @@ def test_the_ledger_sums_what_was_spent_against_the_envelope(where, capsys):
     assert "total through evals.run: $0.0720" in shown and "roughly $25 envelope" in shown
 
 
-# -- the real runner, with the chain and the model replaced ------------------------------------------
+# -- the real runner, with the chain and the model replaced -------------------------------------
 
 
 def test_the_real_runner_pins_the_block_caps_the_run_and_writes_the_trace(tmp_path, monkeypatch):
