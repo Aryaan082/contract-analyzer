@@ -65,3 +65,29 @@ Rules that matter when reading the numbers:
   by the model's judgement; read it as such.
 - Time: never one number, never mixed models, never from runs that shared the machine or slept.
   Timing exists only in traces written since the instrumentation (`agent/trace.py`).
+
+## Collecting the detection set (`python -m evals.collect`)
+
+Part C of Component 6: the labelled contracts the agent layers are scored against. Read-only (node
+reads and Etherscan log reads), no model call, no money. The rules are in
+`datasets/label_rules.toml` (hashed in `label_rules.sha256`); the files it writes and what a label
+means are in `datasets/README.md`.
+
+```text
+python -m evals.collect scan --env /path/to/.env      discover, inspect and measure candidate tokens (resumable; cache in evals/collect/cache/, git-ignored)
+python -m evals.collect verify --env /path/to/.env    identify_contract on the grey, famous and incident contracts: traits, implementation, code family
+python -m evals.collect build                         label, pick one token per code family, split, write contracts*.toml, disputed.toml, collection_log.md
+```
+
+| Module | Does |
+|---|---|
+| `rules.py` | reads the numbers from `label_rules.toml`; the router and event lists the rules point at |
+| `chaindata.py` | the small interface to the chain (Etherscan logs, node code and supply); scripted in tests |
+| `scan.py` | `discover`, `inspect`, `measure` (counts, no labels) and `decide` (counts to label under the rules) |
+| `existing.py` | the eight existing cards (from the smoke-test note's Part 1), the extra grey and famous contracts, the 13 disputed tokens |
+| `split.py` | the split rule and the tool-use set |
+| `build.py`, `log.py`, `tomlout.py` | assembling, the counts-only log, writing TOML safely |
+
+`build` refuses to run if `label_rules.toml` no longer matches its recorded hash. To change a rule:
+edit the file, say why in its version history, replace the hash on purpose, rebuild, and log the
+change in `results.md`.

@@ -1,0 +1,131 @@
+# Label rules for the detection set (Component 6, part C).
+#
+# Written 2026-10-27/28, BEFORE any outcome was labelled and before any agent run on these contracts. The
+# scripts in evals/collect/ read every number below from this file, and the SHA-256 of this file
+# (evals/datasets/label_rules.sha256, also copied into contracts.toml) is the record that the
+# rules were not changed after the labels were seen. Change a number here and the dataset-check
+# tests fail until the labels are rebuilt and the hash is replaced on purpose, with a row in
+# evals/results.md saying why.
+#
+# What a label means: "agrees with a script that read chain history under these written rules".
+# It does not mean "agrees with Aryaan" or "is truly safe/unsafe". Nobody has read these labels
+# (reviewed_by is empty on every card). Every threshold is a choice; the reason is beside it.
+
+# VERSION HISTORY
+# v1, sha256 e9c4f18bff79b9c7195f9ace7555499a70df06c5b2b8494ebf8688ef3c4ba5e6, in force from
+#   2026-10-28 04:08 UTC. The scan measured counts under it; no label had been computed.
+# v2, 2026-10-28: added the "late sellers" condition to benign (`late_blocks`,
+#   `healthy_min_late_sellers`). Why: a check on four known honeypots (groklet, meowe, asasar, brick)
+#   showed that groklet and meowe trade normally for about 36 hours, with a third to a half of the
+#   buyers selling, and then stop altogether. Under v1 such a token would have been labelled benign.
+#   Requiring sells to still be happening in the last 10 days keeps a token that trades and then dies
+#   or gets trapped out of the benign class. It was changed on that evidence, not on the candidates'
+#   labels (none had been computed). It also shows what these rules cannot do: a trap that springs
+#   after the early trading cannot be seen from Transfer events, so such a token is left out, not
+#   flagged. groklet and meowe stay in the set only through the eight existing cards.
+version = 2
+
+[classes]
+flagged = """\
+Warn-worthy for a reason the agent's tools can see. Either (a) holders could not get out: many
+different wallets bought after the pinned block and almost none could sell; or (b) a power the
+bytecode shows was used: the supply grew by 10% or more through a mint function, or a blacklist
+event was emitted. Bugs in a protocol's logic are NOT flagged (see beyond_reach)."""
+benign = """\
+Traded normally for 30 days after the pinned block: many buyers, a healthy share of them sold, sells
+were still happening in the last 10 days, the pool was not drained by the account that funded it,
+the supply did not grow by 10% or more, no blacklist event. Says nothing about contracts that were never traded this way (the unclear ones are
+left out, not guessed). A benign token can still own powers it never used; an agent that warns about
+those is counted as a false alarm, on purpose."""
+grey = """\
+Legitimate but powerful or unfamiliar (USDC, USDT, stETH, DAI, Seaport, Permit2): not scored on the
+verdict. Scored on citations, on whether the not-checked list names what was not examined, and on
+what the report must not say (an issuer or protocol name that no tool showed)."""
+beyond_reach = """\
+A real incident caused by a bug in the protocol's logic (a pricing rule, an access rule, an
+accounting error) which the agent's tools cannot see because they never read the logic. Reported,
+not scored for detection. The question asked is only whether the report said what it did not check."""
+excluded = """\
+Anything the rules cannot settle is left out and counted in evals/datasets/collection_log.md:
+a pool drained by the account that funded it (a rug is not something the tools can see at the
+pinned block, and it is not benign), buyers with too few sellers to call either way, too little
+trading to say anything, no ERC-20 shape, a pair that is not paired with WETH, and a code family
+that already has a representative."""
+
+[window]
+# The agent is asked about a token at the pinned block P. P is chosen so that a pool exists and has
+# a little history, like a person deciding whether to buy.
+pinned_after_first_liquidity_blocks = 300  # about 1 hour after the pair first held reserves
+pair_must_have_liquidity_within_blocks = 7200  # about 1 day after the pair was created, else out
+outcome_window_blocks = 216000  # 30 days at 7,200 blocks a day: what happens after P counts
+latest_allowed_end_block = 26280500  # P + window must end by here (2026-10-27 00:37 UTC): the 30 days must exist
+first_launch_block = 25435000  # about 2026-07-01 01:00 UTC; pairs created before are not scanned
+last_launch_block = 26050000  # about 2026-09-25: pair creation after this has no full 30 days of outcome
+
+[trading]
+# Counting wallets after P, from the token's Transfer events. A buyer is an address that received
+# tokens from the pair; a seller is an address that sent tokens to the pair. Left out of both: the
+# pair, the token itself, the zero address, the account that received the first mint (the creator),
+# and the router contracts listed in evals/collect/rules.py (they stand in for many wallets).
+min_buyers = 20  # fewer than 20 buyers in 30 days is too little trading to call anything
+# 20 is about what the earlier honeypot sample showed for a small honeypot (26 holders, 24 failed).
+stuck_max_seller_share = 0.10  # flagged: sellers <= 10% of buyers (a honeypot lets a few insiders out)
+healthy_min_sellers = 10  # benign: at least 10 different wallets sold
+healthy_min_seller_share = 0.25  # benign: and at least a quarter as many sellers as buyers
+late_blocks = 72000  # the last 10 days of the 30
+healthy_min_late_sellers = 5  # benign: and at least 5 different wallets sold in those last 10 days
+# Between 10% and 25% is left out as unclear. Plain tokens that people hold rather than sell exist,
+# and so do honeypots that let a handful sell; the gap is there so neither is mislabelled.
+
+[supply]
+inflation_share = 0.10  # flagged if new mints after P add 10% or more of the supply at P ...
+needs_mint_selector = true  # ... and the bytecode has a mint function the tools can show
+
+[blacklist]
+# A blacklist event counts only if the bytecode also has a blacklist function (evals/collect/rules.py
+# lists the event and function names). Events outside this fixed list are not seen: a limit.
+min_events = 1
+
+[liquidity]
+# A rug: the first account to receive the pair's liquidity shares sends them back to the pair and
+# takes the WETH out. The tools cannot see a future rug, and a rugged token is not benign, so it is
+# left out of both classes.
+removed_share = 0.80  # 80% or more of all the WETH ever added as liquidity, removed that way within 30 days
+
+[famous]
+# Well-known tokens are reported separately. They have no launch pair to count, so the benign rule
+# is replaced by a sample: this many different senders of the token within the sample.
+sample_blocks = 500
+min_senders = 200
+
+[scan]
+# Where candidate tokens come from: tokens paired with WETH on Uniswap V2, in five windows spread
+# over July to September, each 20,000 blocks (about 2.8 days). About 1,300 tokens in all, no more
+# than the earlier scans (760 and 1,372). Read through Etherscan's log endpoint, because the node
+# plan allows eth_getLogs over only 10 blocks.
+windows = [[25450000, 25470000], [25585000, 25605000], [25720000, 25740000], [25855000, 25875000], [25990000, 26010000]]
+max_transfer_logs = 5000  # the earliest 5,000 transfers after P are read; counts above are lower bounds
+max_family_scanned = 8  # at most 8 tokens of one code family are measured (the smallest split keys)
+target_new_flagged = 20  # the eight existing contracts supply the rest of about 25
+target_new_benign = 22
+sample_salt = "evals-part-c-v1"  # if there are more decisive tokens than the target, sha256(salt + key) orders them
+
+[incidents]
+# Beyond-reach cases come from the DeFiHackLabs incident list (Apache-2.0, Copyright 2022-2026
+# DeFiHackLabs). A card records the vulnerable contract and the block BEFORE the attack transaction
+# as the pinned block; nothing from the exploit code is copied.
+pin_blocks_before_attack = 1
+first_date = "2026-07-01"
+last_date = "2026-09-30"
+
+[split]
+# Applied to every class in turn. A code family (same code, compiler metadata removed; a minimal
+# proxy is judged by its implementation) is one unit and goes to one side.
+key = "sha256(chain + ':' + lowercase address)"
+heldout_share = 0.3333  # the first third of each class, in hash order, rounded to the nearest
+dev_only = "the eight contracts of agent/contracts.toml"
+tool_use_set_size = 20
+
+[dedupe]
+# One representative per code family is kept: the member with the smallest split key.
+by = "code hash with the compiler metadata removed"

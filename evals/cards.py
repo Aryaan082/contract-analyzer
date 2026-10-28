@@ -21,6 +21,12 @@ results file says how many are unreviewed. The file format (one `[[contract]]` t
     min_not_checked = 3          # a grey contract's report must list at least this many gaps
     label_source = "script:outcome-v1"
     reviewed_by = ""
+    source = "..."               # where the contract and its label came from
+    reason = "..."               # why it is in its class, in words
+    group = "obscure"            # existing | obscure | famous | grey | disputed | incident
+    code_hash = "..."            # SHA-256 of the code without its metadata tail (the family)
+    family_size = 1              # contracts of that family seen before one was kept
+    tool_use = false             # part of the tool-use set (a subset of the dev cards)
 
 `flagged` and `benign` are scored on the verdict and in precision and recall. `grey` (legitimate
 but powerful: USDC, Seaport) is not scored on the verdict, only on its citations, its not-checked
@@ -63,6 +69,12 @@ class Card(BaseModel):
     min_not_checked: int = 0
     label_source: str = "hand"
     reviewed_by: str = ""
+    source: str = ""
+    reason: str = ""
+    group: str = ""
+    code_hash: str = ""
+    family_size: int = 1
+    tool_use: bool = False
 
     @field_validator("address", "implementation")
     @classmethod
