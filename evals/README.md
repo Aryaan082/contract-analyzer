@@ -1,7 +1,8 @@
 # evals/: measuring the system
 
-Only the retrieval layer exists so far (the spec's Component 6 adds tool use, detection and
-answer quality as further entries in `evals.run.LAYERS`).
+The retrieval layer is run by `evals.run` (below). The agent layers (tool use, detection, answer
+quality, time and cost) are scored offline from stored agent traces by `evals.score` (section
+"Scoring agent runs"); generating the runs (`make eval-run`) and the judge come in later parts.
 
 ```text
 make eval                                                    dev questions, core variants, small models
@@ -30,3 +31,37 @@ python -m evals.run retrieval --check-baseline               what CI runs
   worse on the same questions.
 - Nobody edits chunk text or labels in response to a quiz result. A label fix
   is logged as its own row and applied to every variant.
+
+## Scoring agent runs (`python -m evals.score`)
+
+No model, no network, no money: it reads agent traces (`agent/runs/*.json`, or a run-set folder).
+
+```text
+python -m evals.score agent/runs                                   label-free metrics for every trace
+python -m evals.score runs/ --cards evals/datasets/contracts.toml --split dev
+python -m evals.score runs/ --model deepseek/deepseek-v4.1-flash-1017   one model (several pooled is only a survey)
+python -m evals.score runs/ --cards ... --write                    also save evals/results/<date>-<commit>-<label>.json
+python -m evals.score runs/ --cards ... --held-out --declare "why"  held-out: totals only, a declared look
+```
+
+| Module | Does |
+|---|---|
+| `runs.py` | reads a trace (old or new) into a `RunRecord`: tools in order, arguments, seconds, attempts |
+| `cards.py` | the labels: one `[[contract]]` per test contract (class, reasons, split, acceptable verdicts); `reviewed_by` empty until a person has read it |
+| `trajectory.py` | tool-use rules: hygiene for every run, plus rules from the card's traits and reasons; per-rule failure counts |
+| `detection.py` | verdict to warn/clear/abstain; precision, recall, F1 (strict: an abstain on a flagged contract is a miss), coverage, recall by reason; grey cards judged on their not-checked list |
+| `repeats.py` | single-run, majority and all-correct rates over repeats; verdict flips; the cluster bootstrap (resamples contracts, not runs) |
+| `citations.py` | citation validity on the FIRST `submit_report` (the final report is valid by construction); older traces are rebuilt with the validator |
+| `timing.py` | median, p95 (only from 40 runs), max and n, per model; leaves out runs without timing, run alongside others, or slept through; cost per report |
+| `results_file.py` | the versioned results document (`schema_version`, manifest, every layer) |
+
+Rules that matter when reading the numbers:
+- Cards are computed by script and unreviewed for now; the manifest and the printed report say
+  "N of M labels unreviewed". The numbers mean "agrees with the script and the written rules", not
+  "agrees with Aryaan".
+- A claim is only valid here if its evidence exists and is of the right kind. Whether the evidence
+  says what the claim says (faithfulness) is the judge's job, not done yet (`faithfulness: null`).
+- `honeypot-sell-blocked` recall is decided by the sell rehearsal and the validator's floor rather than
+  by the model's judgement; read it as such.
+- Time: never one number, never mixed models, never from runs that shared the machine or slept.
+  Timing exists only in traces written since the instrumentation (`agent/trace.py`).
