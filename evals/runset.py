@@ -19,7 +19,7 @@ goes for the files that describe it.)
 import hashlib
 import json
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -44,18 +44,21 @@ def sha256(data: bytes | str) -> str:
 # ---- the manifest ------------------------------------------------------------
 
 
-def describe_dataset(cards_path: Path, cards: CardSet, kind: str) -> dict[str, Any]:
-    """What the labels were: a hash of the cards file and of the label rules, how many contracts,
-    and a hash of their block pins. A dev run-set also lists the pins; a held-out one does not."""
+def describe_dataset(
+    cards_path: Path, cards: CardSet, kind: str, selected: Sequence[Card] | None = None
+) -> dict[str, Any]:
+    """What the labels were: a hash of the cards file and of the label rules, how many contracts
+    were run (`selected`, if only some of the cards were), and a hash of their block pins. A dev or
+    noise run-set also lists the pins; a held-out one does not."""
     rules = LABEL_RULES_HASH.read_text().strip() if LABEL_RULES_HASH.exists() else None
-    pins = {c.id: c.block for c in cards}
+    pins = {c.id: c.block for c in (cards if selected is None else selected)}
     out: dict[str, Any] = {
         "dataset_sha256": sha256(cards_path.read_bytes() + b"\0" + (rules or "").encode()),
         "label_rules_sha256": rules,
-        "contracts": len(cards),
+        "contracts": len(pins),
         "block_pins_sha256": sha256(json.dumps(sorted(pins.items()))),
     }
-    if kind == "dev":
+    if kind in ("dev", "noise"):
         out["block_pins"] = pins
         out["cards_file"] = cards_path.name
     return out
@@ -78,6 +81,7 @@ def new_manifest(
     declared: str | None = None,
     workers: int = 1,
     judge_policy: dict[str, Any] | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
@@ -122,6 +126,7 @@ def new_manifest(
         },
         "declared": declared,
         "environment": environment,
+        **(extra or {}),
     }
 
 

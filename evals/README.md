@@ -196,6 +196,25 @@ there is nothing to compare and it says so.
 no contract, address or block (only how many, and a hash). The `--cards` file must be all held-out cards
 (the Makefile passes it; dev tooling never loads it otherwise), and `--declare` is required.
 
+### The noise study (`make eval-noise`, `make eval-noise-report`)
+
+How much does a contract's result change between runs of the same agent, and is the model or the
+tools to blame? The study is registered before it is run: `evals/noise-study.md` (the question, the
+ten contracts by a written rule, the definitions, the decision rule for R) and
+`evals/datasets/noise_study.toml` (the list, recomputed from the cards by `evals/noise_select.py`; a
+list the rule does not give is refused).
+
+| Command | Does | Cost |
+|---|---|---|
+| `make eval-noise` | the estimate for 10 contracts x 5 repeats on the eval tier, one at a time; says whether the registration is committed. `ARGS="--go --max-spend X"` runs it (a cap must be named, and the registration files must be committed so the commit predates the run); afterwards it prints the analysis. `--judge-mode quick` adds a judge to the estimate (not needed for the three questions) | paid, only with `--go` |
+| `make eval-noise-report` | the analysis of the newest noise run-set: flips (exact, and warn/clear), abstains apart, tool-set changes, the pairs of runs by cause, the decision rule applied. Saved to `evals/results/` | $0 |
+
+The run-set is of its own kind, `noise`: `make eval` takes only dev run-sets, so a noise run-set can
+never be mistaken for the newest dev one, and every other command refuses it by name. The contracts
+and the repeats come from the study file and cannot be changed on the command line. Each run is tagged
+`cache_state` (`cold`, `warm`, `mixed`, `no_store`) from what its own stores answered; the tag is put
+on every run the live runner makes, so the timing statistics split cold from warm.
+
 ### CI
 
 `.github/workflows-disabled/evals.yml` is the one parked workflow (it replaces the retrieval-only one);

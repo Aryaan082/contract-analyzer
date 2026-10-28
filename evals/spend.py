@@ -28,6 +28,7 @@ DEV_CAP_USD = (
     4.0  # Aryaan's rule: a full dev run under $4 (component6-approach.md, "Spend caps (v2)")
 )
 HELDOUT_CAP_USD = 2.0
+NOISE_CAP_USD = 0.75  # shown when none is given; a noise run itself needs an explicit --max-spend
 ENVELOPE_USD = 25.0  # the component's rough envelope, same section
 EXPENSIVE_ABOVE = 0.02  # USD per run: above this a run needs --allow-expensive (Sonnet is 0.065)
 
@@ -206,9 +207,12 @@ def decide(
     if problems:
         return Decision(False, tuple(f"refused: {p}" for p in problems))
     if not go:
-        return Decision(
-            False, ("nothing was spent. To run it, add --go (and --max-spend if you want a cap).",)
+        add = (
+            "--go and an explicit --max-spend"
+            if kind == "noise"
+            else "--go (and --max-spend if you want a cap)"
         )
+        return Decision(False, (f"nothing was spent. To run it, add {add}.",))
     return Decision(True, ())
 
 

@@ -12,6 +12,10 @@
 # make eval-heldout DECLARE="why"  MILESTONES ONLY. Held-out retrieval and the newest held-out
 #              run-set, totals only; refuses without DECLARE. ARGS="--generate --go" makes a
 #              held-out run-set first (paid, cap $2).
+# make eval-noise  PAID, but only an estimate unless you add --go and --max-spend: the registered
+#              noise study (evals/noise-study.md), 10 contracts x 5 repeats, one at a time.
+#              make eval-noise ARGS="--go --max-spend 0.75"
+# make eval-noise-report  FREE. Analyses the newest noise run-set and saves evals/results/*.json.
 # make test    ruff and the offline tests
 # Details: evals/README.md ("make eval, make eval-run, make eval-heldout").
 UV = uv run
@@ -19,7 +23,8 @@ ARGS ?=
 DECLARE ?=
 HELDOUT_CARDS = evals/datasets/contracts_heldout.toml
 
-.PHONY: index index-local models models-all eval eval-run eval-heldout test
+.PHONY: index index-local models models-all eval eval-run eval-heldout eval-noise \
+	eval-noise-report test
 
 index:
 	$(UV) python -m retrieval index
@@ -41,6 +46,12 @@ eval-run:
 
 eval-heldout:
 	$(UV) python -m evals.run heldout --cards $(HELDOUT_CARDS) --declare "$(DECLARE)" $(ARGS)
+
+eval-noise:
+	$(UV) python -m evals.run noise $(ARGS)
+
+eval-noise-report:
+	$(UV) python -m evals.run noise-report $(ARGS)
 
 test:
 	$(UV) ruff check .

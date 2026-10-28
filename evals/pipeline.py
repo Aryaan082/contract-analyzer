@@ -6,12 +6,15 @@
     heldout --declare   a milestone look at held-out, totals only.  `make eval-heldout`
     ledger              what the paid commands spent
     check-summaries     score the committed summaries again and compare (CI)
+    noise               ESTIMATE ONLY; `--go --max-spend X` runs the registered noise study
+                        (evals/noise-study.md).  `make eval-noise`
+    noise-report        analyse the newest noise run-set, free.  `make eval-noise-report`
 
 (each is `python -m evals.run <command>`)
 
 What each does and does not do is in evals/README.md. In short: only `generate` (and `heldout
---generate`) can spend money, only with `--go`, only up to `--max-spend`, and a judge only when
-`--judge-mode` or `--judge` asks for one.
+--generate`, and `noise`) can spend money, only with `--go`, only up to `--max-spend`, and a judge
+only when `--judge-mode` or `--judge` asks for one.
 """
 
 import argparse
@@ -25,7 +28,7 @@ from typing import Any
 from agent.config import load_config
 from agent.runmeta import environment
 from evals import spend
-from evals.cards import CardSet, load_cards
+from evals.cards import Card, CardSet, load_cards
 from evals.disagreements import list_disagreements, render
 from evals.disagreements import write as write_text
 from evals.generate import AgentRunner, generate, judge_runset, live_agent_runner, plan_runs
@@ -34,6 +37,18 @@ from evals.judge.client import JudgeClient, JudgeSpec, OpenRouterJudge, load_jud
 from evals.judge.policy import load_policy, policy_block, resolve_judges, self_grading
 from evals.judge.rubric import load_rubric
 from evals.judge.runner import SpendCap
+from evals.noise import analyse, build_document
+from evals.noise import render as render_noise
+from evals.noise_select import (
+    NOTE_PATH,
+    STUDY_PATH,
+    Study,
+    files_sha256,
+    git_registration,
+    load_study,
+    registered_cards,
+    verify,
+)
 from evals.results_file import RESULTS_DIR, write_results
 from evals.runset import (
     RUNSETS_DIR,
@@ -171,6 +186,12 @@ def _score_command(
     runset = (
         load_runset(Path(args.runset)) if args.runset else latest_runset(args.runsets_dir, kind)
     )
+    if runset is not None and runset.kind != kind:
+        _out(
+            f"error: {runset.name} is a {runset.kind} run-set, not a {kind} one"
+            + (": python -m evals.run noise-report analyses it" if runset.kind == "noise" else "")
+        )
+        return 2
     results = None
     if runset is not None:
         results, runs, problem = score_runset(
@@ -243,7 +264,11 @@ def cmd_disagreements(args: argparse.Namespace, **_: Any) -> int:
         _out("no dev run-set yet")
         return 0
     if runset.kind != "dev":
-        _out("error: held-out has totals only; there is no per-claim list to show")
+        _out(
+            "error: held-out has totals only; there is no per-claim list to show"
+            if runset.kind == "heldout"
+            else f"error: {runset.name} is a {runset.kind} run-set, not a dev one"
+        )
         return 2
     judges, refused = usable_judges(runset.manifest)
     for line in refused:
@@ -279,18 +304,23 @@ def cmd_generate(
     env: Mapping[str, str] | None = None,
     kind: str = "dev",
     cards_path: Path | None = None,
+    selection: Sequence[Card] | None = None,
+    manifest_extra: dict[str, Any] | None = None,
     **_: Any,
 ) -> int:
     cards_path = cards_path or args.cards or DEV_CARDS
     cards = load_cards(cards_path)
-    wrong = [c.id for c in cards if c.split != kind]
+    split = "dev" if kind == "noise" else kind  # a noise study is run on dev contracts only
+    wrong = [c.id for c in cards if c.split != split]
     if wrong:
         _out(
             f"error: {cards_path.name} holds {len(wrong)} card(s) that are not in the {kind} split"
         )
         return 2
     chosen = list(cards)
-    if args.contracts:
+    if selection is not None:
+        chosen = list(selection)
+    elif args.contracts:
         wanted = {c.strip() for c in args.contracts.split(",") if c.strip()}
         chosen = [c for c in chosen if c.id in wanted]
         if len(chosen) != len(wanted):
@@ -314,7 +344,9 @@ def cmd_generate(
         for line in refused:
             _out(line)
         return 2
-    cap_default = spend.HELDOUT_CAP_USD if kind == "heldout" else spend.DEV_CAP_USD
+    cap_default = {"heldout": spend.HELDOUT_CAP_USD, "noise": spend.NOISE_CAP_USD}.get(
+        kind, spend.DEV_CAP_USD
+    )
     max_spend = args.max_spend if args.max_spend is not None else cap_default
     try:
         est = spend.estimate_generation(
@@ -352,9 +384,11 @@ def cmd_generate(
         _out(line)
     if not decision.proceed:
         if decision.lines[0].startswith("nothing was spent"):
-            target = "eval-heldout" if kind == "heldout" else "eval-run"
+            target = {"heldout": "eval-heldout", "noise": "eval-noise"}.get(kind, "eval-run")
+            cap = " --max-spend <USD>" if kind == "noise" else ""
             _out(
-                f'with make: make {target} ARGS="--go" (add --judge-mode quick|milestone to judge)'
+                f'with make: make {target} ARGS="--go{cap}" '
+                "(add --judge-mode quick|milestone to judge)"
             )
             return 0
         return 2
@@ -363,7 +397,7 @@ def cmd_generate(
     name = unique_name(
         args.runsets_dir, args.name or f"{kind}-{args.model.split('/')[-1]}-r{args.repeats}"
     )
-    dataset = describe_dataset(cards_path, cards, kind)
+    dataset = describe_dataset(cards_path, cards, kind, chosen)
     manifest = new_manifest(
         name=name,
         kind=kind,
@@ -380,6 +414,7 @@ def cmd_generate(
         declared=getattr(args, "declare", None),
         workers=args.workers,
         judge_policy=judge_policy,
+        extra=manifest_extra,
     )
     runset = create_runset(args.runsets_dir, manifest)
     if make_runner is not None:
@@ -430,7 +465,7 @@ def cmd_generate(
     spend.record(
         args.runsets_dir,
         {
-            "command": "heldout --generate" if kind == "heldout" else "generate",
+            "command": {"heldout": "heldout --generate", "noise": "noise"}.get(kind, "generate"),
             "runset": name,
             "kind": kind,
             "model": slug,
@@ -453,7 +488,7 @@ def cmd_generate(
         _out(f"STOPPED: {manifest['stopped_because']}")
     for line in done.errors[:5]:
         _out(f"  failed: {line}")
-    follow_up = "heldout --declare '<why>'" if kind == "heldout" else "all"
+    follow_up = {"heldout": "heldout --declare '<why>'", "noise": "noise-report"}.get(kind, "all")
     _out(f"next: python -m evals.run {follow_up} --runset {runset.path}")
     return 3 if manifest["stopped_because"] else 0
 
@@ -470,6 +505,109 @@ def _first_metrics(traces: list[Path]) -> dict[str, str | None]:
                 "tools_sha": metrics.get("tools_sha"),
             }
     return {}
+
+
+# ---- the noise study -----------------------------------------------------------------------------
+
+
+def cmd_noise(
+    args: argparse.Namespace,
+    *,
+    prereg: Callable[[], Any] | None = None,
+    study: Study | None = None,
+    **services: Any,
+) -> int:
+    """The registered noise study (evals/noise-study.md): the contracts and the repeats come from
+    the study file and cannot be changed here. Only an estimate unless `--go` and an explicit
+    `--max-spend`; refuses to run while the registration files have uncommitted changes."""
+    cards_path = args.cards or DEV_CARDS
+    cards = load_cards(cards_path)
+    study = study or load_study()
+    problems = verify(study, cards)
+    if problems:
+        for line in problems:
+            _out(f"error: {line}")
+        return 2
+    registration = (prereg or git_registration)()
+    if registration.uncommitted:
+        _out(
+            "registration: NOT committed ("
+            + ", ".join(registration.uncommitted)
+            + "); a run is refused until noise-study.md and noise_study.toml are committed"
+        )
+    else:
+        _out(f"registration: committed at {(registration.commit or '')[:12]}")
+    if args.go:
+        if registration.uncommitted:
+            _out("refused: commit the registration files first, so the commit predates the run")
+            return 2
+        if args.max_spend is None:
+            _out(
+                "refused: a noise run needs an explicit --max-spend (the estimate is printed first)"
+            )
+            return 2
+    args.repeats, args.contracts, args.tool_use, args.workers = study.repeats, None, False, 1
+    extra = {
+        "noise_study": {
+            "version": study.version,
+            "contracts": list(study.ids),
+            "registered_commit": registration.commit,
+            "uncommitted": registration.uncommitted,
+            "files_sha256": files_sha256((STUDY_PATH, NOTE_PATH)),
+            "decision": study.decision.__dict__,
+        }
+    }
+    status = cmd_generate(
+        args,
+        kind="noise",
+        cards_path=cards_path,
+        selection=registered_cards(study, cards),
+        manifest_extra=extra,
+        **services,
+    )
+    if args.go and status in (0, 3):
+        _out()
+        cmd_noise_report(args, study=study)
+    return status
+
+
+def cmd_noise_report(args: argparse.Namespace, study: Study | None = None, **_: Any) -> int:
+    """The analysis of a noise run-set: free, offline, saved as a results file."""
+    runset = (
+        load_runset(Path(args.runset))
+        if getattr(args, "runset", None)
+        else latest_runset(args.runsets_dir, "noise")
+    )
+    if runset is None:
+        _out("no noise run-set yet (make eval-noise prints the estimate; --go makes one)")
+        return 0
+    if runset.kind != "noise":
+        _out(f"error: {runset.name} is a {runset.kind} run-set, not a noise one")
+        return 2
+    cards_path = args.cards or DEV_CARDS
+    cards = load_cards(cards_path)
+    if not getattr(args, "ignore_dataset_change", False):
+        try:
+            dataset_matches(runset.manifest, cards_path, cards)
+        except ValueError as err:
+            _out(f"error: {err}; use --ignore-dataset-change to analyse anyway")
+            return 1
+    runs, skipped = read_runs(runset)
+    for note in skipped:
+        _out(f"skipped: {note}")
+    if not runs:
+        _out(f"error: run-set {runset.name} has no readable traces")
+        return 1
+    analysis = analyse(runs, cards, study or load_study(), resamples=args.resamples)
+    manifest = {
+        **results_manifest(runset.manifest),
+        "noise_study": runset.manifest.get("noise_study"),
+    }
+    document = build_document(manifest, analysis, runs)
+    _out(render_noise(document))
+    path = write_results(document, runset.name, args.results_dir)
+    _out(f"\nsaved {path}")
+    return 0
 
 
 # ---- held-out ----------------------------------------------------------------------------------
@@ -568,19 +706,18 @@ def _score_args(p: argparse.ArgumentParser) -> None:
     )
 
 
-def _generate_args(p: argparse.ArgumentParser, *, heldout: bool) -> None:
+def _model_args(p: argparse.ArgumentParser) -> None:
     p.add_argument(
         "--model", default="eval", help="a tier from models.toml (eval, sonnet, haiku) or a slug"
     )
-    p.add_argument("--repeats", type=int, default=3, help="runs per contract (default 3)")
-    p.add_argument("--contracts", help="only these card ids, comma separated")
-    p.add_argument("--tool-use", action="store_true", help="only the tool-use set (a quick run)")
     p.add_argument("--name", help="name of the run-set (default: from the commit and model)")
+
+
+def _spend_args(p: argparse.ArgumentParser, cap: float) -> None:
     p.add_argument(
         "--judge-mode", choices=sorted(load_policy().modes), default=None, help=JUDGE_MODE_HELP
     )
     p.add_argument("--judge", action="append", default=[], help=JUDGE_HELP)
-    cap = spend.HELDOUT_CAP_USD if heldout else spend.DEV_CAP_USD
     p.add_argument(
         "--max-spend", type=float, help=f"hard cap in USD for the whole command (default {cap:g})"
     )
@@ -595,13 +732,21 @@ def _generate_args(p: argparse.ArgumentParser, *, heldout: bool) -> None:
         help="needed for a model dearer than $0.02 a run (Sonnet)",
     )
     p.add_argument(
-        "--workers", type=int, default=1, help="runs at the same time (timings then do not count)"
-    )
-    p.add_argument(
         "--per-run-usd", type=float, help="cost per run for a model with no measured cost"
     )
     p.add_argument(
         "--judge-call-usd", type=float, help="cost per call for a judge with no measured cost"
+    )
+
+
+def _generate_args(p: argparse.ArgumentParser, *, heldout: bool) -> None:
+    _model_args(p)
+    p.add_argument("--repeats", type=int, default=3, help="runs per contract (default 3)")
+    p.add_argument("--contracts", help="only these card ids, comma separated")
+    p.add_argument("--tool-use", action="store_true", help="only the tool-use set (a quick run)")
+    _spend_args(p, spend.HELDOUT_CAP_USD if heldout else spend.DEV_CAP_USD)
+    p.add_argument(
+        "--workers", type=int, default=1, help="runs at the same time (timings then do not count)"
     )
 
 
@@ -642,6 +787,22 @@ def build_parser() -> argparse.ArgumentParser:
     six.add_argument("--runset", help="a dev run-set folder (default: the newest)")
     six.add_argument("--out", help="write the list (Markdown) to this file")
     six.set_defaults(run=cmd_disagreements)
+
+    seven = sub.add_parser(
+        "noise", help="the registered noise study: prints the estimate; --go --max-spend spends"
+    )
+    _common(seven)
+    _model_args(seven)
+    _spend_args(seven, spend.NOISE_CAP_USD)
+    seven.set_defaults(run=cmd_noise)
+
+    eight = sub.add_parser("noise-report", help="analyse a noise run-set (free)")
+    _common(eight)
+    eight.add_argument("--runset", help="a noise run-set folder (default: the newest)")
+    eight.add_argument(
+        "--ignore-dataset-change", action="store_true", help="analyse although the cards changed"
+    )
+    eight.set_defaults(run=cmd_noise_report)
     return parser
 
 
