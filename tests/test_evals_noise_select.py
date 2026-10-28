@@ -90,7 +90,7 @@ def test_every_trajectory_trait_is_covered_even_when_the_hash_would_not_cover_it
     ]
     cards = CardSet(only_one_proxy)
     for salt in ("a", "b", "c", "d", "e", "f"):
-        assert "proxy-one" in choose(cards, salt=salt, named=[], quota={"beyond_reach": 2})
+        assert "proxy-one" in choose(cards, salt=salt, named=[], quota={"beyond_reach": 1})
 
 
 def test_a_class_prefers_a_trait_mix_not_yet_chosen():

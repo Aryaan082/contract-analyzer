@@ -126,6 +126,33 @@ def generate(
     return result
 
 
+def _store_state(asked: int, answered: int) -> str | None:
+    if not asked:
+        return None
+    return "cold" if not answered else "warm" if answered >= asked else "mixed"
+
+
+def cache_state(counters: Mapping[str, int]) -> str:
+    """Whether a run met warm stores, from what the run itself counted: `warm` if the code store and
+    the selector-name store answered everything they were asked, `cold` if they answered nothing,
+    `mixed` otherwise, `no_store` if no store was asked (none is configured). The stores live in
+    Postgres and outlast a run, so the first run of a contract is not necessarily cold."""
+    states = {
+        s
+        for s in (
+            _store_state(counters.get("code_store_lookups", 0), counters.get("code_store_hits", 0)),
+            _store_state(
+                counters.get("selector_names_asked", 0),
+                counters.get("selector_names_from_cache", 0),
+            ),
+        )
+        if s
+    }
+    if not states:
+        return "no_store"
+    return states.pop() if len(states) == 1 else "mixed"
+
+
 def live_agent_runner(model: str, traces: Path, env: Mapping[str, str]) -> AgentRunner:
     """The real runner: each call pins the card's block, runs the agent with the named model and
     writes the trace into `traces`. Needs RPC and the model service (it costs money)."""
@@ -151,7 +178,8 @@ def live_agent_runner(model: str, traces: Path, env: Mapping[str, str]) -> Agent
             agent_run = run_agent(llm, ctx, card.address, limits=limits)
         except ChainError as err:
             return RunResult(None, 0.0, error=err.code)
-        path = write_trace(agent_run, limits, traces, tags=tags)
+        state = cache_state(agent_run.metrics.get("counters") or {})
+        path = write_trace(agent_run, limits, traces, tags={**tags, "cache_state": state})
         return RunResult(path, agent_run.report.run.cost_usd, agent_run.report.validation.accepted)
 
     return run

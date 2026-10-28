@@ -328,7 +328,13 @@ def test_the_real_runner_pins_the_block_caps_the_run_and_writes_the_trace(tmp_pa
     assert asked == {"block": world.block, "model": load_config().resolve_model("eval").name}
     assert result.accepted and result.error is None and result.cost_usd == pytest.approx(0.014)
     saved = json.loads(result.trace.read_text())
-    assert saved["tags"] == {"runset": "t", "repeat": 2, "concurrent": False}
+    # the run also tags itself with what its stores answered (no store is configured here)
+    assert saved["tags"] == {
+        "runset": "t",
+        "repeat": 2,
+        "concurrent": False,
+        "cache_state": "no_store",
+    }
     assert saved["limits"]["max_cost_usd"] == 0.05  # the ceiling reached the agent loop
 
 
