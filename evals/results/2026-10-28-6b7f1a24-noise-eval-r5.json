@@ -1,0 +1,822 @@
+{
+ "schema_version": 1,
+ "created_at": "2026-10-28T19:48:12+00:00",
+ "manifest": {
+  "name": "noise-eval-r5",
+  "kind": "noise",
+  "model": {
+   "tier": "eval",
+   "slug": "deepseek/deepseek-v4.1-flash-1017"
+  },
+  "repeats": 5,
+  "hashes": {
+   "models_toml_sha": "9f535e5db0658e66",
+   "system_prompt_sha": "265b06f77ebff9f2",
+   "tools_sha": "f7920decca10eae4",
+   "dataset_sha256": "b2a4f1ff3e9abe8612f6d88d7c936181650a7695644e90abef9c92c6478ea93f",
+   "label_rules_sha256": "d415c2b370e85dcfcf9658f1c11742046c7f03e19c8f486c5cd622979f96a91d",
+   "block_pins_sha256": "d3c3ecd83e990589a086dbbfb10f3115f3deb32cdfa9a11bfd30196d037c7990"
+  },
+  "judges": {
+   "slugs": [],
+   "rubric_sha256": null
+  },
+  "planned_runs": 50,
+  "completed_runs": 50,
+  "spend_usd": 0.3241,
+  "concurrent": false,
+  "noise_study": {
+   "version": 1,
+   "contracts": [
+    "uniswap-pair",
+    "milka",
+    "groklet",
+    "meowe",
+    "seaport",
+    "steth",
+    "tok-f7755634",
+    "tok-e2f2f46b",
+    "inc-etherfiatomicqueue",
+    "inc-termfinance"
+   ],
+   "registered_commit": "b427b83a3552a49d3acc55f18fb8e7b860b39296",
+   "uncommitted": [],
+   "files_sha256": "4acf3672d8d94111bc8fe8333032c8498c55e7822d96a702c6c3d8840b41c423",
+   "decision": {
+    "calm_direction_max": 0,
+    "calm_exact_max": 3,
+    "noisy_direction_min": 3,
+    "noisy_exact_min": 7,
+    "abstain_max": 5,
+    "tools_share": 0.5
+   }
+  },
+  "git_commits": [
+   "6b7f1a24cdaf84ea334c77439cc13e49db350586"
+  ]
+ },
+ "schema_version_noise": 1,
+ "what": "Run-to-run noise: ten contracts x repeats, compared with each other only.",
+ "registration_notes": [],
+ "noise": {
+  "runs": 50,
+  "planned_runs": 50,
+  "contracts": 10,
+  "contracts_registered": 10,
+  "unmatched_runs": 0,
+  "outside_study": [],
+  "runs_per_contract": {
+   "groklet": 5,
+   "inc-etherfiatomicqueue": 5,
+   "inc-termfinance": 5,
+   "meowe": 5,
+   "milka": 5,
+   "seaport": 5,
+   "steth": 5,
+   "tok-e2f2f46b": 5,
+   "tok-f7755634": 5,
+   "uniswap-pair": 5
+  },
+  "verdict": {
+   "exact": {
+    "k": 2,
+    "n": 10,
+    "share": 0.2,
+    "bootstrap": [
+     0.0,
+     0.5
+    ],
+    "exact_95": [
+     0.0252,
+     0.5561
+    ]
+   },
+   "substantive": {
+    "k": 1,
+    "n": 10,
+    "share": 0.1,
+    "bootstrap": [
+     0.0,
+     0.3
+    ],
+    "exact_95": [
+     0.0025,
+     0.445
+    ]
+   },
+   "direction": {
+    "k": 1,
+    "n": 10,
+    "share": 0.1,
+    "bootstrap": [
+     0.0,
+     0.3
+    ],
+    "exact_95": [
+     0.0025,
+     0.445
+    ]
+   },
+   "flipped": {
+    "tok-e2f2f46b": {
+     "elevated_risk": 4,
+     "no_red_flags_found": 1
+    },
+    "tok-f7755634": {
+     "elevated_risk": 4,
+     "insufficient_evidence": 1
+    }
+   },
+   "contracts": {
+    "groklet": {
+     "runs": 5,
+     "verdicts": {
+      "high_risk": 5
+     },
+     "abstains": 0,
+     "flips_exact": false,
+     "flips_substantive": false,
+     "flips_direction": false
+    },
+    "inc-etherfiatomicqueue": {
+     "runs": 5,
+     "verdicts": {
+      "elevated_risk": 5
+     },
+     "abstains": 0,
+     "flips_exact": false,
+     "flips_substantive": false,
+     "flips_direction": false
+    },
+    "inc-termfinance": {
+     "runs": 5,
+     "verdicts": {
+      "elevated_risk": 5
+     },
+     "abstains": 0,
+     "flips_exact": false,
+     "flips_substantive": false,
+     "flips_direction": false
+    },
+    "meowe": {
+     "runs": 5,
+     "verdicts": {
+      "high_risk": 5
+     },
+     "abstains": 0,
+     "flips_exact": false,
+     "flips_substantive": false,
+     "flips_direction": false
+    },
+    "milka": {
+     "runs": 5,
+     "verdicts": {
+      "elevated_risk": 5
+     },
+     "abstains": 0,
+     "flips_exact": false,
+     "flips_substantive": false,
+     "flips_direction": false
+    },
+    "seaport": {
+     "runs": 5,
+     "verdicts": {
+      "no_red_flags_found": 5
+     },
+     "abstains": 0,
+     "flips_exact": false,
+     "flips_substantive": false,
+     "flips_direction": false
+    },
+    "steth": {
+     "runs": 5,
+     "verdicts": {
+      "elevated_risk": 5
+     },
+     "abstains": 0,
+     "flips_exact": false,
+     "flips_substantive": false,
+     "flips_direction": false
+    },
+    "tok-e2f2f46b": {
+     "runs": 5,
+     "verdicts": {
+      "elevated_risk": 4,
+      "no_red_flags_found": 1
+     },
+     "abstains": 0,
+     "flips_exact": true,
+     "flips_substantive": true,
+     "flips_direction": true
+    },
+    "tok-f7755634": {
+     "runs": 5,
+     "verdicts": {
+      "elevated_risk": 4,
+      "insufficient_evidence": 1
+     },
+     "abstains": 1,
+     "flips_exact": true,
+     "flips_substantive": false,
+     "flips_direction": false
+    },
+    "uniswap-pair": {
+     "runs": 5,
+     "verdicts": {
+      "no_red_flags_found": 5
+     },
+     "abstains": 0,
+     "flips_exact": false,
+     "flips_substantive": false,
+     "flips_direction": false
+    }
+   }
+  },
+  "abstains": {
+   "runs": 1,
+   "of": 50,
+   "contracts": 1,
+   "contracts_mixed": 1,
+   "by_cause": {
+    "report_rejected": 1
+   },
+   "hit_tool_cap_runs": 4,
+   "share": [
+    0.02,
+    0.0,
+    0.06
+   ]
+  },
+  "tool_set": {
+   "set_changed": {
+    "k": 8,
+    "n": 10,
+    "share": 0.8,
+    "bootstrap": [
+     0.5,
+     1.0
+    ],
+    "exact_95": [
+     0.4439,
+     0.9748
+    ]
+   },
+   "contracts": {
+    "groklet": {
+     "runs": 5,
+     "calls_min": 16,
+     "calls_max": 20,
+     "sometimes": {
+      "read_storage": 1
+     },
+     "set_changed": true
+    },
+    "inc-etherfiatomicqueue": {
+     "runs": 5,
+     "calls_min": 11,
+     "calls_max": 14,
+     "sometimes": {},
+     "set_changed": false
+    },
+    "inc-termfinance": {
+     "runs": 5,
+     "calls_min": 19,
+     "calls_max": 25,
+     "sometimes": {
+      "read_storage": 4,
+      "search_knowledge": 4
+     },
+     "set_changed": true
+    },
+    "meowe": {
+     "runs": 5,
+     "calls_min": 16,
+     "calls_max": 17,
+     "sometimes": {
+      "diff_against_reference": 3
+     },
+     "set_changed": true
+    },
+    "milka": {
+     "runs": 5,
+     "calls_min": 16,
+     "calls_max": 21,
+     "sometimes": {},
+     "set_changed": false
+    },
+    "seaport": {
+     "runs": 5,
+     "calls_min": 11,
+     "calls_max": 16,
+     "sometimes": {
+      "search_knowledge": 4
+     },
+     "set_changed": true
+    },
+    "steth": {
+     "runs": 5,
+     "calls_min": 17,
+     "calls_max": 24,
+     "sometimes": {
+      "read_storage": 3
+     },
+     "set_changed": true
+    },
+    "tok-e2f2f46b": {
+     "runs": 5,
+     "calls_min": 17,
+     "calls_max": 20,
+     "sometimes": {
+      "read_storage": 4
+     },
+     "set_changed": true
+    },
+    "tok-f7755634": {
+     "runs": 5,
+     "calls_min": 17,
+     "calls_max": 25,
+     "sometimes": {
+      "diff_against_reference": 1
+     },
+     "set_changed": true
+    },
+    "uniswap-pair": {
+     "runs": 5,
+     "calls_min": 6,
+     "calls_max": 9,
+     "sometimes": {
+      "read_getter": 4
+     },
+     "set_changed": true
+    }
+   },
+   "runs_calling": {
+    "diff_against_reference": 9,
+    "get_deployment": 50,
+    "get_verified_source": 50,
+    "identify_contract": 50,
+    "list_selectors": 45,
+    "lookup_selector": 45,
+    "match_references": 50,
+    "read_getter": 49,
+    "read_storage": 17,
+    "resolve_proxy": 10,
+    "risk_scan": 50,
+    "search_knowledge": 43,
+    "simulate_sell": 25,
+    "taxonomy_lookup": 50
+   },
+   "runs": 50
+  },
+  "stability": {
+   "verdict_right": {
+    "contracts": 6,
+    "runs": 30,
+    "single_run": {
+     "value": 0.7,
+     "low": 0.3667,
+     "high": 1.0
+    },
+    "majority": {
+     "value": 0.6667,
+     "low": 0.3333,
+     "high": 1.0
+    },
+    "all_correct": {
+     "value": 0.6667,
+     "low": 0.3333,
+     "high": 1.0
+    },
+    "stable_pass": 4,
+    "unstable": 1,
+    "stable_fail": 1
+   },
+   "tool_use_pass": {
+    "contracts": 10,
+    "runs": 50,
+    "single_run": {
+     "value": 0.9,
+     "low": 0.76,
+     "high": 1.0
+    },
+    "majority": {
+     "value": 0.9,
+     "low": 0.7,
+     "high": 1.0
+    },
+    "all_correct": {
+     "value": 0.8,
+     "low": 0.5,
+     "high": 1.0
+    },
+    "stable_pass": 8,
+    "unstable": 2,
+    "stable_fail": 0
+   }
+  },
+  "attribution": {
+   "buckets": {
+    "different_direction": {
+     "pairs": 4,
+     "contracts": 1,
+     "same_inputs": 0,
+     "calls_differ": 4,
+     "results_differ": 0,
+     "unknown": 0
+    },
+    "same_direction_other_verdict": {
+     "pairs": 0,
+     "contracts": 0,
+     "same_inputs": 0,
+     "calls_differ": 0,
+     "results_differ": 0,
+     "unknown": 0
+    },
+    "same_verdict": {
+     "pairs": 92,
+     "contracts": 10,
+     "same_inputs": 1,
+     "calls_differ": 91,
+     "results_differ": 0,
+     "unknown": 0
+    },
+    "abstain_involved": {
+     "pairs": 4,
+     "contracts": 1,
+     "same_inputs": 0,
+     "calls_differ": 4,
+     "results_differ": 0,
+     "unknown": 0
+    }
+   },
+   "per_tool": {
+    "diff_against_reference": {
+     "shared_calls": 13,
+     "differing": 0,
+     "share": 0.0
+    },
+    "get_deployment": {
+     "shared_calls": 103,
+     "differing": 0,
+     "share": 0.0
+    },
+    "get_verified_source": {
+     "shared_calls": 123,
+     "differing": 0,
+     "share": 0.0
+    },
+    "identify_contract": {
+     "shared_calls": 107,
+     "differing": 0,
+     "share": 0.0
+    },
+    "list_selectors": {
+     "shared_calls": 100,
+     "differing": 0,
+     "share": 0.0
+    },
+    "lookup_selector": {
+     "shared_calls": 96,
+     "differing": 0,
+     "share": 0.0
+    },
+    "match_references": {
+     "shared_calls": 97,
+     "differing": 0,
+     "share": 0.0
+    },
+    "read_getter": {
+     "shared_calls": 463,
+     "differing": 0,
+     "share": 0.0
+    },
+    "read_storage": {
+     "shared_calls": 17,
+     "differing": 0,
+     "share": 0.0
+    },
+    "resolve_proxy": {
+     "shared_calls": 20,
+     "differing": 0,
+     "share": 0.0
+    },
+    "risk_scan": {
+     "shared_calls": 101,
+     "differing": 0,
+     "share": 0.0
+    },
+    "simulate_sell": {
+     "shared_calls": 50,
+     "differing": 0,
+     "share": 0.0
+    },
+    "taxonomy_lookup": {
+     "shared_calls": 72,
+     "differing": 0,
+     "share": 0.0
+    }
+   },
+   "state_mix": {
+    "verdict_differs": {
+     "different_state": 1,
+     "same_state": 3
+    },
+    "verdict_same": {
+     "same_state": 68,
+     "different_state": 24
+    }
+   },
+   "differing_verdict_by_contract": {
+    "tok-e2f2f46b": {
+     "calls_differ": 4
+    }
+   }
+  },
+  "cache_state": {
+   "mixed": 8,
+   "warm": 42
+  },
+  "time": {
+   "deepseek/deepseek-v4.1-flash-1017": {
+    "runs": 50,
+    "used": 49,
+    "left_out": {
+     "slept": 1
+    },
+    "end_to_end_s": {
+     "n": 49,
+     "min": 7.575,
+     "p50": 39.461,
+     "max": 84.275,
+     "mean": 39.612,
+     "p95": 72.835,
+     "p95_interval": [
+      63.388,
+      84.275
+     ]
+    },
+    "model_s": {
+     "n": 49,
+     "min": 5.319,
+     "p50": 31.55,
+     "max": 77.394,
+     "mean": 33.03,
+     "p95": 69.037,
+     "p95_interval": [
+      54.701,
+      77.394
+     ]
+    },
+    "tools_s": {
+     "n": 49,
+     "min": 2.082,
+     "p50": 5.886,
+     "max": 17.286,
+     "mean": 6.403,
+     "p95": 12.464,
+     "p95_interval": [
+      9.73,
+      17.286
+     ]
+    },
+    "overhead_s": {
+     "n": 49,
+     "min": 0.002,
+     "p50": 0.008,
+     "max": 0.018,
+     "mean": 0.009,
+     "p95": 0.018,
+     "p95_interval": [
+      0.013,
+      0.018
+     ]
+    },
+    "setup_s": {
+     "n": 49,
+     "min": 0.124,
+     "p50": 0.159,
+     "max": 0.285,
+     "mean": 0.17,
+     "p95": 0.231,
+     "p95_interval": [
+      0.2,
+      0.285
+     ]
+    },
+    "per_tool_s": {
+     "diff_against_reference": {
+      "n": 9,
+      "min": 0.002,
+      "p50": 0.005,
+      "max": 0.008,
+      "mean": 0.005,
+      "p95": null,
+      "note": "n=9 is too small for a 95th percentile; the maximum is shown"
+     },
+     "get_deployment": {
+      "n": 53,
+      "min": 0.198,
+      "p50": 0.326,
+      "max": 0.474,
+      "mean": 0.317,
+      "p95": 0.439,
+      "p95_interval": [
+       0.379,
+       0.446
+      ]
+     },
+     "get_verified_source": {
+      "n": 63,
+      "min": 0.237,
+      "p50": 0.343,
+      "max": 1.746,
+      "mean": 0.395,
+      "p95": 0.686,
+      "p95_interval": [
+       0.515,
+       0.883
+      ]
+     },
+     "identify_contract": {
+      "n": 61,
+      "min": 0.0,
+      "p50": 1.044,
+      "max": 1.738,
+      "mean": 1.051,
+      "p95": 1.377,
+      "p95_interval": [
+       1.335,
+       1.585
+      ]
+     },
+     "list_selectors": {
+      "n": 50,
+      "min": 0.002,
+      "p50": 0.027,
+      "max": 0.116,
+      "mean": 0.033,
+      "p95": 0.103,
+      "p95_interval": [
+       0.051,
+       0.116
+      ]
+     },
+     "lookup_selector": {
+      "n": 48,
+      "min": 0.0,
+      "p50": 0.027,
+      "max": 0.493,
+      "mean": 0.045,
+      "p95": 0.199,
+      "p95_interval": [
+       0.036,
+       0.493
+      ]
+     },
+     "match_references": {
+      "n": 50,
+      "min": 0.003,
+      "p50": 0.047,
+      "max": 0.167,
+      "mean": 0.059,
+      "p95": 0.153,
+      "p95_interval": [
+       0.088,
+       0.167
+      ]
+     },
+     "read_getter": {
+      "n": 281,
+      "min": 0.076,
+      "p50": 0.103,
+      "max": 0.479,
+      "mean": 0.115,
+      "p95": 0.181,
+      "p95_interval": [
+       0.157,
+       0.226
+      ]
+     },
+     "read_storage": {
+      "n": 28,
+      "min": 0.001,
+      "p50": 0.042,
+      "max": 0.09,
+      "mean": 0.048,
+      "p95": null,
+      "note": "n=28 is too small for a 95th percentile; the maximum is shown"
+     },
+     "resolve_proxy": {
+      "n": 10,
+      "min": 0.012,
+      "p50": 0.016,
+      "max": 0.028,
+      "mean": 0.019,
+      "p95": null,
+      "note": "n=10 is too small for a 95th percentile; the maximum is shown"
+     },
+     "risk_scan": {
+      "n": 51,
+      "min": 0.006,
+      "p50": 0.059,
+      "max": 0.785,
+      "mean": 0.107,
+      "p95": 0.249,
+      "p95_interval": [
+       0.143,
+       0.785
+      ]
+     },
+     "search_knowledge": {
+      "n": 59,
+      "min": 0.299,
+      "p50": 0.689,
+      "max": 11.781,
+      "mean": 1.517,
+      "p95": 4.215,
+      "p95_interval": [
+       3.073,
+       9.116
+      ]
+     },
+     "simulate_sell": {
+      "n": 24,
+      "min": 2.208,
+      "p50": 2.66,
+      "max": 6.858,
+      "mean": 2.986,
+      "p95": null,
+      "note": "n=24 is too small for a 95th percentile; the maximum is shown"
+     },
+     "taxonomy_lookup": {
+      "n": 49,
+      "min": 0.006,
+      "p50": 0.018,
+      "max": 0.032,
+      "mean": 0.016,
+      "p95": 0.023,
+      "p95_interval": [
+       0.02,
+       0.032
+      ]
+     }
+    },
+    "by_cache_state": {
+     "mixed": {
+      "n": 8,
+      "min": 19.513,
+      "p50": 43.033,
+      "max": 84.275,
+      "mean": 46.398,
+      "p95": null,
+      "note": "n=8 is too small for a 95th percentile; the maximum is shown"
+     },
+     "warm": {
+      "n": 41,
+      "min": 7.575,
+      "p50": 37.807,
+      "max": 75.704,
+      "mean": 38.288,
+      "p95": 71.66,
+      "p95_interval": [
+       60.929,
+       75.704
+      ]
+     }
+    }
+   }
+  },
+  "cost": {
+   "deepseek/deepseek-v4.1-flash-1017": {
+    "runs": 50,
+    "total_usd": 0.3241,
+    "per_report_usd": {
+     "n": 50,
+     "min": 0.002,
+     "p50": 0.005,
+     "max": 0.022,
+     "mean": 0.006,
+     "p95": 0.02,
+     "p95_interval": [
+      0.012,
+      0.022
+     ]
+    },
+    "tokens_in_mean": 76508,
+    "tokens_out_mean": 6372,
+    "cached_share": 0.782,
+    "tool_calls_mean": 17.1
+   }
+  },
+  "decision": {
+   "level": "moderate",
+   "direction_flips": 1,
+   "exact_flips": 2,
+   "quick": "R=1 only to check that nothing broke; R=3 to compare two changes",
+   "milestone": "R=3, then 2 more repeats for each contract that disagrees (cap 5)",
+   "top_up": "2 more repeats for contracts whose runs disagree, capped at 5 in all",
+   "overrides": [],
+   "floor": "a milestone run keeps R at 3 or more whatever the study finds"
+  }
+ }
+}

@@ -124,6 +124,33 @@ it gave a strict label to 10 of 10 faults. That is a hint of leniency on its sib
 from two reports; it is equally what two borderline sentences would give (two of the gaps with glm are
 sentences #1 and #2 of one USDC summary, true of the real USDC but not stated in the evidence).
 
+## Run-to-run noise study
+
+Component 6, part F, step 1. The eval-tier agent (`deepseek/deepseek-v4.1-flash-1017`) run 5 times on each of
+10 dev contracts chosen by a rule fixed before any run (`evals/noise-study.md`, registered at `b427b83`),
+one run at a time, at the pinned blocks: 50 runs, none failed. Run-set `noise-eval-r5`, code at `6b7f1a2`,
+analysis corrected at `bf5701a` (see the last attribution row); full record
+`evals/results/2026-10-28-6b7f1a24-noise-eval-r5.json`. Runs of a contract are compared with each other only;
+n is contracts unless it says runs or pairs. Two intervals for a share of contracts: the exact binomial one
+and, in brackets after it, the bootstrap over contracts that the other layers use (it collapses at 0 or 10).
+The cards' labels (computed by script, reviewed by nobody) are used only for the two pass-stability rows and
+the last row.
+
+| date | change | what | n | result [95% CI] | notes |
+|---|---|---|---|---|---|
+| 2026-10-28 | noise study | verdict differs between the 5 runs (an abstain counts as a verdict) | 10 contracts, 50 runs | 2/10 = 0.20 [exact 0.03–0.56; bootstrap 0.00–0.50] | `tok-e2f2f46b` 4x elevated_risk + 1x no_red_flags_found; `tok-f7755634` 4x elevated_risk + 1x insufficient_evidence. The other 8 gave one verdict in all 5 runs (Seaport 5x no_red_flags_found) |
+| 2026-10-28 | noise study | verdict flips between warn and clear, abstains left out | 10 contracts | 1/10 = 0.10 [exact 0.00–0.44; bootstrap 0.00–0.30] | only `tok-e2f2f46b`. One flip among ten contracts leaves an upper bound of 0.44, so it cannot rule out that a third of contracts flip |
+| 2026-10-28 | noise study | abstains (`insufficient_evidence`), counted apart | 50 runs | 1/50 = 0.02 [bootstrap 0.00–0.06] | one run of `tok-f7755634`, ended because its report was rejected by the validator. The 25-call cap was hit in 4/50 runs (`inc-termfinance` 3 of 5, `tok-f7755634` 1 of 5); all four still ended with an accepted report |
+| 2026-10-28 | noise study | the set of tools called changes between the 5 runs | 10 contracts | 8/10 = 0.80 [exact 0.44–0.97; bootstrap 0.50–1.00] | `read_storage`, `search_knowledge`, `diff_against_reference` and `read_getter` come and go; 6 to 25 tool calls a run. A change of tools did not by itself change a verdict (Seaport changed `search_knowledge` in 4 of 5 runs and kept its verdict) |
+| 2026-10-28 | noise study | cause, for the pairs of runs of one contract with a different warn/clear verdict | 4 pairs, 1 contract | tools 0 of 4, model 4 of 4 | the model: in every pair the two runs made different calls and every call both made returned the same result. Pairs of one contract are not independent, so read it as one contract. The 4 pairs with an abstain, apart: the same split |
+| 2026-10-28 | noise study | the same question asked twice (identical call, 13 tools) | 1,362 comparisons of an identical call in two runs of one contract (100 pairs of runs) | 0 returned a different result | the tools are repeatable at the pinned block, including `simulate_sell` 50 and `get_verified_source` 123. The first printed report said 20 comparisons did (`lookup_selector` 16 of 96, `taxonomy_lookup` 4 of 76) and "tools 1 of 4"; both were the analysis, corrected in `bf5701a`: `lookup_selector` counts names from the cache (cold first run, warm later runs), `taxonomy_lookup` without arguments reads the evidence gathered so far (a groklet run that identified the Uniswap pair first got a different question) |
+| 2026-10-28 | noise study | pass stability, for the 6 scored contracts (verdict in the card's accepted set) | 6 contracts, 30 runs | one run right 0.70 [0.37–1.00]; the majority of 5 right 0.67 [0.33–1.00]; every run right 0.67 [0.33–1.00] | 4 contracts always right, 1 sometimes, 1 never. See the last row |
+| 2026-10-28 | noise study | pass stability of the tool-use rules | 10 contracts, 50 runs | one run 0.90 [0.76–1.00]; majority 0.90 [0.70–1.00]; every run 0.80 [0.50–1.00] | 8 contracts always pass, 2 sometimes |
+| 2026-10-28 | noise study | time, sequential, eval tier | 49 of 50 runs | median 39.5 s; 95th percentile 72.8 s [63.4–84.3]; max 84.3 s | model 31.6 s and tools 5.9 s of the median. Warm runs median 37.8 s (n = 41), mixed 43.0 s (n = 8). One run left out: the laptop slept from 07:54 to 08:14 UTC, the run in flight froze and then finished |
+| 2026-10-28 | noise study | cost | 50 runs | $0.3241 ($0.0065 a run, dearest $0.022) | estimate $0.28, cap $0.75. OpenRouter's own meter moved $0.3244; the $0.0003 difference is the hosted embedding of knowledge searches, which the cap does not count |
+| 2026-10-28 | noise study | decision rule for R (written before the run) | 1 contract flips warn/clear, 2 differ in any verdict | moderate: quick R=1 to check nothing broke, R=3 to compare two changes; milestone R=3 then 2 more repeats for contracts that disagree (cap 5) | a proposal, **not approved by Aryaan**. Neither override applied (1 abstaining run, limit 5; 0 of 4 differing-verdict pairs caused by tools, limit half) |
+| 2026-10-28 | noise study | the two benign obscure tokens in the study against their labels | 2 contracts, 10 runs | `tok-e2f2f46b` right in 1 of 5 runs, `tok-f7755634` in 0 of 5 | the labels say benign, the agent says elevated_risk in 4 of 5 runs of each because it reads a bot-blacklist, a tax setter and an owner withdraw in the code. That is the agent and the script-computed label disagreeing, not noise; no card was changed |
+
 ## Retrieval rows
 
 | date | change | variant | split | n | recall@5 [95% CI] | MRR [95% CI] | p50 / p95 ms | notes |
