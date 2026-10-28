@@ -1,0 +1,127 @@
+# NOT ENABLED. GitHub only reads .github/workflows/, so this file does nothing where it is, even
+# if the repository is pushed. It is the ONE workflow for the evals: it replaces the earlier
+# retrieval-only workflow (same file, renamed, so the history follows).
+#
+# WHAT CI DOES, AND DOES NOT DO
+#   CI runs only the FREE subset: ruff, the offline tests (which include the dataset checks), the
+#   retrieval quiz on dev with the small LOCAL model, and the scoring of results that are already
+#   stored in the repository. It has no RPC, Etherscan or OpenRouter key and makes no model call.
+#   So it does NOT run the agent: the spec's "runs in CI on every PR" holds for retrieval and for
+#   scoring stored results, not for the agent layers. A change that makes the agent worse is only
+#   seen when someone makes a run-set by hand (`make eval-run`, paid) and commits its summary.
+#
+# TO SWITCH IT ON (all of these first):
+#   1. git mv .github/workflows-disabled/evals.yml .github/workflows/evals.yml
+#   2. Re-check the action versions below. They were checked on 2026-10-25 (checkout v7, setup-uv
+#      v10, cache v6) and NOT re-checked since.
+#   3. Re-save the retrieval baseline from the first Linux run. evals/baseline_retrieval.json was
+#      saved on Apple Silicon and a Linux runner can rank a borderline chunk differently. If the
+#      first run fails on a tiny difference:
+#        python -m evals.run retrieval --variants dense-small --save-baseline
+#      on the runner's output, then commit it.
+#   4. Check the GitHub Actions minutes your plan includes for a private repository. The retrieval
+#      job downloads the small models (about 150 MB, cached after the first run) and builds the
+#      index on every pull request that touches the paths below.
+#   5. Rotate the Alchemy key (its URL was printed into a transcript on 2026-10-26) before ANY key
+#      reaches CI. This workflow uses no secrets today; do not add one for the evals without
+#      deciding that on purpose.
+#   6. Until the first milestone run commits a summary, the `stored-results` job prints "no
+#      committed summaries yet" and passes: there is nothing to compare. After that it fails a pull
+#      request whose scoring change moves a committed number.
+#   7. Make the jobs "required checks" only after they have been green once.
+#
+# THE JOBS
+#   tests          every pull request touching the paths below: ruff and the whole offline test
+#                  suite (fake models, no network), dataset checks included.
+#   retrieval      after tests: downloads the small models (cached), builds the index, runs the quiz
+#                  on the DEV questions for the core variants. Fails only if the baseline variant is
+#                  confidently worse than the saved baseline on the same questions
+#                  (evals/run.py, _check_baseline), so ordinary noise does not break a pull request.
+#   stored-results after tests: scores every committed run-set summary again (evals/summaries/) and
+#                  requires the result to equal the committed results file exactly, so a scoring
+#                  change cannot silently move a number. It prints each summary's layer table,
+#                  time and cost included. Timing is REPORTED here and never gated: wall time on a
+#                  shared runner or over a network is noise.
+#   held-out       only when started by hand with the box ticked, never on a pull request: if every
+#                  pull request could see the held-out score it would turn into something to tune
+#                  against. It runs the retrieval quiz on the held-out questions, totals only. The
+#                  agent's held-out run needs a paid run-set and is made by hand (`make eval-heldout`).
+
+name: evals
+
+on:
+  pull_request:
+    paths:
+      - "agent/**"
+      - "chain/**"
+      - "references/**"
+      - "knowledge/**"
+      - "retrieval/**"
+      - "evals/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "Makefile"
+  workflow_dispatch:
+    inputs:
+      held_out:
+        description: "Run the held-out retrieval questions (milestones only)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  retrieval:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync --frozen
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/contract-analyzer/models
+          key: models-small-${{ hashFiles('retrieval/models.toml') }}
+      # Downloads only what is missing from the cache: about 150 MB for the small pair.
+      - run: uv run python -m retrieval models --tier small
+      # The local small model on purpose: CI has no OpenRouter key and must stay offline-capable.
+      - run: uv run python -m retrieval index --embedder small
+      - run: uv run python -m evals.run retrieval --variants core --check-baseline
+
+  stored-results:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync --frozen
+      # Scores each committed summary again and compares it with its committed results file.
+      # Prints the layer table of each, timing and cost included; nothing about time is gated.
+      - run: uv run python -m evals.run check-summaries
+
+  held-out:
+    if: github.event_name == 'workflow_dispatch' && inputs.held_out
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync --frozen
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/contract-analyzer/models
+          key: models-small-${{ hashFiles('retrieval/models.toml') }}
+      - run: uv run python -m retrieval models --tier small
+      - run: uv run python -m evals.run retrieval --variants core --held-out
