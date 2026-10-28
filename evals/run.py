@@ -1,6 +1,11 @@
-"""One command for the evals: `python -m evals.run <layer> [options]`.
+"""One command for the evals: `python -m evals.run <layer or command> [options]`.
 
-Only the retrieval layer exists so far; Component 6 adds the others to LAYERS.
+The retrieval layer is run here (`retrieval`). The agent layers are scored from a stored run-set by
+`all`, a run-set is made by `generate`, and `heldout`, `ledger` and `check-summaries` are in
+`evals/pipeline.py`; `make eval`, `make eval-run` and `make eval-heldout` call them.
+
+    python -m evals.run all               retrieval on dev + the latest dev run-set, scored
+    python -m evals.run generate          the estimate of a run-set; --go --max-spend X makes one
 
     python -m evals.run retrieval                       dev questions, the core variants
     python -m evals.run retrieval --variants all        every variant (needs the base models too)
@@ -80,7 +85,9 @@ def _compare(runs: dict[str, Run]) -> list[tuple[str, str, str]]:
     return out
 
 
-def run_retrieval(args: argparse.Namespace) -> int:
+def run_retrieval(args: argparse.Namespace, collect: list | None = None) -> int:
+    """`collect`, if given, receives (variant, split, summary) for each variant that was run, for
+    the layer table of `python -m evals.run all`."""
     split: Split = "heldout" if args.held_out else "dev"
     if args.held_out and args.by:
         print("error: --by is not available on held-out (totals only)", file=sys.stderr)
@@ -105,6 +112,8 @@ def run_retrieval(args: argparse.Namespace) -> int:
         )
 
     rows = [(name, label, summarize(run.scored)) for name, run in runs.items()]
+    if collect is not None:
+        collect.extend(rows)
     _print_table(rows)
     comparisons = _compare(runs)
     if comparisons:
@@ -194,7 +203,15 @@ def _check_baseline(runner: RetrievalRunner, runs: dict[str, Run]) -> int:
 LAYERS: dict[str, Callable[[argparse.Namespace], int]] = {"retrieval": run_retrieval}
 
 
+COMMANDS = ("all", "generate", "heldout", "ledger", "check-summaries")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] in COMMANDS:
+        from evals.pipeline import main as pipeline_main
+
+        return pipeline_main(arguments)
     parser = argparse.ArgumentParser(prog="python -m evals.run", description=__doc__)
     parser.add_argument("layer", choices=sorted(LAYERS))
     parser.add_argument("--variants", default="core", help=f"{' | '.join(GROUPS)} or a,b,c")
@@ -206,7 +223,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--log", metavar="CHANGE", help="append rows to results.md")
     parser.add_argument("--save-baseline", action="store_true")
     parser.add_argument("--check-baseline", action="store_true")
-    args = parser.parse_args(argv)
+    args = parser.parse_args(arguments)
     try:
         return LAYERS[args.layer](args)
     except ValueError as err:

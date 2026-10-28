@@ -16,6 +16,8 @@ are a model's opinion, and `limits` in the result says how that opinion was chec
 
 from collections import Counter
 from collections.abc import Sequence
+from pathlib import Path
+from typing import Any
 
 from evals.judge.cache import JudgeCache, claim_key, summary_key
 from evals.judge.compare import agreement
@@ -31,6 +33,12 @@ LIMITS = (
     "another company; it was not checked against the project owner's own labels, and it is not "
     "truth. It sees only what a claim cites."
 )
+
+
+def run_key(run: RunRecord, number: int) -> str:
+    """How a run is named in a table of labels: its trace's file name (so the same name serves on
+    any machine), else its position."""
+    return Path(run.path).name if run.path else f"run-{number}"
 
 
 def _label(row: dict | None, index: int = 0) -> str | None:
@@ -55,7 +63,7 @@ def claim_labels(
                 inp.claim_sha, inp.evidence_sha, inp.kind, inp.severity, model, rubric, repeat
             )
             labels.append(_label(cache.get(key)))
-        out[run.path or f"run-{number}"] = labels
+        out[run_key(run, number)] = labels
     return out
 
 
@@ -71,9 +79,9 @@ def summary_labels(
             continue
         row = cache.get(summary_key(inp.summary_sha, inp.context_sha, model, rubric, repeat))
         if row is not None and row.get("parsed"):
-            out[run.path or f"run-{number}"] = [v["label"] for v in row["verdicts"]]
+            out[run_key(run, number)] = [v["label"] for v in row["verdicts"]]
         else:
-            out[run.path or f"run-{number}"] = [None] * len(inp.sentences)
+            out[run_key(run, number)] = [None] * len(inp.sentences)
     return out
 
 
@@ -139,33 +147,53 @@ def judge_cost(cache: JudgeCache, model: str, rubric: str) -> dict[str, object]:
     }
 
 
-def faithfulness(
+def collect_labels(
+    runs: Sequence[RunRecord], cache: JudgeCache, models: Sequence[str], rubric: str
+) -> dict[str, Any]:
+    """Everything the faithfulness numbers are counted from, as plain data: for each judge, the
+    label of each claim and of each summary sentence of each accepted run, and what the judge cost.
+    This is what a committed run-set summary keeps, so the numbers can be counted again without the
+    traces or the cache."""
+    return {
+        "rubric_sha256": rubric,
+        "judges": {
+            model: {
+                "claims": claim_labels(runs, cache, model, rubric),
+                "summary": summary_labels(runs, cache, model, rubric),
+                "cost": judge_cost(cache, model, rubric),
+            }
+            for model in models
+        },
+    }
+
+
+def faithfulness_from_labels(
+    labels: dict[str, Any],
     runs: Sequence[RunRecord],
-    cache: JudgeCache,
-    models: Sequence[str],
-    rubric: str,
     *,
     detail: bool = True,
     resamples: int = 10_000,
 ) -> dict[str, object]:
-    """The faithfulness block of the results file for each judge in `models`, and, for two judges,
-    how they agree. `detail=False` (the held-out split) leaves out the per-report disagreement
-    list."""
-    contract_of = {r.path or f"run-{n}": r.key for n, r in enumerate(runs)}
+    """The faithfulness block of the results file for each judge in `labels`, and, for two judges,
+    how they agree. Only the runs in `runs` count. `detail=False` (the held-out split) leaves out
+    the per-report disagreement list."""
+    contract_of = {run_key(r, n): r.key for n, r in enumerate(runs)}
+    models = list(labels["judges"])
     per_judge: dict[str, object] = {}
     claim_sets = {}
     for model in models:
-        claims = claim_labels(runs, cache, model, rubric)
-        summaries = summary_labels(runs, cache, model, rubric)
+        found = labels["judges"][model]
+        claims = {k: v for k, v in found["claims"].items() if k in contract_of}
+        summaries = {k: v for k, v in found["summary"].items() if k in contract_of}
         claim_sets[model] = claims
         per_judge[model] = {
             "claims": _levels(claims, contract_of, resamples),
             "summary": _levels(summaries, contract_of, resamples),
-            "cost": judge_cost(cache, model, rubric),
+            "cost": found["cost"],
         }
     block: dict[str, object] = {
-        "rubric_sha256": rubric,
-        "judges": list(models),
+        "rubric_sha256": labels["rubric_sha256"],
+        "judges": models,
         "per_judge": per_judge,
         "limits": LIMITS,
     }
@@ -173,8 +201,8 @@ def faithfulness(
         first, second = (
             {
                 f"{run}#{i}": label
-                for run, labels in claim_sets[m].items()
-                for i, label in enumerate(labels)
+                for run, run_labels in claim_sets[m].items()
+                for i, label in enumerate(run_labels)
             }
             for m in models
         )
@@ -185,3 +213,18 @@ def faithfulness(
     judged = sum(per_judge[m]["claims"]["labelled"] for m in models)  # type: ignore[index]
     block["claims_judged"] = judged
     return block
+
+
+def faithfulness(
+    runs: Sequence[RunRecord],
+    cache: JudgeCache,
+    models: Sequence[str],
+    rubric: str,
+    *,
+    detail: bool = True,
+    resamples: int = 10_000,
+) -> dict[str, object]:
+    """`collect_labels` then `faithfulness_from_labels`: the block counted from a judge cache."""
+    return faithfulness_from_labels(
+        collect_labels(runs, cache, models, rubric), runs, detail=detail, resamples=resamples
+    )

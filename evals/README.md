@@ -1,12 +1,14 @@
 # evals/: measuring the system
 
-The retrieval layer is run by `evals.run` (below). The agent layers (tool use, detection, answer
-quality, time and cost) are scored offline from stored agent traces by `evals.score` (section
-"Scoring agent runs"); the faithfulness judge is in `judge/` (section "The faithfulness judge");
-generating the runs (`make eval-run`) comes in a later part.
+Three commands run it all (section "`make eval`, `make eval-run`, `make eval-heldout`"). The retrieval
+layer is run by `evals.run retrieval` (below). The agent layers (tool use, detection, answer quality,
+time and cost) are scored offline from stored agent traces by `evals.score` (section "Scoring agent
+runs") or, for a stored run-set, by `make eval`; the faithfulness judge is in `judge/` (section "The
+faithfulness judge"); a run-set is made by `make eval-run`, which is paid and spends nothing without
+`--go`.
 
 ```text
-make eval                                                    dev questions, core variants, small models
+make eval                                                    retrieval on dev + the newest stored dev run-set, scored (free)
 python -m evals.run retrieval --variants all                 every variant (needs `make models-all`)
 python -m evals.run retrieval --variants rerank-small --by style kind    recall@5 per query style and kind
 python -m evals.run retrieval --variants rerank-small --also dense-small --log "change"
@@ -109,3 +111,74 @@ python -m evals.judge checkset report --judge A --judge B              catch rat
 python -m evals.judge run RUNS --judge A --judge B --max-spend 1 --go  judge agent traces (PAID)
 python -m evals.score RUNS --judge-cache evals/judge/cache --judge A --judge B   count them into the results file
 ```
+
+## `make eval`, `make eval-run`, `make eval-heldout`
+
+Part E of Component 6. Each is `python -m evals.run <command>`; extra arguments go in `ARGS="..."`.
+
+| Command | Does | Cost |
+|---|---|---|
+| `make eval` | retrieval on dev (local small models, as before) **and** the scoring of the newest stored dev run-set: tool use, detection, citation validity, cached judge results, time, cost. Prints the layer table and the full report, saves `evals/results/<date>-<commit>-<runset>.json`. With no run-set it prints "no run-set yet" for those layers and still runs retrieval. `--no-retrieval` skips retrieval; `--runset PATH` picks a run-set; `--write-summary` also writes the committed summary | $0 |
+| `make eval-run` | makes a run-set: the agent on the dev contracts, R repeats (default 3), then a judge **only if named**. Bare, it prints the estimate and what to add, and does nothing else | paid, only with `--go` |
+| `make eval-heldout DECLARE="why"` | milestones only. Held-out retrieval, and the newest held-out run-set scored, totals only. Refuses without `DECLARE`. `ARGS="--generate --go"` makes a held-out run-set first (cap $2) | $0, or paid with `--generate --go` |
+
+What `make eval` prints with no run-set yet, today (nothing has been generated):
+
+```text
+layer           n  metric                                value [95% CI]
+retrieval[...]  87 dev   recall@5 / MRR                  (from the quiz)
+tool use        -  pass rate (single run / all-correct)  no run-set yet (make eval-run)
+detection       -  precision / recall / F1 (abstains)    no run-set yet (make eval-run)
+answer quality  -  citation validity / faithfulness      no run-set yet (make eval-run)
+time            -  end-to-end p50 / p95 (s)              no run-set yet (make eval-run)
+cost            -  $ per report (p50 / max)              no run-set yet (make eval-run)
+```
+
+**Spending is explicit.** A paid command (`generate`, `heldout --generate`) works out an estimate
+first and prints it. It then does nothing unless all of these hold (`evals/spend.py`, tested):
+
+1. `--go` was given. Without it only the estimate and what to add are printed (this is what a bare
+   `make eval-run` does);
+2. `--max-spend` covers the estimate. The default cap is $4 for a dev run and $2 for held-out;
+3. a model dearer than $0.02 a run (Sonnet) also has `--allow-expensive`;
+4. a judge only runs if `--judge SLUG` names one. There is no default judge: the rubric and the judge
+   pair are not approved. The trial pair (`qwen/qwen3.7-flash`, `z-ai/glm-5.3-flash`) is listed in
+   `--help` as candidates.
+
+While it runs, each agent run first reserves its ceiling (the per-run cap handed to the agent loop:
+$0.05 for the eval tier, $0.25 for Sonnet) from a `SpendCap`, and does not start if that would pass
+`--max-spend`; the judge uses the same cap. Estimates come from measured costs, each with its source in
+`evals/spend.py`: eval tier $0.0056 a run (24 runs), Sonnet $0.065 (5 runs), Haiku $0.0049 (8 runs), the
+judges' per-call costs from the stage 1 trial. An unknown model or judge has no estimate unless
+`--per-run-usd` or `--judge-call-usd` is given. Every paid command appends to a git-ignored ledger
+(`evals/runsets/ledger.jsonl`); `python -m evals.run ledger` sums it against the roughly $25 envelope. The
+ledger starts empty: the smoke test ($1.64) and the judge trial ($0.2163) were spent before it existed.
+
+**A run-set** is `evals/runsets/<name>/` (git-ignored): `traces/*.json` and `manifest.json`. The manifest
+has the git commit and dirty flag, the model tier and slug, hashes (settings file, system prompt, tool
+schemas, the cards plus the label rules), the block pins (dev only), R, the judge slugs and rubric hash,
+the spend (estimated, cap, actual) and the environment. Runs go repeat by repeat; `--workers N` runs
+several at once and marks the run-set and its traces concurrent, which the timing statistics leave out.
+
+**The summary.** For a milestone dev run, `make eval ARGS="--write-summary"` writes
+`evals/summaries/<name>.json`: what the free scoring reads from each run (verdict, report text, tool
+calls with arguments and seconds, attempts, cost, tokens) and the labels the judge gave, but not the
+conversation or the evidence. Commit it with the results file it names. `python -m evals.run
+check-summaries` scores every committed summary again and requires exactly the committed results file
+(only the time of writing may differ); it is what CI runs. Until the first milestone summary is committed
+there is nothing to compare and it says so.
+
+**Held-out** is totals only, in every file: no per-contract table, no summary, and a manifest that names
+no contract, address or block (only how many, and a hash). The `--cards` file must be all held-out cards
+(the Makefile passes it; dev tooling never loads it otherwise), and `--declare` is required.
+
+### CI
+
+`.github/workflows-disabled/evals.yml` is the one parked workflow (it replaces the retrieval-only one);
+nothing is in `.github/workflows/`. **CI would run only the free subset**: ruff, the offline tests
+(dataset checks included), retrieval on dev with the local small model and the baseline gate, and the
+re-scoring of committed summaries (timing and cost reported, never gated). It has no RPC, Etherscan or
+OpenRouter key and makes no model call. So it does **not** run the agent: the spec's "runs in CI on every
+PR" holds for retrieval and for scoring stored results, not for the agent layers. A change that makes
+the agent worse shows only when someone makes a run-set by hand and commits its summary. The workflow's
+header lists what must happen before it is switched on.

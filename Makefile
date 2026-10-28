@@ -1,11 +1,24 @@
 # make index   embed every chunk with the default embedder (hosted: needs OPENROUTER_API_KEY)
 # make index-local  the same with the small local model, no key or network
 # make models  download the small models (make models-all adds the bigger comparison pair)
-# make eval    the retrieval quiz on the dev questions, core variants, small models only
+# make eval    FREE. The retrieval quiz on the dev questions (small local models) and the scoring of
+#              the newest stored dev run-set: tool use, detection, citations, judge results if the
+#              run-set has them, time, cost. Prints the layer table and saves evals/results/*.json.
+#              With no run-set yet it says so and still runs retrieval.
+# make eval-run  PAID, but only an estimate unless you add --go: make eval-run ARGS="--go --max-spend 1"
+#              Generates a run-set (the agent on the dev contracts, R repeats). Never spends by
+#              accident: no --go, no spend. A judge only if you name one with --judge SLUG.
+# make eval-heldout DECLARE="why"  MILESTONES ONLY. Held-out retrieval and the newest held-out
+#              run-set, totals only; refuses without DECLARE. ARGS="--generate --go" makes a
+#              held-out run-set first (paid, cap $2).
 # make test    ruff and the offline tests
+# Details: evals/README.md ("make eval, make eval-run, make eval-heldout").
 UV = uv run
+ARGS ?=
+DECLARE ?=
+HELDOUT_CARDS = evals/datasets/contracts_heldout.toml
 
-.PHONY: index index-local models models-all eval test
+.PHONY: index index-local models models-all eval eval-run eval-heldout test
 
 index:
 	$(UV) python -m retrieval index
@@ -20,7 +33,13 @@ models-all:
 	$(UV) python -m retrieval models --tier all
 
 eval:
-	$(UV) python -m evals.run retrieval --variants core
+	$(UV) python -m evals.run all $(ARGS)
+
+eval-run:
+	$(UV) python -m evals.run generate $(ARGS)
+
+eval-heldout:
+	$(UV) python -m evals.run heldout --cards $(HELDOUT_CARDS) --declare "$(DECLARE)" $(ARGS)
 
 test:
 	$(UV) ruff check .

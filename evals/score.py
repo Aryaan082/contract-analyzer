@@ -42,7 +42,7 @@ from evals.detection import (
     verdicts_by_class,
 )
 from evals.judge.cache import JudgeCache
-from evals.judge.faithfulness import faithfulness as count_faithfulness
+from evals.judge.faithfulness import collect_labels, faithfulness_from_labels
 from evals.judge.rubric import load_rubric
 from evals.repeats import cluster_bootstrap, contract_rates, flips
 from evals.results_file import RESULTS_DIR, build_results, write_results
@@ -97,7 +97,9 @@ def _tool_use(pairs: list[Pair], everyone: Sequence[RunRecord], resamples: int) 
     return out
 
 
-def _detection(pairs: list[Pair], resamples: int) -> dict[str, Any]:
+def _detection(pairs: list[Pair], resamples: int, detail: bool = True) -> dict[str, Any]:
+    """`detail=False` (the held-out split) keeps every number that is a total and drops the ones
+    keyed by contract: which contracts flipped, and the grey contracts one by one."""
     scored = [p for p in pairs if p[1].scored]
     out: dict[str, Any] = {"verdicts_by_class": verdicts_by_class(pairs)}
     if scored:
@@ -123,7 +125,10 @@ def _detection(pairs: list[Pair], resamples: int) -> dict[str, Any]:
     verdicts: dict[str, list[str]] = defaultdict(list)
     for run, card in pairs:
         verdicts[card.id].append(run.verdict)
-    out["flips"] = parts(flips(verdicts))
+    flipped = parts(flips(verdicts))
+    if not detail:
+        flipped["contracts"] = len(flipped["contracts"])  # how many flipped, not which
+    out["flips"] = flipped
     stated = [s for run, card in pairs if (s := facts_stated(run, card)) is not None]
     out["facts_stated"] = {"runs": len(stated), "share": _share(stated)}
     shares: dict[str, list[float]] = defaultdict(list)
@@ -146,6 +151,16 @@ def _detection(pairs: list[Pair], resamples: int) -> dict[str, Any]:
         row["runs"] += 1
         row["not_checked_ok"] += bool(checked["not_checked_ok"])
         row["forbidden"] += bool(checked["forbidden"])
+    if not detail and grey:
+        grey = {
+            "all": {
+                "contracts": len(grey),
+                **{
+                    k: sum(row[k] for row in grey.values())
+                    for k in ("runs", "not_checked_ok", "forbidden")
+                },
+            }
+        }
     out["grey"] = grey
     return out
 
@@ -165,9 +180,13 @@ def score(
     resamples: int = 10_000,
     judge_cache: JudgeCache | None = None,
     judges: Sequence[str] = (),
+    judge_labels: dict[str, Any] | None = None,
+    runset: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Every layer that can be scored offline, as a results document (see `results_file`).
-    `judge_cache` and `judges` bring in faithfulness from judgements already made."""
+    `judge_cache` and `judges` bring in faithfulness from judgements already made; `judge_labels`
+    brings it in from labels kept in a run-set summary (what `collect_labels` returns). `runset`
+    is the run-set's manifest, copied into the results manifest."""
     if split == "heldout" and not declared:
         raise ValueError("the held-out split is only scored with a declared reason")
     if model:
@@ -226,14 +245,13 @@ def score(
         ],
     }
     judged = None
-    if judge_cache is not None and judges:
-        judged = count_faithfulness(
-            in_scope,
-            judge_cache,
-            judges,
-            load_rubric().sha256,
-            detail=split != "heldout",
-            resamples=resamples,
+    if judge_labels is None and judge_cache is not None and judges:
+        judge_labels = collect_labels(in_scope, judge_cache, judges, load_rubric().sha256)
+    if runset is not None:
+        manifest["runset"] = runset
+    if judge_labels is not None:
+        judged = faithfulness_from_labels(
+            judge_labels, in_scope, detail=split != "heldout", resamples=resamples
         )
         manifest["notes"].append(
             "Faithfulness is a judge model's opinion of whether the cited evidence supports each "
@@ -243,7 +261,7 @@ def score(
         )
     layers: dict[str, Any] = {
         "tool_use": _tool_use(pairs, in_scope, resamples),
-        "detection": _detection(pairs, resamples) if pairs else None,
+        "detection": _detection(pairs, resamples, detail=split != "heldout") if pairs else None,
         "answer_quality": {
             "citations": parts(citation_summary(in_scope, resamples=resamples)),
             "faithfulness": judged,  # None until judgements are brought in
