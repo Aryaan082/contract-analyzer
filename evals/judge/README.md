@@ -173,6 +173,23 @@ Full numbers and the list of disagreements are in `trials/2026-10-28-stage1.json
   is a lean. Next, if wanted: a stage 2 with `xiaomi/mimo-v2.6-pro` ($0.12–0.33 a pass), the rubric
   tweak below, and a re-run on a larger fault set.
 
+## What judging a run set would cost (projected from the trial)
+
+Measured on 2026-10-28: `qwen3.7-flash` $0.00045 a call, `glm-5.3-flash` $0.00095 a call (money spent,
+retries of cut-off replies included; the check set's claims cite about the same amount of evidence as real
+ones, 3.8k characters on average against 3.8k to 4.2k). A report costs one call per claim plus one for the
+summary. The reports in `agent/runs` average:
+
+| Agent that wrote the reports | Claims a report | Calls a report | 120 reports (a full dev run) with qwen / glm / both |
+|---|---|---|---|
+| Sonnet 5.5 | 6.1 | 7.1 | about $0.38 / $0.81 / $1.19 |
+| DeepSeek flash (the eval tier) | 12.1 | 13.1 | about $0.71 / $1.49 / $2.20 |
+
+So the judge costs more than the eval-tier agent itself ($0.67 for the same 120 runs); with flash as the agent
+and two judges a full dev run is about $2.9, under the $4 rule. One judge on every report, and the second
+only on a sample, would roughly halve it. These are projections from 103 calls each, not a measured run;
+cut-off replies, retries and a different mix of claims move them.
+
 **Rubric change worth considering before approval** (it would give a new hash and restart these
 checks, about $0.15 for the two judges): the reason asks for a quote that contains JSON quote marks
 (`"verdict": "sell_blocked"`), which has to be escaped inside a JSON string. Asking for the quoted
