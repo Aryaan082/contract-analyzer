@@ -19,6 +19,7 @@ import json
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from typing import Any
 
 from agent.config import Limits
@@ -46,6 +47,7 @@ from agent.report import (
     Unavailable,
     Validation,
 )
+from agent.runmeta import digest
 from agent.tools import RunContext, execute, tool_map, unavailable_tools
 from agent.validator import parse_submission, valid_findings, validate
 from chain.models import normalize_address
@@ -80,6 +82,67 @@ class AgentRun:
     registry: EvidenceRegistry
     turns: list[dict[str, Any]] = field(default_factory=list)  # per model call: tools, tokens, cost
     error: str | None = None  # why the model could not be reached; never contains the key
+    # For Component 6, written to the trace and never read by the loop (see `_call_record`,
+    # `_attempt_record` and the `metrics` built at the end of `run_agent`):
+    calls: list[dict[str, Any]] = field(
+        default_factory=list
+    )  # per tool call: seconds, fingerprints
+    attempts: list[dict[str, Any]] = field(default_factory=list)  # per submit_report attempt
+    metrics: dict[str, Any] = field(default_factory=dict)  # where the time went, store hits
+
+
+def _call_record(
+    turn: int, call: Any, result: str, seconds: float, wall_seconds: float
+) -> dict[str, Any]:
+    """What the trace keeps about one tool call: how long it took and a fingerprint of what went
+    in and what came back. The result's fingerprint leaves out the evidence id, so the same call
+    giving the same answer in two runs gets the same fingerprint however the calls were numbered."""
+    try:
+        shown = json.loads(result)
+    except ValueError:
+        shown = None
+    shown = shown if isinstance(shown, dict) else {}
+    evidence_id = shown.pop("evidence_id", None)
+    return {
+        "turn": turn,
+        "tool": call.name,
+        "call_id": call.id,
+        "ran": True,
+        "seconds": round(seconds, 3),
+        "wall_seconds": round(wall_seconds, 3),
+        "arguments_sha": digest(call.arguments),
+        "result_sha": digest(json.dumps(shown, sort_keys=True) if shown else result),
+        "evidence_id": evidence_id,
+        "ok": shown.get("ok") if "ok" in shown else None,
+        "duplicate": bool(shown.get("duplicate")),
+        "error": "error" in shown,
+    }
+
+
+def _attempt_record(
+    attempt: int,
+    turn: int,
+    submission: Submission | None,
+    problems: list[Problem],
+    registry: EvidenceRegistry,
+) -> dict[str, Any]:
+    """One try at `submit_report`: whether the arguments parsed, how many claims, how many of them
+    failed on their own, and every problem by place and code."""
+    findings = submission.findings[:25] if submission is not None else None
+    failing = (
+        len(findings) - len(valid_findings(submission, registry))
+        if submission is not None and findings is not None
+        else None
+    )
+    return {
+        "attempt": attempt,
+        "turn": turn,
+        "parsed": submission is not None,
+        "accepted": not problems,
+        "claims": None if findings is None else len(findings),
+        "claims_failing": failing,
+        "problems": [{"where": p.where, "code": p.code} for p in problems],
+    }
 
 
 def _cited(findings, checked, registry: EvidenceRegistry) -> tuple[CitedEvidence, ...]:
@@ -162,8 +225,13 @@ def run_agent(
     *,
     limits: Limits | None = None,
     clock: Callable[[], float] = time.monotonic,
+    wall: Callable[[], float] = time.time,
 ) -> AgentRun:
     limits = limits or Limits()
+    # Two clocks, for the trace only: `clock` (monotonic) drives the limits and the timings, `wall`
+    # is the time of day. On a laptop the first stops while the machine sleeps and the second does
+    # not, so a gap between them marks a run that slept.
+    began, began_wall = clock(), wall()
     address = normalize_address(address)
     block = ctx.client.pin()
     tools = tool_map(ctx)
@@ -174,8 +242,12 @@ def run_agent(
         {"role": "user", "content": user_message(address, ctx.chain, block, question)},
     ]
     started = clock()
+    setup_seconds = started - began
     totals = Usage()
     turns: list[dict[str, Any]] = []
+    call_log: list[dict[str, Any]] = []
+    attempt_log: list[dict[str, Any]] = []
+    model_seconds = tool_seconds = 0.0
     tool_calls = attempts = reminders = 0
     stop: StoppedBecause = "turn_limit"
     wrapped = False
@@ -206,6 +278,7 @@ def run_agent(
         if wrap_up and not wrapped:
             messages.append({"role": "user", "content": WRAP_UP})
             wrapped = True
+        asked, asked_wall = clock(), wall()
         try:
             reply = model.complete(
                 messages,
@@ -213,8 +286,11 @@ def run_agent(
                 max_tokens=limits.max_output_tokens,
             )
         except ModelUnavailable as err:
+            model_seconds += clock() - asked
             stop, error = "model_unavailable", str(err)
             break
+        model_took, model_wall = clock() - asked, wall() - asked_wall
+        model_seconds += model_took
         usage = reply.usage
         totals = Usage(
             prompt_tokens=totals.prompt_tokens + usage.prompt_tokens,
@@ -228,6 +304,11 @@ def run_agent(
                 "tools": [c.name for c in reply.tool_calls],
                 "finish_reason": reply.finish_reason,
                 **usage.model_dump(),
+                "seconds": round(model_took, 3),
+                "wall_seconds": round(model_wall, 3),
+                "retries": reply.retries,
+                "provider": reply.provider,
+                "model_served": reply.model,
             }
         )
         messages.append(reply.as_message())
@@ -252,9 +333,18 @@ def run_agent(
                 results[call.id] = json.dumps(
                     {"error": "No more tool calls are allowed in this run. Call submit_report."}
                 )
+                call_log.append(
+                    {"turn": len(turns), "tool": call.name, "call_id": call.id, "ran": False}
+                )
                 continue
             tool_calls += 1
+            ran, ran_wall = clock(), wall()
             results[call.id] = execute(ctx, call, tools)
+            tool_took = clock() - ran
+            tool_seconds += tool_took
+            call_log.append(
+                _call_record(len(turns), call, results[call.id], tool_took, wall() - ran_wall)
+            )
 
         finished = exhausted = False
         for index, call in enumerate(submits):
@@ -266,6 +356,9 @@ def run_agent(
             if submission is not None:
                 last = submission
                 problems = validate(submission, ctx.registry)
+            attempt_log.append(
+                _attempt_record(attempts, len(turns), submission, problems, ctx.registry)
+            )
             if not problems:
                 accepted, finished = submission, True
                 results[call.id] = json.dumps({"accepted": True})
@@ -290,6 +383,27 @@ def run_agent(
             stop = "report_rejected"
             break
 
+    loop_seconds = elapsed()
+    wall_seconds = wall() - began_wall
+    metrics = {
+        "schema": 2,
+        "started_at": datetime.fromtimestamp(began_wall, UTC).isoformat(timespec="seconds"),
+        "setup_s": round(setup_seconds, 3),
+        "loop_s": round(loop_seconds, 3),
+        "total_s": round(setup_seconds + loop_seconds, 3),
+        "model_s": round(model_seconds, 3),
+        "tools_s": round(tool_seconds, 3),
+        # what the loop did itself (validating reports, building messages); should be near zero
+        "overhead_s": round(max(0.0, loop_seconds - model_seconds - tool_seconds), 3),
+        "wall_s": round(wall_seconds, 3),
+        # time of day minus the monotonic clock: well above zero means the machine slept
+        "skew_s": round(wall_seconds - (setup_seconds + loop_seconds), 3),
+        "model_calls": len(turns),
+        "tools_run": tool_calls,
+        "system_prompt_sha": digest(messages[0]["content"]),
+        "tools_sha": digest(json.dumps(offered_all, sort_keys=True, default=str)),
+        "counters": dict(ctx.counters),
+    }
     info = RunInfo(
         model=model.name,
         turns=len(turns),
@@ -314,5 +428,12 @@ def run_agent(
         run=info,
     )
     return AgentRun(
-        report=report, messages=messages, registry=ctx.registry, turns=turns, error=error
+        report=report,
+        messages=messages,
+        registry=ctx.registry,
+        turns=turns,
+        error=error,
+        calls=call_log,
+        attempts=attempt_log,
+        metrics=metrics,
     )

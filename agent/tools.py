@@ -60,6 +60,24 @@ MAX_LOOKUP_ENTRIES_SHOWN = 150
 MAX_TAXONOMY_ENTRIES = 8
 
 
+class CountedStore:
+    """A code store that counts how often it was asked and how often it had the answer, for the
+    trace. It changes nothing about what the store returns."""
+
+    def __init__(self, inner: Any, count: Callable[[str], None]) -> None:
+        self._inner, self._count = inner, count
+
+    def find(self, chain_id: int, address: str, block: int):
+        found = self._inner.find(chain_id, address, block)
+        self._count("code_store_lookups")
+        if found is not None:
+            self._count("code_store_hits")
+        return found
+
+    def save(self, chain_id: int, address: str, block: int, code_hash: str, code: bytes) -> None:
+        self._inner.save(chain_id, address, block, code_hash, code)
+
+
 class ArgsModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -177,11 +195,23 @@ class RunContext:
     _codes: dict[str, bytes] = field(default_factory=dict)
     _lookups: dict[str, ToolResult[LookupData]] = field(default_factory=dict)
     _seen: dict[tuple[str, str], str] = field(default_factory=dict)
+    # How often the stores answered instead of the network, for the trace (never read by a tool).
+    counters: dict[str, int] = field(default_factory=dict)
+
+    def count(self, name: str, amount: int = 1) -> None:
+        self.counters[name] = self.counters.get(name, 0) + amount
+
+    @property
+    def code_store(self) -> CountedStore | None:
+        """The code store the tools use (None without one), counting its lookups and hits."""
+        store = self.services.code_store
+        return None if store is None else CountedStore(store, self.count)
 
     def code(self, address: str) -> bytes:
         """The bytes an analysis works on. With a code store, each one read is saved there."""
         if address not in self._codes:
-            self._codes[address] = read_code(self.client, address, self.services.code_store).code
+            self._codes[address] = read_code(self.client, address, self.code_store).code
+            self.count("code_reads")
         return self._codes[address]
 
     def has_code(self, address: str) -> bool:
@@ -197,12 +227,16 @@ class RunContext:
             if isinstance(found.data, ToolError):
                 raise ChainError(found.data.error.code, found.data.error.message)
             wanted = [s.selector for s in found.data.selectors][:MAX_SELECTORS]
-            self._lookups[address] = lookup_selector(
+            looked_up = lookup_selector(
                 wanted,
                 self.client.provenance(address),
                 store=self.services.selector_store,
                 fetch=self.services.fetch_names,
             )
+            if isinstance(looked_up.data, LookupData):
+                self.count("selector_names_asked", len(looked_up.data.entries))
+                self.count("selector_names_from_cache", looked_up.data.from_cache)
+            self._lookups[address] = looked_up
         return self._lookups[address]
 
     def names(self, address: str) -> dict[str, list[NameCandidate]] | None:
@@ -301,11 +335,11 @@ def _failed(ctx: RunContext, address: str | None, err: ChainError, source: str) 
 
 
 def _identify(ctx: RunContext, args: AddressArgs) -> ToolOutput:
-    return _from_result(identify_contract(ctx.client, args.address, ctx.services.code_store))
+    return _from_result(identify_contract(ctx.client, args.address, ctx.code_store))
 
 
 def _resolve_proxy(ctx: RunContext, args: AddressArgs) -> ToolOutput:
-    return _from_result(resolve_proxy(ctx.client, args.address, ctx.services.code_store))
+    return _from_result(resolve_proxy(ctx.client, args.address, ctx.code_store))
 
 
 def _list_selectors(ctx: RunContext, args: AddressArgs) -> ToolOutput:

@@ -73,6 +73,10 @@ class ModelReply(BaseModel, frozen=True):
     usage: Usage = Usage()
     finish_reason: str | None = None
     model: str = ""
+    # For the trace only, never used by the loop: who served the reply (OpenRouter's `provider`
+    # field when it sends one) and how many requests failed before this one worked.
+    provider: str | None = None
+    retries: int = 0
     # What a thinking model hands back with its reply and expects to get back unchanged with its
     # tool results (OpenRouter's `reasoning_details`). None for a model that does not think.
     reasoning_details: tuple[dict[str, Any], ...] | None = None
@@ -199,7 +203,8 @@ class OpenRouterModel:
             f"OpenRouter error {status}: {reasons.get(status, 'request failed')}. {detail}".strip()
         )
 
-    def _post(self, body: dict[str, Any]) -> dict[str, Any]:
+    def _post(self, body: dict[str, Any]) -> tuple[dict[str, Any], int]:
+        """The reply, and how many requests failed before it."""
         request = urllib.request.Request(
             self._url,
             data=json.dumps(body).encode(),
@@ -235,7 +240,7 @@ class OpenRouterModel:
                     f"could not reach OpenRouter ({type(err).__name__})"
                 ) from None
             if isinstance(payload, dict) and payload.get("choices"):
-                return payload
+                return payload, attempt
             # OpenRouter can answer 200 with an error body or no choices when a provider fails.
             message = (
                 payload.get("error", {}).get("message", "") if isinstance(payload, dict) else ""
@@ -271,7 +276,7 @@ class OpenRouterModel:
             "max_tokens": max_tokens,
             "temperature": self._temperature,
         }
-        payload = self._post(body)
+        payload, retries = self._post(body)
         choice = payload["choices"][0]
         message = choice.get("message") or {}
         calls = tuple(
@@ -300,6 +305,10 @@ class OpenRouterModel:
             ),
             finish_reason=choice.get("finish_reason"),
             model=str(payload.get("model") or self.name),
+            provider=_safe(str(payload["provider"]), 60)
+            if isinstance(payload.get("provider"), str)
+            else None,
+            retries=retries,
             reasoning_details=tuple(d for d in details if isinstance(d, dict))
             if isinstance(details, list) and details
             else None,

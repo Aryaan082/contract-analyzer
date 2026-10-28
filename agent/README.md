@@ -305,7 +305,7 @@ contract, GROKLET's; the three above are not.
 
 `config.py` + `models.toml` (model, prices, caps) · `llm.py` (client) · `tools.py` (registry,
 `execute`) · `evidence.py` · `report.py` (schema, text) · `validator.py` · `prompts.py` · `loop.py` ·
-`trace.py` (`agent/runs/*.json`, git-ignored) · `untrusted.py` · `contracts.py` + `contracts.toml` ·
+`trace.py` (`agent/runs/*.json`, git-ignored; never overwrites a file) · `runmeta.py` (code version and machine for the trace) · `untrusted.py` · `contracts.py` + `contracts.toml` ·
 `cli.py`.
 
 ## Not done
@@ -318,3 +318,17 @@ contract, GROKLET's; the three above are not.
 - Faithfulness, completeness and tool-use trajectories are not measured: Component 6.
 - No API, streaming, caching of analyses, model routing or dashboard: Component 7 (the per-run
   trace is the start).
+
+## What a trace records for Component 6
+
+Besides the conversation, evidence and report, a trace holds (older ones lack these keys; the scorer
+copes): `calls` (every tool call: seconds on the monotonic clock and on the time-of-day clock, a
+fingerprint of the arguments and of the result without its evidence id, whether it ran), `attempts`
+(every `submit_report`: parsed, accepted, claims, claims failing, problem codes), `metrics` (setup,
+model, tool and overhead seconds, `skew_s`, store hit counters, fingerprints of the system prompt and
+the tool schemas), per model call `seconds`, `retries`, `provider` and `model_served`, `environment`
+(git commit and dirty flag, `models.toml` fingerprint, `forge` version, cores, an optional
+`AGENT_NETWORK_LABEL`) and `tags` (labels from the caller, such as `{"concurrent": true}`).
+`skew_s` is the time-of-day clock minus the monotonic one: well above zero means the machine slept
+during the run. None of this changes what a run does. The sandbox's own attempt timings are not
+recorded (that would mean editing `chain/`); `simulate_sell` is timed as one tool call.
