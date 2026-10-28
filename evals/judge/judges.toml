@@ -10,6 +10,10 @@
 #
 # Rules for a judge: not American (the eval-model rule), not DeepSeek (the agent's eval model) and not
 # Anthropic (the product model), and the two judges that are kept come from two different companies.
+# ONE EXCEPTION, the last entry: deepseek-v4.1-flash is tried as a third column at Aryaan's request
+# (2026-10-28). It is the same company, and the same model, as the agent's eval tier, so shared blind
+# spots and a taste for its own wording are possible. It is a comparison only: the kept pair stays
+# Alibaba + Z.ai.
 # `max_tokens` leaves room for hidden thinking: a model that thinks first spends part of it before it
 # writes the JSON. At 2500, 27 of 103 qwen3.7-flash replies on the check set (all 16 summaries) were
 # spent on thinking alone and cut off (2026-10-28), so it is 6000. A reply cut off by the limit is
@@ -43,3 +47,10 @@ input_per_mtok = 0.60
 output_per_mtok = 2.40
 max_tokens = 6000
 note = "MiniMax; 13 providers, 0.22 to 0.60 in, 0.88 to 2.40 out, only some accept JSON-schema output. Prices read 2026-10-28."
+
+[[judge]]
+slug = "deepseek/deepseek-v4.1-flash-1017"   # DeepSeek. EXCEPTION to the rule above: the agent's own eval model.
+input_per_mtok = 0.45                  # 38 providers range 0.015 to 0.45; DeepSeek's own is 0.15 but lists no structured_outputs
+output_per_mtok = 1.80                 # 0.15 to 1.80 (Fireworks/us is the dearest that accepts a JSON-schema request); DeepSeek's own is 0.60
+max_tokens = 6000
+note = "DeepSeek; 38 providers, 0.015 to 0.45 in and 0.15 to 1.80 out, most accept response_format and structured outputs (DeepSeek's own endpoint lists response_format only). Prices read 2026-10-28. Same company as the agent's eval model: a third column, not a candidate for the kept pair. Tried 2026-10-28: a strict JSON-schema request was accepted on the first call (15 providers routed); $0.0575 for the check set; no reply cut off (median 235 completion tokens, longest 5,189, so 6000 only just clears it)."

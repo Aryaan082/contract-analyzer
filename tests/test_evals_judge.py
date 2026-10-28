@@ -509,11 +509,15 @@ def test_the_estimate_counts_only_what_is_not_cached_and_bounds_the_cost():
 def test_the_candidate_judges_listed_are_non_american_not_the_agents_vendors_and_priced():
     from evals.judge.client import load_judges
 
+    # the one documented exception: the agent's own eval model, tried as a third column (2026-10-28)
+    exceptions = {"deepseek/deepseek-v4.1-flash-1017"}
     judges = load_judges()
     assert len(judges) >= 3
+    assert exceptions <= set(judges)
     for slug, spec in judges.items():
         vendor = slug.split("/")[0]
-        assert vendor not in {"deepseek", "anthropic", "openai", "google", "x-ai", "meta-llama"}
+        if slug not in exceptions:
+            assert vendor not in {"deepseek", "anthropic", "openai", "google", "x-ai", "meta-llama"}
         assert spec.input_per_mtok > 0 and spec.output_per_mtok > 0 and spec.max_tokens >= 800
     assert len({s.split("/")[0] for s in judges}) >= 3  # at least three different companies
 
