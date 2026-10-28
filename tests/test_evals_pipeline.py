@@ -384,6 +384,57 @@ def test_the_ledger_sums_what_was_spent_against_the_envelope(where, capsys):
     assert "total through evals.run: $0.0720" in shown and "roughly $25 envelope" in shown
 
 
+# -- the real runner, with the chain and the model replaced ------------------------------------------
+
+
+def test_the_real_runner_pins_the_block_caps_the_run_and_writes_the_trace(tmp_path, monkeypatch):
+    """The one path that spends money, run with a scripted chain and a scripted model."""
+    from agent.config import load_config
+    from evals.cards import Card
+    from evals.generate import live_agent_runner
+    from tests.agent_support import (
+        TOKEN,
+        ScriptedModel,
+        call,
+        erc20_world,
+        offline_services,
+        report_body,
+        submit,
+    )
+
+    world = erc20_world()
+    asked = {}
+    seen_limits = []
+
+    def connect(chain, env, block=None):
+        asked["block"] = block
+        return world
+
+    def scripted_model(spec, timeout):
+        model = ScriptedModel(
+            [[call("identify_contract", address=TOKEN)], [submit(**report_body())]], cost=0.007
+        )
+        asked["model"] = spec.name
+        seen_limits.append(timeout)
+        return model
+
+    monkeypatch.setattr("chain.rpc.RpcClient.connect", staticmethod(connect))
+    monkeypatch.setattr("agent.llm.OpenRouterModel", scripted_model)
+    monkeypatch.setattr(
+        "chain.profile.Services.from_env", staticmethod(lambda env: offline_services())
+    )
+    runner = live_agent_runner("eval", tmp_path, {})
+    card = Card.model_validate(
+        {"id": "x", "address": TOKEN, "class": "benign", "block": world.block, "split": "dev"}
+    )
+    result = runner(card, 0.05, {"runset": "t", "repeat": 2, "concurrent": False})
+    assert asked == {"block": world.block, "model": load_config().resolve_model("eval").name}
+    assert result.accepted and result.error is None and result.cost_usd == pytest.approx(0.014)
+    saved = json.loads(result.trace.read_text())
+    assert saved["tags"] == {"runset": "t", "repeat": 2, "concurrent": False}
+    assert saved["limits"]["max_cost_usd"] == 0.05  # the ceiling reached the agent loop
+
+
 # -- the layer table, with and without a run-set ------------------------------------------------
 
 
