@@ -151,6 +151,31 @@ the last row.
 | 2026-10-28 | noise study | decision rule for R (written before the run) | 1 contract flips warn/clear, 2 differ in any verdict | moderate: quick R=1 to check nothing broke, R=3 to compare two changes; milestone R=3 then 2 more repeats for contracts that disagree (cap 5) | a proposal, **not approved by Aryaan**. Neither override applied (1 abstaining run, limit 5; 0 of 4 differing-verdict pairs caused by tools, limit half) |
 | 2026-10-28 | noise study | the two benign obscure tokens in the study against their labels | 2 contracts, 10 runs | `tok-e2f2f46b` right in 1 of 5 runs, `tok-f7755634` in 0 of 5 | the labels say benign, the agent says elevated_risk in 4 of 5 runs of each because it reads a bot-blacklist, a tax setter and an owner withdraw in the code. That is the agent and the script-computed label disagreeing, not noise; no card was changed |
 
+## First full dev run
+
+Component 6, first `make eval-run`. The eval-tier agent (`deepseek/deepseek-v4.1-flash-1017`) on all 29 dev cards,
+3 repeats each, at the pinned blocks, one run at a time: 87 runs, none failed. Run-set `dev-eval-r3`, code at
+`0c888d0` (clean tree), no judge; full record `evals/results/2026-10-28-0c888d04-dev-eval-r3.json`. Every
+label is computed by script and **nobody has reviewed them** (29 of 29): the numbers say "agrees with the script and
+the written rules", not "agrees with Aryaan". Only 5 flagged and 12 benign contracts are scored on the verdict, so
+the detection intervals are wide. Intervals resample contracts (a contract's 3 runs stay together).
+
+| date | change | what | n | result [95% CI] | notes |
+|---|---|---|---|---|---|
+| 2026-10-28 | first dev run | tool use: every rule of the card holds | 29 contracts, 87 runs | one run 0.74 [0.59–0.87]; majority of 3 0.72 [0.55–0.86]; every run 0.66 [0.48–0.83] | 19 contracts always pass, 5 sometimes, 5 never. Rules failing: under the 25-call cap 15 of 87, finished with an accepted report 8 of 87, a context lookup 3 of 84, no repeated call 3 of 87, a sell rehearsal 1 of 63 |
+| 2026-10-28 | first dev run | detection: precision of the warnings | 17 scored contracts, 51 runs; 38 warned | 0.39 [0.14–0.67] (15 of 38) | the 15 right ones are all the flagged runs; the 23 wrong ones are benign contracts the agent warned on |
+| 2026-10-28 | first dev run | detection: recall, F1, coverage | 5 flagged contracts, 15 runs | recall 1.00 [1.00–1.00] (15 of 15 warned); F1 0.57 [0.26–0.80]; coverage 0.94 | read recall as a count of 5 contracts. Benign runs: 23 warned, 10 cleared, 3 abstained |
+| 2026-10-28 | first dev run | verdict as the card labels it | 17 contracts, 51 runs | one run 0.49 [0.25–0.73]; majority 0.47 [0.24–0.71]; every run 0.47 [0.24–0.71] | 8 contracts always right (the 5 flagged and `uniswap-pair`, `famous-weth`, `tok-f2b36ba4`), 1 sometimes (`tok-e2f2f46b`), 8 never |
+| 2026-10-28 | first dev run | verdict flips between the 3 runs of a contract | 29 contracts | 4/29 = 0.14 | `permit2`, `tok-e2f2f46b`, `inc-etherfiatomicqueue`, `inc-termfinance`. The noise study (10 contracts x 5 runs) found 2 of 10 differing in any verdict |
+| 2026-10-28 | first dev run | citation validity (the validator program, not a judge) | 87 runs, 1,004 claims | first submit accepted 0.72 [0.60–0.83]; claims valid 0.995 [0.990–0.999] | 6 runs submitted no report, 21 were accepted after a retry, 2 ended rejected. 5 of 1,004 claims failed the first time |
+| 2026-10-28 | first dev run | faithfulness | 87 runs | not judged | no judge was named for this run-set |
+| 2026-10-28 | first dev run | runs that ended without an accepted report | 8 of 87 | `tok-7427b616` and `inc-reflexergeb` no report in all 3 runs each; `inc-termfinance` report rejected twice | the cause is not looked at yet. They are `insufficient_evidence` verdicts: 3 abstains on benign, 5 on beyond-reach |
+| 2026-10-28 | first dev run | hit the 25-tool-call cap | 15 of 87 runs | `tok-ff2f0388` 3, `inc-ensofinance` 3, `usdc` 2, `tok-f7755634` 2, `inc-usm` 2, `inc-termfinance` 2, `inc-notionalfinance` 1 | all but the unfinished ones still ended with an accepted report |
+| 2026-10-28 | first dev run | the sell rehearsal could not run | `inc-ensofinance`, 3 of 3 runs | `simulate_sell` returned "inconclusive, sandbox_failed" | the Foundry test reverts for this contract every time (deterministic, not a rate limit). Not scored on the verdict (beyond reach) |
+| 2026-10-28 | first dev run | time, sequential, eval tier | 87 of 87 runs | median 40.3 s; 95th percentile 85.7 s [73.5–103.0]; max 111.9 s | 64 minutes for the whole run |
+| 2026-10-28 | first dev run | cost | 87 runs | $0.6509 ($0.0075 a run, median $0.006, dearest $0.024) | estimate $0.487, cap $1.00. 17.8 tool calls a run, 73% of input tokens cached |
+| 2026-10-28 | first dev run | the benign obscure tokens against their labels | 12 benign contracts, 36 runs | 7 contracts warned in all 3 runs (`famous-wbtc`, `tok-0c862c4a`, `tok-432a8e9d`, `tok-5c36660f`, `tok-d170c582`, `tok-ff2f0388`, `tok-f7755634`) | the labels say benign; the agent warns because it reads a bot-blacklist, a tax setter or an owner withdraw in the code. That is the agent and the script-computed label disagreeing, as in the noise study; no card was changed |
+
 ## Retrieval rows
 
 | date | change | variant | split | n | recall@5 [95% CI] | MRR [95% CI] | p50 / p95 ms | notes |

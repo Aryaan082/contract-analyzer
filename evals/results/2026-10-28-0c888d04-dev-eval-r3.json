@@ -1,0 +1,905 @@
+{
+ "schema_version": 1,
+ "created_at": "2026-10-29T00:56:04+00:00",
+ "manifest": {
+  "label": "dev-eval-r3",
+  "split": "dev",
+  "held_out_declared": null,
+  "traces": 87,
+  "carded_runs": 87,
+  "uncarded_runs": 0,
+  "models": {
+   "deepseek/deepseek-v4.1-flash-1017": 87
+  },
+  "git_commits": [
+   "0c888d04d3b153f257c74429bc0e15e4dba9a021"
+  ],
+  "git_dirty": false,
+  "cards": 29,
+  "unreviewed_labels": "29 of 29",
+  "notes": [
+   "Recall rests on 5 flagged contracts in this split (fewer than 10): read it as a count of contracts, not a rate, and expect a very wide interval.",
+   "Labels are computed by script and no human has reviewed them: the numbers say 'agrees with the script and the written rules', not 'agrees with Aryaan'."
+  ],
+  "runset": {
+   "name": "dev-eval-r3",
+   "kind": "dev",
+   "model": {
+    "tier": "eval",
+    "slug": "deepseek/deepseek-v4.1-flash-1017"
+   },
+   "repeats": 3,
+   "hashes": {
+    "models_toml_sha": "9f535e5db0658e66",
+    "system_prompt_sha": "265b06f77ebff9f2",
+    "tools_sha": "f7920decca10eae4",
+    "dataset_sha256": "b2a4f1ff3e9abe8612f6d88d7c936181650a7695644e90abef9c92c6478ea93f",
+    "label_rules_sha256": "d415c2b370e85dcfcf9658f1c11742046c7f03e19c8f486c5cd622979f96a91d",
+    "block_pins_sha256": "6420ee874eb59aa94cbb8334726d799b15736dfd306a9fe107539a02f0f3e15e"
+   },
+   "judges": {
+    "slugs": [],
+    "rubric_sha256": null
+   },
+   "planned_runs": 87,
+   "completed_runs": 87,
+   "spend_usd": 0.6509,
+   "concurrent": false
+  }
+ },
+ "tool_use": {
+  "hygiene_only": {
+   "runs": 87,
+   "pass": {
+    "value": 0.7356,
+    "low": 0.5862,
+    "high": 0.8736
+   }
+  },
+  "hit_tool_cap_by_model": {
+   "deepseek/deepseek-v4.1-flash-1017": 15
+  },
+  "carded_runs": 87,
+  "pass": {
+   "contracts": 29,
+   "runs": 87,
+   "single_run": {
+    "value": 0.7356,
+    "low": 0.5862,
+    "high": 0.8736
+   },
+   "majority": {
+    "value": 0.7241,
+    "low": 0.5517,
+    "high": 0.8621
+   },
+   "all_correct": {
+    "value": 0.6552,
+    "low": 0.4828,
+    "high": 0.8276
+   },
+   "stable_pass": 19,
+   "unstable": 5,
+   "stable_fail": 5
+  },
+  "rule_failures": {
+   "context_looked_up": {
+    "applied": 84,
+    "failed": 3
+   },
+   "finished": {
+    "applied": 87,
+    "failed": 8
+   },
+   "forbids:simulate_sell": {
+    "applied": 9,
+    "failed": 0
+   },
+   "identify_first": {
+    "applied": 87,
+    "failed": 0
+   },
+   "implementation_analysed": {
+    "applied": 12,
+    "failed": 0
+   },
+   "no_pointless_sell": {
+    "applied": 24,
+    "failed": 0
+   },
+   "no_repeat_calls": {
+    "applied": 87,
+    "failed": 3
+   },
+   "proxy_resolved": {
+    "applied": 12,
+    "failed": 0
+   },
+   "reason:hidden-transfer-tax:simulate_sell": {
+    "applied": 3,
+    "failed": 0
+   },
+   "reason:honeypot-sell-blocked:simulate_sell": {
+    "applied": 9,
+    "failed": 0
+   },
+   "reason:mutable-fees:risk_scan/list_selectors/simulate_sell": {
+    "applied": 3,
+    "failed": 0
+   },
+   "reason:upgradeable-implementation:resolve_proxy": {
+    "applied": 3,
+    "failed": 0
+   },
+   "requires:get_verified_source": {
+    "applied": 33,
+    "failed": 0
+   },
+   "requires:identify_contract": {
+    "applied": 33,
+    "failed": 0
+   },
+   "requires:risk_scan": {
+    "applied": 33,
+    "failed": 0
+   },
+   "sell_rehearsed": {
+    "applied": 63,
+    "failed": 1
+   },
+   "source_checked": {
+    "applied": 87,
+    "failed": 0
+   },
+   "under_tool_cap": {
+    "applied": 87,
+    "failed": 15
+   }
+  }
+ },
+ "detection": {
+  "verdicts_by_class": {
+   "benign": {
+    "no_red_flags_found": 10,
+    "elevated_risk": 23,
+    "insufficient_evidence": 3
+   },
+   "beyond_reach": {
+    "elevated_risk": 15,
+    "insufficient_evidence": 5,
+    "no_red_flags_found": 1
+   },
+   "flagged": {
+    "elevated_risk": 3,
+    "high_risk": 12
+   },
+   "grey": {
+    "elevated_risk": 10,
+    "no_red_flags_found": 5
+   }
+  },
+  "scored_runs": 51,
+  "scored_contracts": 17,
+  "confusion": {
+   "tp": 15,
+   "fn": 0,
+   "abstain_flagged": 0,
+   "fp": 23,
+   "tn": 10,
+   "abstain_benign": 3
+  },
+  "precision": {
+   "value": 0.3947,
+   "low": 0.1429,
+   "high": 0.6667
+  },
+  "recall": {
+   "value": 1.0,
+   "low": 1.0,
+   "high": 1.0
+  },
+  "f1": {
+   "value": 0.566,
+   "low": 0.2553,
+   "high": 0.8
+  },
+  "coverage": 0.9412,
+  "by_reason": {
+   "hidden-transfer-tax": {
+    "runs": 3,
+    "warned": 3
+   },
+   "honeypot-sell-blocked": {
+    "runs": 9,
+    "warned": 9
+   },
+   "mutable-fees": {
+    "runs": 3,
+    "warned": 3
+   }
+  },
+  "verdict_right": {
+   "contracts": 17,
+   "runs": 51,
+   "single_run": {
+    "value": 0.4902,
+    "low": 0.2549,
+    "high": 0.7255
+   },
+   "majority": {
+    "value": 0.4706,
+    "low": 0.2353,
+    "high": 0.7059
+   },
+   "all_correct": {
+    "value": 0.4706,
+    "low": 0.2353,
+    "high": 0.7059
+   },
+   "stable_pass": 8,
+   "unstable": 1,
+   "stable_fail": 8
+  },
+  "flips": {
+   "rate": 0.1379,
+   "contracts": {
+    "permit2": {
+     "elevated_risk": 1,
+     "no_red_flags_found": 2
+    },
+    "tok-e2f2f46b": {
+     "elevated_risk": 2,
+     "no_red_flags_found": 1
+    },
+    "inc-etherfiatomicqueue": {
+     "elevated_risk": 2,
+     "no_red_flags_found": 1
+    },
+    "inc-termfinance": {
+     "elevated_risk": 1,
+     "insufficient_evidence": 2
+    }
+   }
+  },
+  "facts_stated": {
+   "runs": 24,
+   "share": 0.9167
+  },
+  "reason_recall": {
+   "runs": 24,
+   "contracts": 8,
+   "mean": {
+    "value": 0.9583,
+    "low": 0.8958,
+    "high": 1.0
+   }
+  },
+  "grey": {
+   "usdc": {
+    "runs": 3,
+    "not_checked_ok": 3,
+    "forbidden": 1
+   },
+   "seaport": {
+    "runs": 3,
+    "not_checked_ok": 3,
+    "forbidden": 0
+   },
+   "steth": {
+    "runs": 3,
+    "not_checked_ok": 3,
+    "forbidden": 3
+   },
+   "dai": {
+    "runs": 3,
+    "not_checked_ok": 3,
+    "forbidden": 1
+   },
+   "permit2": {
+    "runs": 3,
+    "not_checked_ok": 3,
+    "forbidden": 2
+   }
+  }
+ },
+ "answer_quality": {
+  "citations": {
+   "runs": 87,
+   "no_submission": 6,
+   "first_attempt_accepted": {
+    "value": 0.716,
+    "low": 0.6049,
+    "high": 0.8272
+   },
+   "accepted_after_retry": 21,
+   "ended_rejected": 2,
+   "claims_first": 1004,
+   "claims_failing_first": 5,
+   "claim_validity": {
+    "value": 0.995,
+    "low": 0.9895,
+    "high": 0.999
+   },
+   "problem_codes": {
+    "context_needs_knowledge_evidence": 1,
+    "no_evidence": 1,
+    "schema_error": 4,
+    "ungrounded_identifier": 5,
+    "unsupported_unverified_wording": 10,
+    "verdict_below_floor": 1,
+    "verdict_contradicts_findings": 4,
+    "verdict_unsupported": 2
+   },
+   "rebuilt_runs": 0
+  },
+  "faithfulness": null
+ },
+ "time": {
+  "deepseek/deepseek-v4.1-flash-1017": {
+   "runs": 87,
+   "used": 87,
+   "left_out": {},
+   "end_to_end_s": {
+    "n": 87,
+    "min": 16.296,
+    "p50": 40.287,
+    "max": 111.943,
+    "mean": 44.034,
+    "p95": 85.733,
+    "p95_interval": [
+     73.47,
+     103.015
+    ]
+   },
+   "model_s": {
+    "n": 87,
+    "min": 12.493,
+    "p50": 31.573,
+    "max": 106.159,
+    "mean": 36.102,
+    "p95": 74.201,
+    "p95_interval": [
+     61.073,
+     84.118
+    ]
+   },
+   "tools_s": {
+    "n": 87,
+    "min": 2.07,
+    "p50": 6.777,
+    "max": 36.329,
+    "mean": 7.753,
+    "p95": 16.602,
+    "p95_interval": [
+     11.308,
+     21.105
+    ]
+   },
+   "overhead_s": {
+    "n": 87,
+    "min": 0.002,
+    "p50": 0.008,
+    "max": 0.057,
+    "mean": 0.009,
+    "p95": 0.017,
+    "p95_interval": [
+     0.013,
+     0.036
+    ]
+   },
+   "setup_s": {
+    "n": 87,
+    "min": 0.122,
+    "p50": 0.166,
+    "max": 0.251,
+    "mean": 0.17,
+    "p95": 0.217,
+    "p95_interval": [
+     0.199,
+     0.25
+    ]
+   },
+   "per_tool_s": {
+    "diff_against_reference": {
+     "n": 20,
+     "min": 0.001,
+     "p50": 0.004,
+     "max": 0.091,
+     "mean": 0.009,
+     "p95": null,
+     "note": "n=20 is too small for a 95th percentile; the maximum is shown"
+    },
+    "get_deployment": {
+     "n": 90,
+     "min": 0.197,
+     "p50": 0.318,
+     "max": 0.57,
+     "mean": 0.318,
+     "p95": 0.435,
+     "p95_interval": [
+      0.394,
+      0.458
+     ]
+    },
+    "get_verified_source": {
+     "n": 111,
+     "min": 0.188,
+     "p50": 0.302,
+     "max": 1.176,
+     "mean": 0.338,
+     "p95": 0.498,
+     "p95_interval": [
+      0.465,
+      0.592
+     ]
+    },
+    "identify_contract": {
+     "n": 117,
+     "min": 0.0,
+     "p50": 0.972,
+     "max": 1.57,
+     "mean": 0.976,
+     "p95": 1.293,
+     "p95_interval": [
+      1.138,
+      1.437
+     ]
+    },
+    "list_selectors": {
+     "n": 98,
+     "min": 0.001,
+     "p50": 0.025,
+     "max": 0.12,
+     "mean": 0.028,
+     "p95": 0.069,
+     "p95_interval": [
+      0.042,
+      0.094
+     ]
+    },
+    "lookup_selector": {
+     "n": 92,
+     "min": 0.0,
+     "p50": 0.024,
+     "max": 0.555,
+     "mean": 0.083,
+     "p95": 0.497,
+     "p95_interval": [
+      0.263,
+      0.542
+     ]
+    },
+    "match_references": {
+     "n": 87,
+     "min": 0.014,
+     "p50": 0.047,
+     "max": 0.17,
+     "mean": 0.056,
+     "p95": 0.111,
+     "p95_interval": [
+      0.092,
+      0.148
+     ]
+    },
+    "read_getter": {
+     "n": 512,
+     "min": 0.0,
+     "p50": 0.102,
+     "max": 0.365,
+     "mean": 0.11,
+     "p95": 0.16,
+     "p95_interval": [
+      0.145,
+      0.18
+     ]
+    },
+    "read_storage": {
+     "n": 75,
+     "min": 0.027,
+     "p50": 0.035,
+     "max": 0.119,
+     "mean": 0.044,
+     "p95": 0.074,
+     "p95_interval": [
+      0.067,
+      0.113
+     ]
+    },
+    "resolve_proxy": {
+     "n": 27,
+     "min": 0.013,
+     "p50": 0.032,
+     "max": 0.137,
+     "mean": 0.041,
+     "p95": null,
+     "note": "n=27 is too small for a 95th percentile; the maximum is shown"
+    },
+    "risk_scan": {
+     "n": 91,
+     "min": 0.002,
+     "p50": 0.067,
+     "max": 1.008,
+     "mean": 0.108,
+     "p95": 0.594,
+     "p95_interval": [
+      0.138,
+      0.701
+     ]
+    },
+    "search_knowledge": {
+     "n": 85,
+     "min": 0.302,
+     "p50": 0.709,
+     "max": 31.523,
+     "mean": 2.594,
+     "p95": 8.135,
+     "p95_interval": [
+      6.005,
+      17.684
+     ]
+    },
+    "simulate_sell": {
+     "n": 62,
+     "min": 0.0,
+     "p50": 2.643,
+     "max": 6.574,
+     "mean": 3.004,
+     "p95": 4.759,
+     "p95_interval": [
+      4.158,
+      5.411
+     ]
+    },
+    "taxonomy_lookup": {
+     "n": 84,
+     "min": 0.008,
+     "p50": 0.015,
+     "max": 0.1,
+     "mean": 0.016,
+     "p95": 0.025,
+     "p95_interval": [
+      0.021,
+      0.044
+     ]
+    }
+   },
+   "by_cache_state": {
+    "mixed": {
+     "n": 20,
+     "min": 26.291,
+     "p50": 39.347,
+     "max": 85.733,
+     "mean": 43.293,
+     "p95": null,
+     "note": "n=20 is too small for a 95th percentile; the maximum is shown"
+    },
+    "warm": {
+     "n": 67,
+     "min": 16.296,
+     "p50": 40.77,
+     "max": 111.943,
+     "mean": 44.255,
+     "p95": 86.152,
+     "p95_interval": [
+      71.756,
+      103.015
+     ]
+    }
+   }
+  }
+ },
+ "cost": {
+  "deepseek/deepseek-v4.1-flash-1017": {
+   "runs": 87,
+   "total_usd": 0.6509,
+   "per_report_usd": {
+    "n": 87,
+    "min": 0.002,
+    "p50": 0.006,
+    "max": 0.024,
+    "mean": 0.007,
+    "p95": 0.017,
+    "p95_interval": [
+     0.014,
+     0.02
+    ]
+   },
+   "tokens_in_mean": 82294,
+   "tokens_out_mean": 6835,
+   "cached_share": 0.732,
+   "tool_calls_mean": 17.83
+  }
+ },
+ "per_contract": [
+  {
+   "id": "asasar",
+   "class": "flagged",
+   "runs": 3,
+   "verdicts": {
+    "high_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "brick",
+   "class": "flagged",
+   "runs": 3,
+   "verdicts": {
+    "high_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "dai",
+   "class": "grey",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "famous-wbtc",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "famous-weth",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "no_red_flags_found": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "groklet",
+   "class": "flagged",
+   "runs": 3,
+   "verdicts": {
+    "high_risk": 3
+   },
+   "trajectory_failed": [
+    "no_repeat_calls"
+   ]
+  },
+  {
+   "id": "inc-balancerv1bpool",
+   "class": "beyond_reach",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "inc-ensofinance",
+   "class": "beyond_reach",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": [
+    "under_tool_cap"
+   ]
+  },
+  {
+   "id": "inc-etherfiatomicqueue",
+   "class": "beyond_reach",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 2,
+    "no_red_flags_found": 1
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "inc-notionalfinance",
+   "class": "beyond_reach",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": [
+    "under_tool_cap"
+   ]
+  },
+  {
+   "id": "inc-reflexergeb",
+   "class": "beyond_reach",
+   "runs": 3,
+   "verdicts": {
+    "insufficient_evidence": 3
+   },
+   "trajectory_failed": [
+    "finished"
+   ]
+  },
+  {
+   "id": "inc-termfinance",
+   "class": "beyond_reach",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 1,
+    "insufficient_evidence": 2
+   },
+   "trajectory_failed": [
+    "finished",
+    "no_repeat_calls",
+    "under_tool_cap"
+   ]
+  },
+  {
+   "id": "inc-usm",
+   "class": "beyond_reach",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": [
+    "under_tool_cap"
+   ]
+  },
+  {
+   "id": "meowe",
+   "class": "flagged",
+   "runs": 3,
+   "verdicts": {
+    "high_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "milka",
+   "class": "flagged",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "permit2",
+   "class": "grey",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 1,
+    "no_red_flags_found": 2
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "seaport",
+   "class": "grey",
+   "runs": 3,
+   "verdicts": {
+    "no_red_flags_found": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "steth",
+   "class": "grey",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "tok-0c862c4a",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "tok-432a8e9d",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "tok-5c36660f",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "tok-7427b616",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "insufficient_evidence": 3
+   },
+   "trajectory_failed": [
+    "finished"
+   ]
+  },
+  {
+   "id": "tok-d170c582",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "tok-e2f2f46b",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 2,
+    "no_red_flags_found": 1
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "tok-f2b36ba4",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "no_red_flags_found": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "tok-f7755634",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": [
+    "under_tool_cap"
+   ]
+  },
+  {
+   "id": "tok-ff2f0388",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": [
+    "context_looked_up",
+    "under_tool_cap"
+   ]
+  },
+  {
+   "id": "uniswap-pair",
+   "class": "benign",
+   "runs": 3,
+   "verdicts": {
+    "no_red_flags_found": 3
+   },
+   "trajectory_failed": []
+  },
+  {
+   "id": "usdc",
+   "class": "grey",
+   "runs": 3,
+   "verdicts": {
+    "elevated_risk": 3
+   },
+   "trajectory_failed": [
+    "context_looked_up",
+    "sell_rehearsed",
+    "under_tool_cap"
+   ]
+  }
+ ]
+}
