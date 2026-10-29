@@ -1,0 +1,137 @@
+{
+ "cost": {
+  "A": {
+   "calls": 21,
+   "completion_tokens": 29282,
+   "contracts": 21,
+   "mean_seconds": 14.5341,
+   "mean_usd": 0.102,
+   "median_seconds": 13.6792,
+   "median_usd": 0.096,
+   "prompt_tokens": 388879,
+   "total_usd": 2.1412
+  },
+  "P": {
+   "calls": 21,
+   "completion_tokens": 34964,
+   "contracts": 21,
+   "mean_seconds": 16.6464,
+   "mean_usd": 0.0741,
+   "median_seconds": 16.2648,
+   "median_usd": 0.0663,
+   "prompt_tokens": 214047,
+   "total_usd": 1.5555
+  },
+  "total_usd": 3.6967
+ },
+ "failures": {
+  "A": {
+   "contracts_incomplete": 0,
+   "contracts_with_unreadable_reply": 0,
+   "reply_items_dropped": {},
+   "unreadable_replies": {}
+  },
+  "A_status": {
+   "ran": 21
+  },
+  "P": {
+   "contracts_incomplete": 0,
+   "contracts_with_unreadable_reply": 0,
+   "reply_items_dropped": {},
+   "unreadable_replies": {}
+  }
+ },
+ "files_run": 21,
+ "flags": {
+  "A": {
+   "flags": 76,
+   "flags_in_a_judged_function": 16,
+   "flags_per_file": 3.619,
+   "medium_plus_per_file": 2.619
+  },
+  "P": {
+   "flags": 46,
+   "flags_in_a_judged_function": 14,
+   "flags_per_file": 2.1905,
+   "medium_plus_per_file": 1.4286
+  }
+ },
+ "meta": {
+  "checkpoint": "audit-held_out-2026-10-29.jsonl",
+  "code_commit": "8911b34",
+  "date": "2026-10-29",
+  "declared": "code frozen at the committed head, run once",
+  "dirty": false,
+  "max_spend": 5.0,
+  "model": "anthropic/claude-opus-5.5",
+  "spent": 3.6966,
+  "split": "held_out"
+ },
+ "not_scored": [],
+ "sides": {
+  "dev": {
+   "issues": 0
+  },
+  "held_out": {
+   "A": {
+    "found": 12,
+    "of": 26,
+    "recall": [
+     0.4615,
+     0.2692,
+     0.6667
+    ]
+   },
+   "P": {
+    "found": 11,
+    "of": 26,
+    "recall": [
+     0.4231,
+     0.24,
+     0.6071
+    ]
+   },
+   "a_found_p_missed": 2,
+   "both": 10,
+   "difference_points": [
+    0.0385,
+    -0.0769,
+    0.1739
+   ],
+   "files": 21,
+   "files_a_ahead": 2,
+   "files_p_ahead": 1,
+   "issues": 26,
+   "needs_for_p_under_0.05": "none (too few pairs)",
+   "neither": 13,
+   "p_found_a_missed": 1,
+   "relative_improvement": [
+    0.0909,
+    -0.2,
+    0.5714
+   ],
+   "sign_test_p_files": 1.0,
+   "sign_test_p_issues": 1.0,
+   "stratum_hard": {
+    "A": 4,
+    "P": 3,
+    "n": 11
+   },
+   "stratum_high": {
+    "A": 2,
+    "P": 2,
+    "n": 4
+   },
+   "stratum_medium": {
+    "A": 10,
+    "P": 9,
+    "n": 22
+   },
+   "stratum_other": {
+    "A": 8,
+    "P": 8,
+    "n": 15
+   }
+  }
+ }
+}

@@ -507,9 +507,9 @@ the detection intervals are wide. Intervals resample contracts (a contract's 3 r
 
 ## Audit items: judged Sherlock issues (pre-registered, dev side)
 
-Rules and headline: [`evals/datasets/audit_items/README.md`](datasets/audit_items/README.md), committed before any run. One run per file, Claude Opus 5.5, plain against the source-review pipeline, draft labels (unreviewed). Dev is exploratory; held-out has not been run. A diagnostic re-run of one file ($0.085) is not part of any result. Infrastructure fixes made during this run (not pipeline changes): retries lengthened to about a minute and the credit balance read first, after an empty OpenRouter account looked like a dead model (HTTP 402).
+Rules and headline: [`evals/datasets/audit_items/README.md`](datasets/audit_items/README.md), committed before any run. One run per file, Claude Opus 5.5, plain against the source-review pipeline, draft labels (unreviewed). Dev is exploratory. A diagnostic re-run of one file ($0.085) is not part of any result. Infrastructure fixes made during this run (not pipeline changes): retries lengthened to about a minute and the credit balance read first, after an empty OpenRouter account looked like a dead model (HTTP 402).
 
 | date | change | side | n | plain | pipeline | notes |
 |---|---|---|---|---|---|---|
 | 2026-10-29 | plain Opus 5.5 vs pipeline on judged audit issues | dev | 30 issues in 19 files | 13/30 = 0.43 [0.26–0.63] | 13/30 = 0.43 [0.26–0.63] | paired: both 12, pipeline only 1, plain only 1, neither 16; relative improvement 0.00 [-0.22–0.27]; cost $1.25 vs $1.97; 1 pipeline reply was not JSON (plain 0) |
-
+| 2026-10-29 | same, held-out run once (code `8911b34`, declared frozen) | held-out | 26 issues in 21 files | 11/26 = 0.42 [0.24–0.61] | 12/26 = 0.46 [0.27–0.67] | **no improvement shown**: relative improvement +0.09 [-0.20–0.57], difference +0.04 [-0.08–0.17]; paired: both 10, pipeline only 2, plain only 1, neither 13; cost $1.56 vs $2.14; no unreadable replies; held-out holds 26 issues, not 30, because the reserve ran out |

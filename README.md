@@ -116,6 +116,25 @@ problem: both arms flag the fixed function in 8 of 12 families, and in some the 
 model on OpenRouter also has no endpoint that accepts a JSON-schema response format, so both arms
 asked for JSON in the prompt instead.
 
+### Real, judged bugs: plain model against the pipeline
+
+Rules and headline were committed before any run ([`evals/datasets/audit_items/`](evals/datasets/audit_items)).
+Issues come from public, judge-validated Sherlock contest reports (2025); each arm reads the affected
+file alone. Dev was exploratory; held-out was run once with the code frozen.
+
+| | Plain | Pipeline |
+|---|---|---|
+| Dev: judged issues found (30, 19 files) | 13 (0.43) | 13 (0.43) |
+| Held-out: judged issues found (26, 21 files) | 11 (0.42 [0.24–0.61]) | 12 (0.46 [0.27–0.67]) |
+| Held-out cost | $1.56 | $2.14 |
+
+**Result: no improvement shown.** Held-out relative improvement is +9% with a 95% interval of −20% to
++57%, and both arms miss more than half of the judged bugs, mostly business-logic and accounting
+errors that need more than one file of context. On recall the pipeline matches the plain model at
+about 1.4 times the cost; what it adds is checked, span-verified output and injection hardening,
+which this test does not measure. The pre-registered rule only allows an "x% better" claim when that
+interval excludes zero.
+
 ## Status
 
 Built and tested (about 2,000 tests, no network or model needed): chain tools, reference library,
