@@ -3,6 +3,12 @@
     "DroppedFile": {
       "additionalProperties": false,
       "properties": {
+        "count": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Count",
+          "type": "integer"
+        },
         "path": {
           "maxLength": 200,
           "title": "Path",

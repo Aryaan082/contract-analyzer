@@ -111,8 +111,12 @@ class SourceFile(_Model):
 
 
 class DroppedFile(_Model):
+    """A file the bundle does not hold. One entry can stand for several files (`count`), such as
+    "137 more files" past the file cap, so the list stays short."""
+
     path: Annotated[str, Field(max_length=MAX_PATH_CHARS)]
     reason: DroppedReason
+    count: Annotated[int, Field(ge=1)] = 1
 
 
 class Bundle(_Model):

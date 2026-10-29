@@ -1,0 +1,22 @@
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "SourceCode": "",
+      "ABI": "Contract source code not verified",
+      "ContractName": "",
+      "CompilerVersion": "",
+      "CompilerType": "solc",
+      "OptimizationUsed": "1",
+      "Runs": "200",
+      "ConstructorArguments": "",
+      "EVMVersion": "paris",
+      "Library": "",
+      "LicenseType": "MIT",
+      "ContractFileName": "",
+      "Proxy": "0",
+      "Implementation": ""
+    }
+  ]
+}

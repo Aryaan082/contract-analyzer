@@ -276,6 +276,13 @@ def test_a_bundle_refuses_a_wrong_hash_and_duplicate_file_ids():
         make_bundle([a, source_file("F1", "b.sol", "contract B {}")])
 
 
+def test_one_dropped_entry_can_stand_for_several_files():
+    assert t.DroppedFile(path="(more files)", reason="too_many_files", count=137).count == 137
+    assert t.DroppedFile(path="a.sol", reason="urls_only").count == 1
+    with pytest.raises(ValidationError):
+        t.DroppedFile(path="a.sol", reason="urls_only", count=0)
+
+
 def test_the_stripped_view_has_one_class_entry_per_line():
     t.View(file_id="F1", text="a\nb\n", line_classes=((), (), ()))
     with pytest.raises(ValidationError, match="one entry per line"):

@@ -4,6 +4,9 @@
   block never changes, and a hash names exactly one byte string, so nothing here expires.
 - the SELECTOR CACHE (`selector_status`, `selector_name`): names from a public database, which
   change, so entries are refetched after 7 days (chain/signatures.py).
+- the SOURCE CACHE (`source_bundle`, `source_for_code`, `source_miss`): a published source bundle is
+  named by its own hash and never changes, so it is kept for good; "not verified" and the like are
+  kept only briefly, because a contract can be verified later (review/bundle.py).
 
 Postgres is an optional helper, never a requirement: if `DATABASE_URL` is missing or the server
 is down, a read is a miss and a write is dropped, with one scrubbed warning in the log, and the
@@ -41,6 +44,28 @@ CREATE TABLE IF NOT EXISTS code_at (
     code_hash   text NOT NULL REFERENCES code_blob (code_hash),
     observed_at timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (chain_id, address, block)
+);
+CREATE TABLE IF NOT EXISTS source_bundle (
+    bundle_sha256 text PRIMARY KEY CHECK (bundle_sha256 ~ '^[0-9a-f]{64}$'),
+    bundle        bytea NOT NULL,
+    first_seen    timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS source_for_code (
+    chain_id      bigint NOT NULL,
+    address       text NOT NULL CHECK (address ~ '^0x[0-9a-f]{40}$'),
+    code_hash     text NOT NULL CHECK (code_hash ~ '^0x[0-9a-f]{64}$'),
+    bundle_sha256 text NOT NULL REFERENCES source_bundle (bundle_sha256),
+    observed_at   timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (chain_id, address, code_hash)
+);
+CREATE TABLE IF NOT EXISTS source_miss (
+    chain_id   bigint NOT NULL,
+    address    text NOT NULL CHECK (address ~ '^0x[0-9a-f]{40}$'),
+    code_hash  text NOT NULL CHECK (code_hash ~ '^0x[0-9a-f]{64}$'),
+    status     text NOT NULL,
+    reason     text NOT NULL,
+    checked_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (chain_id, address, code_hash)
 );
 CREATE TABLE IF NOT EXISTS selector_status (
     selector       text PRIMARY KEY CHECK (selector ~ '^0x[0-9a-f]{8}$'),
@@ -140,6 +165,79 @@ class PostgresCodeStore:
                 "VALUES (%s, %s, %s, %s) ON CONFLICT (chain_id, address, block) "
                 "DO UPDATE SET code_hash = EXCLUDED.code_hash, observed_at = now()",
                 (chain_id, address.lower(), block, code_hash),
+            )
+
+        self._db.run(work, None)
+
+
+class PostgresBundleStore:
+    """Source bundles by hash, which on-chain code each belongs to, and short-lived misses. It keeps
+    bytes and strings only: review/bundle.py owns what a bundle is and checks it on the way out."""
+
+    def __init__(self, db: Database) -> None:
+        self._db = db
+
+    def find(self, chain_id: int, address: str, code_hash: str) -> bytes | None:
+        """The bundle JSON saved for this code at this address, if any."""
+
+        def work(conn: psycopg.Connection) -> bytes | None:
+            row = conn.execute(
+                "SELECT b.bundle FROM source_for_code f JOIN source_bundle b USING (bundle_sha256) "
+                "WHERE f.chain_id = %s AND f.address = %s AND f.code_hash = %s",
+                (chain_id, address.lower(), code_hash),
+            ).fetchone()
+            return bytes(row[0]) if row else None
+
+        return self._db.run(work, None)
+
+    def save(
+        self, chain_id: int, address: str, code_hash: str, bundle_sha256: str, bundle: bytes
+    ) -> None:
+        def work(conn: psycopg.Connection) -> None:
+            conn.execute(
+                "INSERT INTO source_bundle (bundle_sha256, bundle) VALUES (%s, %s) "
+                "ON CONFLICT DO NOTHING",
+                (bundle_sha256, bundle),
+            )
+            conn.execute(
+                "INSERT INTO source_for_code (chain_id, address, code_hash, bundle_sha256) "
+                "VALUES (%s, %s, %s, %s) ON CONFLICT (chain_id, address, code_hash) "
+                "DO UPDATE SET bundle_sha256 = EXCLUDED.bundle_sha256, observed_at = now()",
+                (chain_id, address.lower(), code_hash, bundle_sha256),
+            )
+            # a bundle is now known for this code, so an older miss is out of date
+            conn.execute(
+                "DELETE FROM source_miss WHERE chain_id = %s AND address = %s AND code_hash = %s",
+                (chain_id, address.lower(), code_hash),
+            )
+
+        self._db.run(work, None)
+
+    def find_miss(
+        self, chain_id: int, address: str, code_hash: str, max_age_seconds: int
+    ) -> tuple[str, str] | None:
+        """(status, reason) of a miss no older than `max_age_seconds`, else None."""
+
+        def work(conn: psycopg.Connection) -> tuple[str, str] | None:
+            row = conn.execute(
+                "SELECT status, reason FROM source_miss WHERE chain_id = %s AND address = %s "
+                "AND code_hash = %s AND checked_at > now() - make_interval(secs => %s)",
+                (chain_id, address.lower(), code_hash, max_age_seconds),
+            ).fetchone()
+            return (row[0], row[1]) if row else None
+
+        return self._db.run(work, None)
+
+    def save_miss(
+        self, chain_id: int, address: str, code_hash: str, status: str, reason: str
+    ) -> None:
+        def work(conn: psycopg.Connection) -> None:
+            conn.execute(
+                "INSERT INTO source_miss (chain_id, address, code_hash, status, reason) "
+                "VALUES (%s, %s, %s, %s, %s) ON CONFLICT (chain_id, address, code_hash) "
+                "DO UPDATE SET status = EXCLUDED.status, reason = EXCLUDED.reason, "
+                "checked_at = now()",
+                (chain_id, address.lower(), code_hash, status, reason),
             )
 
         self._db.run(work, None)

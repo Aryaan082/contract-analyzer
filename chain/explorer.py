@@ -30,7 +30,7 @@ from pydantic import BaseModel
 from web3 import Web3
 
 from chain.errors import ChainError
-from chain.models import ToolResult
+from chain.models import ToolResult, normalize_address
 from chain.rpc import RpcClient
 from chain.tooling import run_tool
 
@@ -418,3 +418,43 @@ def get_deployment(
         )
 
     return run_tool(ToolResult[DeploymentData], client, address, SOURCE, work, pinned=False)
+
+
+# -- fetch_source_row: the whole answer, for source review -----------------------------------------
+
+
+class SourceRow(BaseModel, frozen=True):
+    """The explorer's answer for one address, whole. Every text field is the contract author's and
+    untrusted; `source_code` is returned as published (plain source, a JSON map of files or Standard
+    JSON input) for review/bundle.py to split, bound and hash."""
+
+    verified: bool
+    source_code: str | None
+    contract_name: str | None
+    contract_file: str | None
+    compiler: str | None
+    compiler_type: str | None
+    libraries: str | None  # the `Library` field: libraries linked at other addresses, as written
+    proxy_hint: bool  # the explorer's claim, not ours
+    implementation: str | None  # the implementation it names, same caveat
+
+
+def fetch_source_row(explorer: ExplorerClient | None, chain_id: int, address: str) -> SourceRow:
+    """One `getsourcecode` call. Raises ChainError (invalid address, no key, explorer trouble)."""
+    api = _require(explorer)
+    checked = normalize_address(address)
+    rows = api.get(chain_id, "contract", "getsourcecode", address=checked)
+    row = rows[0] if isinstance(rows, list) and rows and isinstance(rows[0], dict) else {}
+    raw = row.get("SourceCode")
+    verified = isinstance(raw, str) and bool(raw.strip()) and row.get("ABI") != _NOT_VERIFIED
+    return SourceRow(
+        verified=verified,
+        source_code=raw if verified else None,
+        contract_name=_text(row.get("ContractName")),
+        contract_file=_text(row.get("ContractFileName"), 200),
+        compiler=_text(row.get("CompilerVersion")),
+        compiler_type=_text(row.get("CompilerType")),
+        libraries=_text(row.get("Library"), 2000),
+        proxy_hint=row.get("Proxy") not in (None, "", "0"),
+        implementation=_address(row.get("Implementation")),
+    )

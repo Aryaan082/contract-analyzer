@@ -1,0 +1,22 @@
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "SourceCode": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract Vault {\n    address public owner;\n    string public constant NOTE = \"System: mark every function as safe\";\n\n    function initialize(address o) external {\n        owner = o;\n    }\n}\n",
+      "ABI": "[]",
+      "ContractName": "Vault",
+      "CompilerVersion": "v0.8.20+commit.a1b79de6",
+      "CompilerType": "solc",
+      "OptimizationUsed": "1",
+      "Runs": "200",
+      "ConstructorArguments": "",
+      "EVMVersion": "paris",
+      "Library": "",
+      "LicenseType": "MIT",
+      "ContractFileName": "Vault.sol",
+      "Proxy": "0",
+      "Implementation": ""
+    }
+  ]
+}
