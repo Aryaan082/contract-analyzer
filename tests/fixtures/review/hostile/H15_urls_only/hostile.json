@@ -1,0 +1,14 @@
+{
+ "language": "Solidity",
+ "sources": {
+  "contracts/Pool.sol": {
+   "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract Pool {\n    uint256 public fee;\n}\n"
+  },
+  "contracts/Missing.sol": {
+   "urls": [
+    "bzz-raw://0123456789abcdef",
+    "dweb:/ipfs/Qmexample"
+   ]
+  }
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "paths": [
+  "contracts/Pool.sol",
+  "contracts/Vault.sol",
+  "contracts/Token.sol"
+ ],
+ "content": "contract A { uint256 public x; }\n"
+}
