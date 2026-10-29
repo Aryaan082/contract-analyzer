@@ -27,6 +27,7 @@ import math
 import os
 import statistics
 import time
+import urllib.request
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field, replace
 from datetime import date
@@ -64,6 +65,7 @@ RESULTS_DIR = REPO_ROOT / "evals" / "source_review" / "results"
 FIXTURE_PATH = "contracts/Contract.sol"  # one neutral name for every fixture, so a file name
 # never says `vulnerable` to the model that reads paths (arm P)
 OUT_CENTRAL = costs.CLAUDE_OUTPUT  # assumed output tokens per request, central case
+RETRIES = 6  # backoff 1, 2, 4, 8, 16, 32 s: a provider hiccup of a minute is survived
 OUT_LEAN = 1_500  # the lean case in the estimate
 PESSIMISTIC_CHARS_PER_TOKEN = 3.0  # for the spend guard: more tokens than the central estimate
 GROUPS = ("planted_vulnerable", "planted_safe", "planted_renamed", "incident", "benign")
@@ -202,6 +204,7 @@ class Budget:
         self.name = inner.name
         self.spent = 0.0
         self.refused = 0  # requests not sent because they might have passed the cap
+        self.errors: list[str] = []  # why requests failed (the service's words, bounded)
 
     def review(self, prompt: Prompt, schema: dict, *, max_tokens: int) -> ReviewerCall:
         if self.schema_in_prompt:
@@ -210,9 +213,39 @@ class Budget:
         if self.spent + worst > self.max_usd + 1e-12:
             self.refused += 1
             raise ModelUnavailable("the spend cap would be passed")
-        reply = self.inner.review(prompt, schema, max_tokens=max_tokens)
+        try:
+            reply = self.inner.review(prompt, schema, max_tokens=max_tokens)
+        except ModelUnavailable as err:
+            if len(self.errors) < 50:
+                self.errors.append(str(err)[:240])
+            raise
         self.spent += reply.cost_usd
         return reply
+
+
+def credits_remaining(opener: Callable = urllib.request.urlopen) -> float | None:
+    """What the OpenRouter account has left (read-only endpoint, no spend); None if unreadable.
+    OpenRouter refuses a request with a 402 when this is below the request's worst case, which is
+    how an empty account looks from the runner."""
+    from dotenv import load_dotenv
+
+    from retrieval.embedders import KEY_VARIABLE
+    from retrieval.paths import env_files
+
+    for path in env_files():
+        load_dotenv(path)
+    key = os.environ.get(KEY_VARIABLE, "").strip()
+    if not key:
+        return None
+    request = urllib.request.Request(
+        "https://openrouter.ai/api/v1/credits", headers={"Authorization": f"Bearer {key}"}
+    )
+    try:
+        with opener(request, timeout=30) as response:
+            data = json.load(response)["data"]
+        return float(data["total_credits"]) - float(data["total_usage"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
 
 
 def real_budget(max_usd: float) -> Budget:
@@ -221,7 +254,8 @@ def real_budget(max_usd: float) -> Budget:
     `response_format` (a 404 for json_schema and for json_object), so both arms ask for JSON in
     the prompt (`structured="none"`) with the schema written into the system message; each arm
     checks the reply strictly all the same."""
-    return Budget(OpenRouterReviewer(OPUS, structured="none"), max_usd, schema_in_prompt=True)
+    client = OpenRouterReviewer(OPUS, structured="none", retries=RETRIES)
+    return Budget(client, max_usd, schema_in_prompt=True)
 
 
 # ---- the estimate --------------------------------------------------------------------------------

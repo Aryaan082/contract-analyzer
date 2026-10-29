@@ -23,6 +23,8 @@ from evals.source_review.audit_report import (
 )
 from evals.source_review.cards import REPO_ROOT
 
+CREDIT_MARGIN = 0.05  # kept back from the balance, in dollars
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -109,6 +111,14 @@ def cmd_run(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     done = cmp.read_checkpoint(checkpoint)
     budget = cmp.real_budget(args.max_spend)
     budget.spent = sum(r[a]["cost_usd"] for r in done.values() if "P" in r for a in ("P", "A"))
+    left = cmp.credits_remaining()
+    if left is not None:
+        out(f"OpenRouter credits left: ${left:.2f}")
+        if left < central:
+            out(
+                "NOTE: that is below the estimate; add credits or the run will stop at the balance."
+            )
+        budget.max_usd = min(budget.max_usd, budget.spent + max(left - CREDIT_MARGIN, 0.0))
     records = cmp.run_compare(
         files,
         sources,
@@ -133,6 +143,8 @@ def cmd_run(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     }
     report = build_audit_report({f.id: f for f in files}, records, meta)
     js, md = write_audit_report(report, args.split)
+    for message in sorted(set(budget.errors)):
+        out(f"request failed: {message}")
     out("\n".join(render_audit(report)))
     out(f"\nwrote {js} and {md}")
     return 0

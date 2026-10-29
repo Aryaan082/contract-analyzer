@@ -337,7 +337,11 @@ def test_the_real_client_asks_for_json_in_the_prompt_because_opus_has_no_schema_
 
     monkeypatch.setattr(cmp, "OpenRouterReviewer", Fake)
     cmp.real_budget(1.0)
-    assert seen == {"structured": "none", "name": "anthropic/claude-opus-5.5"}
+    assert seen == {
+        "structured": "none",
+        "retries": cmp.RETRIES,
+        "name": "anthropic/claude-opus-5.5",
+    }
 
 
 def test_with_no_response_format_the_schema_reaches_the_model_inside_the_prompt_for_both_arms():
@@ -464,3 +468,29 @@ def test_log_appends_one_row_once(tmp_path, monkeypatch):
     assert compare_cli.main(["log", "--report", str(report)], out=lambda _: None) == 1
     assert log.read_text().count("plain Opus 5.5") == 1
     assert Path(log).read_text().startswith("# Experiment log")
+
+
+def test_budget_keeps_the_service_message_of_a_failed_request():
+    boom = ScriptedReviewer([ModelUnavailable("OpenRouter error 429: rate limited")])
+    budget = cmp.Budget(boom, 5.0)
+    prompt = plain.plain_prompts([("a.sol", "contract A {}")])[0]
+    with pytest.raises(ModelUnavailable):
+        budget.review(prompt, {}, max_tokens=100)
+    assert budget.errors == ["OpenRouter error 429: rate limited"]
+
+
+def test_credits_remaining_reads_the_balance_and_survives_a_failure(monkeypatch):
+    import io
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key-value")
+
+    def served(request, timeout=0):
+        assert request.get_header("Authorization") == "Bearer test-key-value"
+        return io.BytesIO(json.dumps({"data": {"total_credits": 10, "total_usage": 9.7}}).encode())
+
+    assert cmp.credits_remaining(served) == pytest.approx(0.3)
+
+    def down(request, timeout=0):
+        raise OSError("no route")
+
+    assert cmp.credits_remaining(down) is None
