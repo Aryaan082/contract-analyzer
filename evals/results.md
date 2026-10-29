@@ -504,3 +504,12 @@ the detection intervals are wide. Intervals resample contracts (a contract's 3 r
 | date | change | model | arms | n scored | recall P / A (planted) | false alarm P / A (safe twins) | cost P / A | notes |
 |---|---|---|---|---|---|---|---|---|
 | 2026-10-29 | plain Opus 5.5 vs our source review (same model, stripped view + checklist + span checks, no second pass) | anthropic/claude-opus-5.5 | P, A | 46 of 47 | 12/12 vs 12/12 | 7/12 vs 8/12 | $1.33 / $3.16 | DRAFT labels (unreviewed), one run each at temperature 0; incidents may be memorised; full report evals/source_review/results/compare-2026-10-29.md |
+
+## Audit items: judged Sherlock issues (pre-registered, dev side)
+
+Rules and headline: [`evals/datasets/audit_items/README.md`](datasets/audit_items/README.md), committed before any run. One run per file, Claude Opus 5.5, plain against the source-review pipeline, draft labels (unreviewed). Dev is exploratory; held-out has not been run. A diagnostic re-run of one file ($0.085) is not part of any result. Infrastructure fixes made during this run (not pipeline changes): retries lengthened to about a minute and the credit balance read first, after an empty OpenRouter account looked like a dead model (HTTP 402).
+
+| date | change | side | n | plain | pipeline | notes |
+|---|---|---|---|---|---|---|
+| 2026-10-29 | plain Opus 5.5 vs pipeline on judged audit issues | dev | 30 issues in 19 files | 13/30 = 0.43 [0.26–0.63] | 13/30 = 0.43 [0.26–0.63] | paired: both 12, pipeline only 1, plain only 1, neither 16; relative improvement 0.00 [-0.22–0.27]; cost $1.25 vs $1.97; 1 pipeline reply was not JSON (plain 0) |
+
