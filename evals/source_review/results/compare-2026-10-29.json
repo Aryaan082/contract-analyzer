@@ -1,0 +1,1267 @@
+{
+ "banner": "DRAFT LABELS: every label is unreviewed (reviewed_by is empty on all of them), so no number here is final until Aryaan has reviewed ten. One run per contract at temperature 0: model noise is not measured.",
+ "cost": {
+  "A": {
+   "calls": 47,
+   "completion_tokens": 26300,
+   "contracts": 46,
+   "mean_seconds": 7.7601,
+   "mean_usd": 0.0687,
+   "median_seconds": 6.9517,
+   "median_usd": 0.0546,
+   "prompt_tokens": 658106,
+   "total_usd": 3.1584
+  },
+  "P": {
+   "calls": 46,
+   "completion_tokens": 25566,
+   "contracts": 46,
+   "mean_seconds": 7.3877,
+   "mean_usd": 0.0288,
+   "median_seconds": 5.4961,
+   "median_usd": 0.0097,
+   "prompt_tokens": 203587,
+   "total_usd": 1.3257
+  },
+  "total_usd": 4.4841
+ },
+ "failures": {
+  "A": {
+   "contracts_incomplete": 0,
+   "contracts_with_unreadable_reply": 0,
+   "reply_items_dropped": {},
+   "unreadable_replies": {}
+  },
+  "A_status": {
+   "ran": 46
+  },
+  "P": {
+   "contracts_incomplete": 0,
+   "contracts_with_unreadable_reply": 2,
+   "reply_items_dropped": {},
+   "unreadable_replies": {
+    "reply is not JSON": 2
+   }
+  }
+ },
+ "groups": {
+  "benign": {
+   "A": {
+    "false_alarm_rate": [
+     0.8333,
+     0.5,
+     1.0
+    ],
+    "flags_per_item": 4.8333,
+    "medium_plus_flags_per_item": 3.6667,
+    "with_medium_plus_flag": 5
+   },
+   "P": {
+    "false_alarm_rate": [
+     0.6667,
+     0.3333,
+     1.0
+    ],
+    "flags_per_item": 4.0,
+    "medium_plus_flags_per_item": 2.1667,
+    "with_medium_plus_flag": 4
+   },
+   "n": 6
+  },
+  "incident": {
+   "A": {
+    "flags_per_item": 2.75,
+    "found_items": 1,
+    "labelled_items": 4,
+    "precision": [
+     0.0909,
+     0.0,
+     0.3333
+    ],
+    "precision_medium_plus": [
+     0.25,
+     0.0,
+     1.0
+    ],
+    "recall": [
+     0.2,
+     0.0,
+     0.75
+    ],
+    "recall_medium_plus": [
+     0.2,
+     0.0,
+     0.75
+    ]
+   },
+   "P": {
+    "flags_per_item": 1.25,
+    "found_items": 1,
+    "labelled_items": 4,
+    "precision": [
+     0.2,
+     0.0,
+     1.0
+    ],
+    "precision_medium_plus": [
+     0.2,
+     0.0,
+     1.0
+    ],
+    "recall": [
+     0.2,
+     0.0,
+     0.75
+    ],
+    "recall_medium_plus": [
+     0.2,
+     0.0,
+     0.75
+    ]
+   },
+   "n": 4
+  },
+  "planted_renamed": {
+   "A": {
+    "flags_per_item": 1.6667,
+    "found_items": 12,
+    "labelled_items": 12,
+    "precision": [
+     0.8,
+     0.6667,
+     1.0
+    ],
+    "precision_medium_plus": [
+     0.8571,
+     0.7059,
+     1.0
+    ],
+    "recall": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "recall_medium_plus": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "P": {
+    "flags_per_item": 1.5833,
+    "found_items": 12,
+    "labelled_items": 12,
+    "precision": [
+     0.8571,
+     0.7059,
+     1.0
+    ],
+    "precision_medium_plus": [
+     0.8571,
+     0.7059,
+     1.0
+    ],
+    "recall": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "recall_medium_plus": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "n": 12
+  },
+  "planted_safe": {
+   "A": {
+    "false_alarm_rate": [
+     0.6667,
+     0.4167,
+     0.9167
+    ],
+    "flags_per_item": 1.25,
+    "medium_plus_flags_per_item": 1.0,
+    "with_medium_plus_flag": 8
+   },
+   "P": {
+    "false_alarm_rate": [
+     0.5833,
+     0.3333,
+     0.8333
+    ],
+    "flags_per_item": 1.0,
+    "medium_plus_flags_per_item": 0.6667,
+    "with_medium_plus_flag": 7
+   },
+   "n": 12
+  },
+  "planted_vulnerable": {
+   "A": {
+    "flags_per_item": 1.4167,
+    "found_items": 12,
+    "labelled_items": 12,
+    "precision": [
+     0.8,
+     0.6667,
+     1.0
+    ],
+    "precision_medium_plus": [
+     0.8,
+     0.6667,
+     1.0
+    ],
+    "recall": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "recall_medium_plus": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "P": {
+    "flags_per_item": 1.25,
+    "found_items": 12,
+    "labelled_items": 12,
+    "precision": [
+     0.9231,
+     0.8,
+     1.0
+    ],
+    "precision_medium_plus": [
+     0.9231,
+     0.8,
+     1.0
+    ],
+    "recall": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "recall_medium_plus": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "n": 12
+  }
+ },
+ "meta": {
+  "checkpoint": "compare-2026-10-29.jsonl",
+  "date": "2026-10-29",
+  "items_total": 47,
+  "max_spend": 9.0,
+  "model": "anthropic/claude-opus-5.5",
+  "refused_requests": 0,
+  "spent": 4.5206
+ },
+ "not_scored": [
+  {
+   "item": "tok-d170c582",
+   "why": "Contract source code is not verified on the explorer."
+  }
+ ],
+ "paired": {
+  "incident": {
+   "a_found_p_missed": 0,
+   "both_found": 1,
+   "difference_shown": false,
+   "items": 4,
+   "needs_for_p_under_0.05": "none (too few pairs)",
+   "neither": 3,
+   "p_found_a_missed": 0,
+   "recall_a_minus_p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sign_test_p": 1.0
+  },
+  "planted_renamed": {
+   "a_found_p_missed": 0,
+   "both_found": 12,
+   "difference_shown": false,
+   "items": 12,
+   "needs_for_p_under_0.05": "none (too few pairs)",
+   "neither": 0,
+   "p_found_a_missed": 0,
+   "recall_a_minus_p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sign_test_p": 1.0
+  },
+  "planted_vulnerable": {
+   "a_found_p_missed": 0,
+   "both_found": 12,
+   "difference_shown": false,
+   "items": 12,
+   "needs_for_p_under_0.05": "none (too few pairs)",
+   "neither": 0,
+   "p_found_a_missed": 0,
+   "recall_a_minus_p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sign_test_p": 1.0
+  }
+ },
+ "per_item": [
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 2.8,
+    "usd": 0.049
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 2.5,
+    "usd": 0.0059
+   },
+   "group": "planted_vulnerable",
+   "item": "pl01"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 0,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 4.9,
+    "usd": 0.0484
+   },
+   "P": {
+    "complete": true,
+    "flags": 0,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 5.3,
+    "usd": 0.0065
+   },
+   "group": "planted_safe",
+   "item": "pl01-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 7.4,
+    "usd": 0.0531
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 2.4,
+    "usd": 0.0056
+   },
+   "group": "planted_renamed",
+   "item": "pl01-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 5.0,
+    "usd": 0.0502
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 2.9,
+    "usd": 0.0058
+   },
+   "group": "planted_vulnerable",
+   "item": "pl02"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": null,
+    "medium_plus": 2,
+    "seconds": 7.3,
+    "usd": 0.0544
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 6.4,
+    "usd": 0.0092
+   },
+   "group": "planted_safe",
+   "item": "pl02-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 6.6,
+    "usd": 0.0547
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 7.0,
+    "usd": 0.0096
+   },
+   "group": "planted_renamed",
+   "item": "pl02-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 3.4,
+    "usd": 0.0484
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 2.6,
+    "usd": 0.0057
+   },
+   "group": "planted_vulnerable",
+   "item": "pl03"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 0,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 4.1,
+    "usd": 0.0461
+   },
+   "P": {
+    "complete": true,
+    "flags": 0,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 3.3,
+    "usd": 0.0052
+   },
+   "group": "planted_safe",
+   "item": "pl03-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 3.5,
+    "usd": 0.0485
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 2.7,
+    "usd": 0.0056
+   },
+   "group": "planted_renamed",
+   "item": "pl03-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 3.2,
+    "usd": 0.0482
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 2.6,
+    "usd": 0.0056
+   },
+   "group": "planted_vulnerable",
+   "item": "pl04"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 6.3,
+    "usd": 0.0523
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 5.2,
+    "usd": 0.0081
+   },
+   "group": "planted_safe",
+   "item": "pl04-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 3,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 4.9,
+    "usd": 0.0533
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 3.1,
+    "usd": 0.0056
+   },
+   "group": "planted_renamed",
+   "item": "pl04-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 6.4,
+    "usd": 0.0516
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 4.5,
+    "usd": 0.0075
+   },
+   "group": "planted_vulnerable",
+   "item": "pl05"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 6.6,
+    "usd": 0.0539
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 7.5,
+    "usd": 0.0139
+   },
+   "group": "planted_safe",
+   "item": "pl05-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 6.5,
+    "usd": 0.0555
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 5.5,
+    "usd": 0.0078
+   },
+   "group": "planted_renamed",
+   "item": "pl05-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 4.4,
+    "usd": 0.0515
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 3.9,
+    "usd": 0.0059
+   },
+   "group": "planted_vulnerable",
+   "item": "pl06"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 8.2,
+    "usd": 0.0555
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 6.8,
+    "usd": 0.0097
+   },
+   "group": "planted_safe",
+   "item": "pl06-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 6.3,
+    "usd": 0.0552
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 3.2,
+    "usd": 0.0061
+   },
+   "group": "planted_renamed",
+   "item": "pl06-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 4.1,
+    "usd": 0.0512
+   },
+   "P": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 5.5,
+    "usd": 0.0108
+   },
+   "group": "planted_vulnerable",
+   "item": "pl07"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 6.8,
+    "usd": 0.0531
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 5.9,
+    "usd": 0.011
+   },
+   "group": "planted_safe",
+   "item": "pl07-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 4.0,
+    "usd": 0.0514
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 5.4,
+    "usd": 0.0083
+   },
+   "group": "planted_renamed",
+   "item": "pl07-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 9.6,
+    "usd": 0.0575
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 5.5,
+    "usd": 0.0092
+   },
+   "group": "planted_vulnerable",
+   "item": "pl08"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": null,
+    "medium_plus": 2,
+    "seconds": 8.2,
+    "usd": 0.0584
+   },
+   "P": {
+    "complete": true,
+    "flags": 2,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 7.9,
+    "usd": 0.0134
+   },
+   "group": "planted_safe",
+   "item": "pl08-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 6.8,
+    "usd": 0.0543
+   },
+   "P": {
+    "complete": true,
+    "flags": 3,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 4.6,
+    "usd": 0.0101
+   },
+   "group": "planted_renamed",
+   "item": "pl08-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 3,
+    "found": true,
+    "medium_plus": 3,
+    "seconds": 8.6,
+    "usd": 0.058
+   },
+   "P": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 4.4,
+    "usd": 0.0098
+   },
+   "group": "planted_vulnerable",
+   "item": "pl09"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 7.1,
+    "usd": 0.0534
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 5.1,
+    "usd": 0.0091
+   },
+   "group": "planted_safe",
+   "item": "pl09-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 3,
+    "found": true,
+    "medium_plus": 3,
+    "seconds": 8.0,
+    "usd": 0.0598
+   },
+   "P": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 8.0,
+    "usd": 0.0151
+   },
+   "group": "planted_renamed",
+   "item": "pl09-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 5.9,
+    "usd": 0.0541
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 7.2,
+    "usd": 0.0095
+   },
+   "group": "planted_vulnerable",
+   "item": "pl10"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 9.7,
+    "usd": 0.0612
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 7.7,
+    "usd": 0.0153
+   },
+   "group": "planted_safe",
+   "item": "pl10-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 7.2,
+    "usd": 0.057
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 9.0,
+    "usd": 0.0155
+   },
+   "group": "planted_renamed",
+   "item": "pl10-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 8.4,
+    "usd": 0.0556
+   },
+   "P": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 5.4,
+    "usd": 0.0115
+   },
+   "group": "planted_vulnerable",
+   "item": "pl11"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 3,
+    "found": null,
+    "medium_plus": 3,
+    "seconds": 8.9,
+    "usd": 0.0623
+   },
+   "P": {
+    "complete": true,
+    "flags": 2,
+    "found": null,
+    "medium_plus": 2,
+    "seconds": 7.7,
+    "usd": 0.0151
+   },
+   "group": "planted_safe",
+   "item": "pl11-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 8.9,
+    "usd": 0.0539
+   },
+   "P": {
+    "complete": true,
+    "flags": 3,
+    "found": true,
+    "medium_plus": 3,
+    "seconds": 8.3,
+    "usd": 0.0177
+   },
+   "group": "planted_renamed",
+   "item": "pl11-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 3.6,
+    "usd": 0.0485
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 2.7,
+    "usd": 0.0067
+   },
+   "group": "planted_vulnerable",
+   "item": "pl12"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 6.4,
+    "usd": 0.0533
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": null,
+    "medium_plus": 1,
+    "seconds": 5.0,
+    "usd": 0.0096
+   },
+   "group": "planted_safe",
+   "item": "pl12-safe"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 7.2,
+    "usd": 0.0564
+   },
+   "P": {
+    "complete": true,
+    "flags": 3,
+    "found": true,
+    "medium_plus": 2,
+    "seconds": 6.6,
+    "usd": 0.0154
+   },
+   "group": "planted_renamed",
+   "item": "pl12-renamed"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 3,
+    "found": false,
+    "medium_plus": 3,
+    "seconds": 13.4,
+    "usd": 0.1502
+   },
+   "P": {
+    "complete": true,
+    "flags": 3,
+    "found": false,
+    "medium_plus": 3,
+    "seconds": 18.3,
+    "usd": 0.1387
+   },
+   "group": "incident",
+   "item": "balancerv1bpool"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": false,
+    "medium_plus": 0,
+    "seconds": 18.1,
+    "usd": 0.2476
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": false,
+    "medium_plus": 1,
+    "seconds": 17.3,
+    "usd": 0.2514
+   },
+   "group": "incident",
+   "item": "usm"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 2,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 13.2,
+    "usd": 0.1026
+   },
+   "P": {
+    "complete": true,
+    "flags": 1,
+    "found": true,
+    "medium_plus": 1,
+    "seconds": 16.3,
+    "usd": 0.0865
+   },
+   "group": "incident",
+   "item": "etherfiatomicqueue"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 4,
+    "found": false,
+    "medium_plus": 0,
+    "seconds": 10.3,
+    "usd": 0.1197
+   },
+   "P": {
+    "complete": true,
+    "flags": 0,
+    "found": false,
+    "medium_plus": 0,
+    "seconds": 29.7,
+    "usd": 0.1316
+   },
+   "group": "incident",
+   "item": "reflexergeb"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 0,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 2.6,
+    "usd": 0.0731
+   },
+   "P": {
+    "complete": true,
+    "flags": 0,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 7.4,
+    "usd": 0.0447
+   },
+   "group": "benign",
+   "item": "uniswap-pair"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 3,
+    "found": null,
+    "medium_plus": 3,
+    "seconds": 7.1,
+    "usd": 0.0826
+   },
+   "P": {
+    "complete": true,
+    "flags": 0,
+    "found": null,
+    "medium_plus": 0,
+    "seconds": 5.2,
+    "usd": 0.045
+   },
+   "group": "benign",
+   "item": "famous-wbtc"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 5,
+    "found": null,
+    "medium_plus": 4,
+    "seconds": 14.5,
+    "usd": 0.0966
+   },
+   "P": {
+    "complete": true,
+    "flags": 6,
+    "found": null,
+    "medium_plus": 2,
+    "seconds": 12.6,
+    "usd": 0.0495
+   },
+   "group": "benign",
+   "item": "tok-7427b616"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 7,
+    "found": null,
+    "medium_plus": 5,
+    "seconds": 16.2,
+    "usd": 0.1398
+   },
+   "P": {
+    "complete": true,
+    "flags": 7,
+    "found": null,
+    "medium_plus": 4,
+    "seconds": 15.5,
+    "usd": 0.1215
+   },
+   "group": "benign",
+   "item": "tok-432a8e9d"
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 7,
+    "found": null,
+    "medium_plus": 5,
+    "seconds": 16.6,
+    "usd": 0.108
+   },
+   "P": {
+    "complete": true,
+    "flags": 6,
+    "found": null,
+    "medium_plus": 4,
+    "seconds": 13.9,
+    "usd": 0.0547
+   },
+   "group": "benign",
+   "item": "tok-ff2f0388"
+  },
+  {
+   "group": "benign",
+   "item": "tok-d170c582",
+   "not_run": "Contract source code is not verified on the explorer."
+  },
+  {
+   "A": {
+    "complete": true,
+    "flags": 7,
+    "found": null,
+    "medium_plus": 5,
+    "seconds": 17.7,
+    "usd": 0.109
+   },
+   "P": {
+    "complete": true,
+    "flags": 5,
+    "found": null,
+    "medium_plus": 3,
+    "seconds": 14.7,
+    "usd": 0.0602
+   },
+   "group": "benign",
+   "item": "tok-5c36660f"
+  }
+ ],
+ "renamed_gap": {
+  "A": {
+   "families": 12,
+   "original_found": 12,
+   "renamed_found": 12
+  },
+  "P": {
+   "families": 12,
+   "original_found": 12,
+   "renamed_found": 12
+  }
+ },
+ "twins": {
+  "A": {
+   "fixed_function_flagged": 8,
+   "pairs": 12,
+   "separated": 4
+  },
+  "P": {
+   "fixed_function_flagged": 8,
+   "pairs": 12,
+   "separated": 4
+  }
+ }
+}

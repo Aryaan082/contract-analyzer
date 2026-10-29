@@ -498,3 +498,9 @@ the detection intervals are wide. Intervals resample contracts (a contract's 3 r
 | 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=snippet] | 10 | 0.80 [0.65–0.95] | 0.95 [0.85–1.00] | 22.6 / 37.9 |  |
 | 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=twin] | 6 | 0.92 [0.75–1.00] | 0.92 [0.75–1.00] | 7.0 / 7.7 |  |
 | 2026-10-26 | keyword search removed: chunk-text variants by style and kind (dense) | recipe-short | dev [kind=unseen] | 8 | 0.25 [0.00–0.50] | 0.22 [0.03–0.47] | 27.3 / 47.1 |  |
+
+## Source review: plain model against our pipeline
+
+| date | change | model | arms | n scored | recall P / A (planted) | false alarm P / A (safe twins) | cost P / A | notes |
+|---|---|---|---|---|---|---|---|---|
+| 2026-10-29 | plain Opus 5.5 vs our source review (same model, stripped view + checklist + span checks, no second pass) | anthropic/claude-opus-5.5 | P, A | 46 of 47 | 12/12 vs 12/12 | 7/12 vs 8/12 | $1.33 / $3.16 | DRAFT labels (unreviewed), one run each at temperature 0; incidents may be memorised; full report evals/source_review/results/compare-2026-10-29.md |
