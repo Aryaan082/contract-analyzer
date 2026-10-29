@@ -20,6 +20,8 @@
   "definitions_known": 5,
   "definitions_new": 1,
   "definitions_reviewed": 1,
+  "definitions_not_reviewed": 0,
+  "files_not_checked": 0,
   "new_tokens": 120,
   "ceiling_tokens": 300000,
   "known_libraries": [

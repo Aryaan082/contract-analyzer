@@ -330,11 +330,19 @@ def test_a_review_that_did_not_fully_run_must_say_why():
         t.ReviewSummary.model_validate(summary(status="refused", definitions_reviewed=0))
 
 
+def test_a_review_that_could_not_read_a_definition_is_partial_not_ran():
+    base = summary(definitions_new=2, definitions_reviewed=2, definitions_not_reviewed=1)
+    with pytest.raises(ValueError):
+        t.ReviewSummary.model_validate(base)
+    ok = {**base, "status": "partial", "reason": "1 definition could not be parsed"}
+    assert t.ReviewSummary.model_validate(ok).definitions_not_reviewed == 1
+
+
 def test_a_refused_review_covered_nothing_and_a_partial_one_covered_part():
     with pytest.raises(ValidationError, match="covered nothing"):
         t.ReviewSummary.model_validate(summary(status="refused", reason="over the ceiling"))
     partial = summary(status="partial", reason="a reviewer call failed twice", definitions_new=3)
-    with pytest.raises(ValidationError, match="some, not all"):
+    with pytest.raises(ValidationError, match="left some definitions"):
         t.ReviewSummary.model_validate({**partial, "definitions_reviewed": 3})
     assert (
         t.ReviewSummary.model_validate({**partial, "definitions_reviewed": 2}).status == "partial"

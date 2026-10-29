@@ -59,6 +59,7 @@ MAX_PATH_CHARS = 200
 MAX_NOTE_CHARS = 200  # the reviewer's one line
 MAX_EXCERPT_CHARS = 280  # one verbatim sentence of an audit finding (decision 22)
 MAX_PRECEDENTS = 3  # per span (decision 21)
+MAX_SPAN_LINES = 200  # a flagged place is a few lines, not a file
 MAX_REVIEWER_ITEMS = 50  # per reply; a proposal, the span validator drops the rest and counts them
 
 
@@ -401,6 +402,10 @@ class ReviewSummary(_Model):
     definitions_known: Annotated[int, Field(ge=0)] = 0
     definitions_new: Annotated[int, Field(ge=0)] = 0
     definitions_reviewed: Annotated[int, Field(ge=0)] = 0
+    # definitions the lexer or parser could not read; they make a review partial, whatever else ran
+    definitions_not_reviewed: Annotated[int, Field(ge=0)] = 0
+    # files that could not be normalised safely and so were not read at all
+    files_not_checked: Annotated[int, Field(ge=0)] = 0
     new_tokens: Annotated[int, Field(ge=0)] = 0
     ceiling_tokens: Annotated[int, Field(ge=0)] = 0
     known_libraries: tuple[KnownLibrary, ...] = ()
@@ -415,10 +420,13 @@ class ReviewSummary(_Model):
         if self.files_reviewed > self.files_total or self.chars_reviewed > self.chars_total:
             raise ValueError("cannot review more than was fetched")
         reviewed, new = self.definitions_reviewed, self.definitions_new
-        if self.status == "ran" and reviewed != new:
-            raise ValueError("a review that ran covered all the new definitions")
-        if self.status == "partial" and not 0 < reviewed < new:
-            raise ValueError("a partial review covered some, not all, of the new definitions")
+        unread = self.definitions_not_reviewed + self.files_not_checked
+        if self.status == "ran" and (reviewed != new or unread):
+            raise ValueError(
+                "a review that ran covered all the new definitions and could read every file"
+            )
+        if self.status == "partial" and not (reviewed < new or unread):
+            raise ValueError("a partial review left some definitions or files unreviewed or unread")
         if self.status in ("refused", "skipped", "failed") and reviewed != 0:
             raise ValueError("a review that did not run covered nothing")
         return self
@@ -435,12 +443,19 @@ class ReviewerItem(_Model):
     start_line: Annotated[int, Field(ge=1)]
     end_line: Annotated[int, Field(ge=1)]
     quote: Annotated[str, Field(max_length=2000)]
-    function: Identifier | None = None
+    # only compared with the parser's own answer, never shown: a loose name must not cost a finding
+    function: Annotated[str, Field(max_length=100)] | None = None
     entry: EntryId
     clause: Annotated[int, Field(ge=0)] | None = None
     severity: Severity
     confidence: Confidence
     note: Annotated[str, Field(max_length=MAX_NOTE_CHARS)]
+
+    @model_validator(mode="after")
+    def _a_few_lines_in_order(self) -> "ReviewerItem":
+        if not 0 <= self.end_line - self.start_line < MAX_SPAN_LINES:
+            raise ValueError(f"a place is 1 to {MAX_SPAN_LINES} lines, in order")
+        return self
 
 
 class ReviewerReply(_Model):

@@ -1,6 +1,7 @@
 """The deterministic scans (layer L4): hidden characters, non-ASCII, wording aimed at a reader and
 long identifiers, as `SourceSpan` records of kind `scan`."""
 
+import json
 import re
 from pathlib import Path
 
@@ -331,3 +332,12 @@ def test_h11_a_look_alike_letter_in_an_identifier_is_flagged_and_the_file_is_not
 def test_h20_instruction_text_in_the_comments_of_a_library_copy_is_flagged_too():
     assert flags(fixture("H20_known_library_noise", "hostile.sol")) == {"instruction_like": 2}
     assert flags(fixture("H20_known_library_noise", "edited_string.sol")) == {}
+
+
+def test_the_golden_scan_record_hashes_the_real_stripped_line():
+    golden = Path(__file__).parent / "fixtures" / "review" / "golden"
+    view = lex("F1", (golden / "Vault.sol").read_text()).view
+    assert view is not None
+    record = json.loads((golden / "source_span_scan.json").read_text())
+    line = record["range"]["start_line"]
+    assert record["range"]["span_sha256"] == span_sha256([view.text.split("\n")[line - 1]])

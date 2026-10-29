@@ -269,14 +269,14 @@ def test_an_interface_is_outline_only_unless_it_matches_the_list():
     assert statuses(split_of({"a.sol": text}, known_from(text))[2]) == {"IThing": "known"}
 
 
-def test_plain_declarations_and_bodiless_contracts_are_outline_only_and_free_functions_are_new():
+def test_constants_and_free_functions_are_new_and_the_rest_is_outline_only():
     text = HEAD + (
         "error Bad();\nuint256 constant K = 5;\nstruct S { uint a; }\n"
         "abstract contract C { function f() external virtual; }\n"
         "function twice(uint x) pure returns (uint) { return x * 2; }\n"
     )
     assert statuses(split_of({"a.sol": text})[2]) == {
-        "Bad": "outline_only", "K": "outline_only", "S": "outline_only",
+        "Bad": "outline_only", "K": "new", "S": "outline_only",
         "C": "outline_only", "twice": "new",
     }  # fmt: skip
 
@@ -493,11 +493,21 @@ def test_h6_a_very_long_identifier_is_shown_by_its_length_only():
 
 
 def test_declarations_are_listed_by_kind_with_a_cap():
+    errors = "".join(f"error E{i}();\n" for i in range(30))
+    outline = build_outline(*split_of({"a.sol": HEAD + errors}))
+    assert "declarations: error: E0, E1" in outline and "+18 more" in outline
+
+
+def test_file_level_constants_are_code_not_outline_names():
     consts = "".join(f"uint256 constant K{i} = {i};\n" for i in range(30))
-    outline = build_outline(
-        *split_of({"a.sol": HEAD + consts})[:2], split_of({"a.sol": HEAD + consts})[2]
-    )
-    assert "declarations: constant: K0, K1" in outline and "+18 more" in outline
+    bundle, lexed, split = split_of({"a.sol": HEAD + consts})
+    outline = build_outline(bundle, lexed, split)
+    assert "file-level constants: 30, their values are in the code" in outline
+    assert "K0" not in outline
+    chunks = plan_chunks(split, lexed)
+    text = "\n".join(p.text for c in chunks for p in c.pieces)
+    assert "uint256 constant K29 = 29;" in text
+    assert split.new_chars > 0
 
 
 # ---- chunks -------------------------------------------------------------------------------------

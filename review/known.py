@@ -227,6 +227,10 @@ def _classify(text: str, result: Lexed, d: Definition, known: KnownList) -> Clas
     if not d.parse_ok:
         return Classified(definition=d, status="not_reviewed", reason="could not be parsed")
     if d.kind == "declaration":
+        if d.declares == "constant":
+            # a file-level constant's value is code the reviewer reads (Aryaan, 2026-10-29)
+            chars = len("\n".join(definition_lines(result.view, d)))
+            return Classified(definition=d, status="new", chars=chars)
         return Classified(definition=d, status="outline_only")
     sha = definition_hash(text, result.regions, d)
     if matches := known.lookup(sha):
@@ -449,11 +453,16 @@ def build_outline(bundle: Bundle, lexed: Mapping[str, Lexed], split: Split) -> s
             continue
         out.append(f"{file.file_id}:")
         declared: dict[str, list[str]] = defaultdict(list)
+        constants = 0
         for item in items:
-            if item.definition.kind == "declaration" and item.status != "not_reviewed":
+            if item.definition.kind == "declaration" and item.status == "new":
+                constants += 1  # its value is in the code, not in the outline
+            elif item.definition.kind == "declaration" and item.status != "not_reviewed":
                 declared[item.definition.declares].append(_name(item.definition.name))
             else:
                 out.extend(_definition_lines(item))
+        if constants:
+            out.append(f"  file-level constants: {constants}, their values are in the code")
         if declared:
             parts = []
             for kind, names in declared.items():

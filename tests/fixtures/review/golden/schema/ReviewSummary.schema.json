@@ -141,6 +141,12 @@
       "title": "Definitions New",
       "type": "integer"
     },
+    "definitions_not_reviewed": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Definitions Not Reviewed",
+      "type": "integer"
+    },
     "definitions_reviewed": {
       "default": 0,
       "minimum": 0,
@@ -154,6 +160,12 @@
       },
       "title": "Dropped",
       "type": "array"
+    },
+    "files_not_checked": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Files Not Checked",
+      "type": "integer"
     },
     "files_reviewed": {
       "default": 0,
