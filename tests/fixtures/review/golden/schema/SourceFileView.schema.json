@@ -1,0 +1,179 @@
+{
+  "$defs": {
+    "Highlight": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "end_line": {
+          "minimum": 1,
+          "title": "End Line",
+          "type": "integer"
+        },
+        "entry": {
+          "pattern": "^taxonomy:[a-z0-9][a-z0-9-]*$",
+          "title": "Entry",
+          "type": "string"
+        },
+        "group": {
+          "title": "Group",
+          "type": "string"
+        },
+        "span_id": {
+          "pattern": "^S[1-9][0-9]*$",
+          "title": "Span Id",
+          "type": "string"
+        },
+        "start_line": {
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "span_id",
+        "start_line",
+        "end_line",
+        "entry",
+        "group",
+        "confidence"
+      ],
+      "title": "Highlight",
+      "type": "object"
+    },
+    "Line": {
+      "additionalProperties": false,
+      "properties": {
+        "classes": {
+          "default": [],
+          "items": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  "comment",
+                  "string",
+                  "code"
+                ],
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Classes",
+          "type": "array"
+        },
+        "n": {
+          "minimum": 1,
+          "title": "N",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "n",
+        "text"
+      ],
+      "title": "Line",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "file_id": {
+      "pattern": "^F[1-9][0-9]*$",
+      "title": "File Id",
+      "type": "string"
+    },
+    "from": {
+      "minimum": 1,
+      "title": "From",
+      "type": "integer"
+    },
+    "highlights": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Highlight"
+      },
+      "title": "Highlights",
+      "type": "array"
+    },
+    "language": {
+      "enum": [
+        "solidity",
+        "vyper",
+        "yul",
+        "unknown"
+      ],
+      "title": "Language",
+      "type": "string"
+    },
+    "line_count": {
+      "minimum": 0,
+      "title": "Line Count",
+      "type": "integer"
+    },
+    "lines": {
+      "items": {
+        "$ref": "#/$defs/Line"
+      },
+      "title": "Lines",
+      "type": "array"
+    },
+    "path": {
+      "maxLength": 200,
+      "title": "Path",
+      "type": "string"
+    },
+    "schema": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema",
+      "type": "integer"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    },
+    "stripped_available": {
+      "title": "Stripped Available",
+      "type": "boolean"
+    },
+    "to": {
+      "minimum": 1,
+      "title": "To",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "file_id",
+    "path",
+    "sha256",
+    "language",
+    "line_count",
+    "from",
+    "to",
+    "lines",
+    "stripped_available"
+  ],
+  "title": "SourceFileView",
+  "type": "object"
+}

@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "S3",
+  "kind": "scan",
+  "subject": {
+    "chain": "ethereum",
+    "chain_id": 1,
+    "address": "0xabababababababababababababababababababab",
+    "block": 25872274,
+    "code_hash": "0xcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+    "bundle_sha256": "6c4ef3dba5104bd8cc01a0dad5e1446f7c1f3727ed0451867fbead8c95b3d378"
+  },
+  "file": {
+    "file_id": "F1",
+    "path": "contracts/Vault.sol",
+    "sha256": "fd63e0523773ea02501695090b185694f6786781e7b5f1c2f86698595fc01e8b"
+  },
+  "range": {
+    "start_line": 6,
+    "end_line": 6,
+    "span_sha256": "7a552636e3317c1d116f1c562c91b3ecff5ffcbb4dc5d1b6b77af7a2b9bef711",
+    "function": null
+  },
+  "match": null,
+  "precedents": [],
+  "explanation": null,
+  "reviewer": null,
+  "scan": {
+    "flag": "instruction_like",
+    "count": 1
+  }
+}

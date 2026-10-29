@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "file_id": "F1",
+      "start_line": 8,
+      "end_line": 10,
+      "quote": "function initialize(address o) external {         owner = o;     }",
+      "function": "initialize",
+      "entry": "taxonomy:unprotected-initializer",
+      "clause": 0,
+      "severity": "high",
+      "confidence": "medium",
+      "note": "Sets the owner with no caller check and no initializer guard."
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "Credit": {
+      "additionalProperties": false,
+      "properties": {
+        "auditor": {
+          "title": "Auditor",
+          "type": "string"
+        },
+        "changes": {
+          "title": "Changes",
+          "type": "string"
+        },
+        "date": {
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "title": "Date",
+          "type": "string"
+        },
+        "excerpt": {
+          "maxLength": 280,
+          "title": "Excerpt",
+          "type": "string"
+        },
+        "finding_label": {
+          "title": "Finding Label",
+          "type": "string"
+        },
+        "licence": {
+          "title": "Licence",
+          "type": "string"
+        },
+        "licence_url": {
+          "maxLength": 500,
+          "pattern": "^https://",
+          "title": "Licence Url",
+          "type": "string"
+        },
+        "link": {
+          "maxLength": 500,
+          "pattern": "^https://",
+          "title": "Link",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "page_end": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page End"
+        },
+        "protocol": {
+          "title": "Protocol",
+          "type": "string"
+        },
+        "report_title": {
+          "title": "Report Title",
+          "type": "string"
+        },
+        "severity_by_auditor": {
+          "title": "Severity By Auditor",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "auditor",
+        "report_title",
+        "protocol",
+        "date",
+        "finding_label",
+        "severity_by_auditor",
+        "title",
+        "page",
+        "excerpt",
+        "link",
+        "licence",
+        "licence_url",
+        "changes"
+      ],
+      "title": "Credit",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "closeness": {
+      "enum": [
+        "close",
+        "related"
+      ],
+      "title": "Closeness",
+      "type": "string"
+    },
+    "credit": {
+      "$ref": "#/$defs/Credit"
+    },
+    "finding_id": {
+      "pattern": "^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "title": "Finding Id",
+      "type": "string"
+    },
+    "relation": {
+      "enum": [
+        "same_class",
+        "same_code_family"
+      ],
+      "title": "Relation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "finding_id",
+    "relation",
+    "closeness",
+    "credit"
+  ],
+  "title": "PrecedentCard",
+  "type": "object"
+}

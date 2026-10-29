@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "status": "ran",
+  "reason": null,
+  "reviewer_model": "deepseek/deepseek-v4.1-flash-1017",
+  "files_total": 3,
+  "files_reviewed": 1,
+  "chars_total": 21000,
+  "chars_reviewed": 400,
+  "dropped": [],
+  "unsupported": null,
+  "assembly_blocks": 0,
+  "scan_flags": [
+    {
+      "flag": "instruction_like",
+      "count": 1
+    }
+  ],
+  "cost_usd": 0.006,
+  "definitions_known": 5,
+  "definitions_new": 1,
+  "definitions_reviewed": 1,
+  "new_tokens": 120,
+  "ceiling_tokens": 300000,
+  "known_libraries": [
+    {
+      "library": "OpenZeppelin Contracts",
+      "version": "4.9.3",
+      "definitions": 5
+    }
+  ],
+  "confirmation_model": "z-ai/glm-5.3-flash"
+}

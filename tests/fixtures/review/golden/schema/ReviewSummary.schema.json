@@ -1,0 +1,245 @@
+{
+  "$defs": {
+    "DroppedFile": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "maxLength": 200,
+          "title": "Path",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "urls_only",
+            "too_many_files",
+            "too_large",
+            "linked_library",
+            "diamond_facet"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "reason"
+      ],
+      "title": "DroppedFile",
+      "type": "object"
+    },
+    "KnownLibrary": {
+      "additionalProperties": false,
+      "properties": {
+        "definitions": {
+          "minimum": 1,
+          "title": "Definitions",
+          "type": "integer"
+        },
+        "library": {
+          "title": "Library",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "library",
+        "version",
+        "definitions"
+      ],
+      "title": "KnownLibrary",
+      "type": "object"
+    },
+    "ScanCount": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "minimum": 1,
+          "title": "Count",
+          "type": "integer"
+        },
+        "flag": {
+          "enum": [
+            "hidden_character",
+            "non_ascii",
+            "instruction_like",
+            "long_identifier"
+          ],
+          "title": "Flag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "flag",
+        "count"
+      ],
+      "title": "ScanCount",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assembly_blocks": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Assembly Blocks",
+      "type": "integer"
+    },
+    "ceiling_tokens": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Ceiling Tokens",
+      "type": "integer"
+    },
+    "chars_reviewed": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Chars Reviewed",
+      "type": "integer"
+    },
+    "chars_total": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Chars Total",
+      "type": "integer"
+    },
+    "confirmation_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confirmation Model"
+    },
+    "cost_usd": {
+      "default": 0.0,
+      "minimum": 0,
+      "title": "Cost Usd",
+      "type": "number"
+    },
+    "definitions_known": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Definitions Known",
+      "type": "integer"
+    },
+    "definitions_new": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Definitions New",
+      "type": "integer"
+    },
+    "definitions_reviewed": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Definitions Reviewed",
+      "type": "integer"
+    },
+    "dropped": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DroppedFile"
+      },
+      "title": "Dropped",
+      "type": "array"
+    },
+    "files_reviewed": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Files Reviewed",
+      "type": "integer"
+    },
+    "files_total": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Files Total",
+      "type": "integer"
+    },
+    "known_libraries": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/KnownLibrary"
+      },
+      "title": "Known Libraries",
+      "type": "array"
+    },
+    "new_tokens": {
+      "default": 0,
+      "minimum": 0,
+      "title": "New Tokens",
+      "type": "integer"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "reviewer_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reviewer Model"
+    },
+    "scan_flags": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ScanCount"
+      },
+      "title": "Scan Flags",
+      "type": "array"
+    },
+    "schema": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema",
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "ran",
+        "partial",
+        "refused",
+        "skipped",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "unsupported": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unsupported"
+    }
+  },
+  "required": [
+    "status"
+  ],
+  "title": "ReviewSummary",
+  "type": "object"
+}

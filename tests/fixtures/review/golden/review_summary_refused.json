@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "status": "refused",
+  "reason": "Not reviewed: the new code is 410000 tokens, over the review ceiling of 300000.",
+  "reviewer_model": null,
+  "files_total": 62,
+  "files_reviewed": 0,
+  "chars_total": 1045109,
+  "chars_reviewed": 0,
+  "dropped": [],
+  "unsupported": null,
+  "assembly_blocks": 0,
+  "scan_flags": [],
+  "cost_usd": 0.0,
+  "definitions_known": 0,
+  "definitions_new": 130,
+  "definitions_reviewed": 0,
+  "new_tokens": 410000,
+  "ceiling_tokens": 300000,
+  "known_libraries": [],
+  "confirmation_model": null
+}

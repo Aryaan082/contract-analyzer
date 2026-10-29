@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "ReviewerItem": {
+      "additionalProperties": false,
+      "properties": {
+        "clause": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clause"
+        },
+        "confidence": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "end_line": {
+          "minimum": 1,
+          "title": "End Line",
+          "type": "integer"
+        },
+        "entry": {
+          "pattern": "^taxonomy:[a-z0-9][a-z0-9-]*$",
+          "title": "Entry",
+          "type": "string"
+        },
+        "file_id": {
+          "pattern": "^F[1-9][0-9]*$",
+          "title": "File Id",
+          "type": "string"
+        },
+        "function": {
+          "anyOf": [
+            {
+              "maxLength": 40,
+              "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Function"
+        },
+        "note": {
+          "maxLength": 200,
+          "title": "Note",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 2000,
+          "title": "Quote",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "start_line": {
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file_id",
+        "start_line",
+        "end_line",
+        "quote",
+        "entry",
+        "severity",
+        "confidence",
+        "note"
+      ],
+      "title": "ReviewerItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "$ref": "#/$defs/ReviewerItem"
+      },
+      "maxItems": 50,
+      "title": "Items",
+      "type": "array"
+    }
+  },
+  "required": [
+    "items"
+  ],
+  "title": "ReviewerReply",
+  "type": "object"
+}

@@ -1,0 +1,394 @@
+{
+  "$defs": {
+    "Explanation": {
+      "additionalProperties": false,
+      "properties": {
+        "by": {
+          "const": "reviewer_model",
+          "default": "reviewer_model",
+          "title": "By",
+          "type": "string"
+        },
+        "checked": {
+          "default": false,
+          "title": "Checked",
+          "type": "boolean"
+        },
+        "text": {
+          "maxLength": 200,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "Explanation",
+      "type": "object"
+    },
+    "FileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "file_id": {
+          "pattern": "^F[1-9][0-9]*$",
+          "title": "File Id",
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 200,
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id",
+        "path",
+        "sha256"
+      ],
+      "title": "FileRef",
+      "type": "object"
+    },
+    "LineRange": {
+      "additionalProperties": false,
+      "properties": {
+        "end_line": {
+          "minimum": 1,
+          "title": "End Line",
+          "type": "integer"
+        },
+        "function": {
+          "anyOf": [
+            {
+              "maxLength": 40,
+              "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Function"
+        },
+        "span_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Span Sha256",
+          "type": "string"
+        },
+        "start_line": {
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_line",
+        "end_line",
+        "span_sha256"
+      ],
+      "title": "LineRange",
+      "type": "object"
+    },
+    "Match": {
+      "additionalProperties": false,
+      "properties": {
+        "clause": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clause"
+        },
+        "confidence": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "confirmed_by": {
+          "anyOf": [
+            {
+              "pattern": "^S[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmed By"
+        },
+        "entry": {
+          "pattern": "^taxonomy:[a-z0-9][a-z0-9-]*$",
+          "title": "Entry",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "severity_claimed": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Severity Claimed",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entry",
+        "severity",
+        "severity_claimed",
+        "confidence"
+      ],
+      "title": "Match",
+      "type": "object"
+    },
+    "PrecedentRef": {
+      "additionalProperties": false,
+      "properties": {
+        "closeness": {
+          "enum": [
+            "close",
+            "related"
+          ],
+          "title": "Closeness",
+          "type": "string"
+        },
+        "finding_id": {
+          "pattern": "^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "same_class",
+            "same_code_family"
+          ],
+          "title": "Relation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "relation",
+        "closeness"
+      ],
+      "title": "PrecedentRef",
+      "type": "object"
+    },
+    "ReviewerInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "checklist_sha": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Checklist Sha",
+          "type": "string"
+        },
+        "lexer_version": {
+          "title": "Lexer Version",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "prompt_sha": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Prompt Sha",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model",
+        "prompt_sha",
+        "checklist_sha",
+        "lexer_version"
+      ],
+      "title": "ReviewerInfo",
+      "type": "object"
+    },
+    "ScanInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "minimum": 1,
+          "title": "Count",
+          "type": "integer"
+        },
+        "flag": {
+          "enum": [
+            "hidden_character",
+            "non_ascii",
+            "instruction_like",
+            "long_identifier"
+          ],
+          "title": "Flag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "flag",
+        "count"
+      ],
+      "title": "ScanInfo",
+      "type": "object"
+    },
+    "Subject": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "title": "Address",
+          "type": "string"
+        },
+        "block": {
+          "title": "Block",
+          "type": "integer"
+        },
+        "bundle_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Bundle Sha256",
+          "type": "string"
+        },
+        "chain": {
+          "title": "Chain",
+          "type": "string"
+        },
+        "chain_id": {
+          "title": "Chain Id",
+          "type": "integer"
+        },
+        "code_hash": {
+          "pattern": "^0x[0-9a-f]{64}$",
+          "title": "Code Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "chain",
+        "chain_id",
+        "address",
+        "block",
+        "code_hash",
+        "bundle_sha256"
+      ],
+      "title": "Subject",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "explanation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Explanation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "file": {
+      "$ref": "#/$defs/FileRef"
+    },
+    "id": {
+      "pattern": "^S[1-9][0-9]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "span",
+        "scan"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "match": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Match"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "precedents": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PrecedentRef"
+      },
+      "maxItems": 3,
+      "title": "Precedents",
+      "type": "array"
+    },
+    "range": {
+      "$ref": "#/$defs/LineRange"
+    },
+    "reviewer": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReviewerInfo"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "scan": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ScanInfo"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema",
+      "type": "integer"
+    },
+    "subject": {
+      "$ref": "#/$defs/Subject"
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "subject",
+    "file",
+    "range"
+  ],
+  "title": "SourceSpan",
+  "type": "object"
+}

@@ -1,0 +1,21 @@
+{
+  "finding_id": "morpho-v1-tob-2022-06:TOB-MORPHO-6",
+  "relation": "same_class",
+  "closeness": "close",
+  "credit": {
+    "auditor": "Trail of Bits",
+    "report_title": "Morpho Protocol V1 security review",
+    "protocol": "Morpho Protocol V1",
+    "date": "2022-06",
+    "finding_label": "TOB-MORPHO-6",
+    "severity_by_auditor": "high",
+    "title": "Anyone can destroy Morpho\u2019s implementation",
+    "page": 23,
+    "page_end": 24,
+    "excerpt": "An incorrect access control on the initialize function for Morpho\u2019s implementation contract allows anyone to destroy the contract.",
+    "link": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/reviews/MorphoLabs.pdf",
+    "licence": "CC-BY-SA-4.0",
+    "licence_url": "https://github.com/trailofbits/publications/blob/89940dfbec07ad03b0989e67d78e84250765366b/LICENSE",
+    "changes": "Excerpt of the description. Code listings, exploit scenario and recommendations not shown."
+  }
+}

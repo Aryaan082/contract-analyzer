@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "id": "S5",
+  "kind": "span",
+  "subject": {
+    "chain": "ethereum",
+    "chain_id": 1,
+    "address": "0xabababababababababababababababababababab",
+    "block": 25872274,
+    "code_hash": "0xcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+    "bundle_sha256": "6c4ef3dba5104bd8cc01a0dad5e1446f7c1f3727ed0451867fbead8c95b3d378"
+  },
+  "file": {
+    "file_id": "F1",
+    "path": "contracts/Vault.sol",
+    "sha256": "fd63e0523773ea02501695090b185694f6786781e7b5f1c2f86698595fc01e8b"
+  },
+  "range": {
+    "start_line": 8,
+    "end_line": 10,
+    "span_sha256": "11ff614a2595c33a1aadc7a07ff742b6f840cf2cbf88c7d73a9b0a0c89d9a9f2",
+    "function": "initialize"
+  },
+  "match": {
+    "entry": "taxonomy:unprotected-initializer",
+    "clause": 0,
+    "severity": "high",
+    "confirmed_by": "S6",
+    "severity_claimed": "high",
+    "confidence": "high"
+  },
+  "precedents": [
+    {
+      "finding_id": "morpho-v1-tob-2022-06:TOB-MORPHO-6",
+      "relation": "same_class",
+      "closeness": "close"
+    }
+  ],
+  "explanation": {
+    "text": "Anyone can call initialize and take ownership.",
+    "by": "reviewer_model",
+    "checked": false
+  },
+  "reviewer": {
+    "model": "deepseek/deepseek-v4.1-flash-1017",
+    "prompt_sha": "1111111111111111111111111111111111111111111111111111111111111111",
+    "checklist_sha": "2222222222222222222222222222222222222222222222222222222222222222",
+    "lexer_version": "1"
+  },
+  "scan": null
+}
