@@ -11,6 +11,8 @@ dependencies = [
     "pypdf>=6.21.2",
     "fastembed>=0.9.1",
     "psycopg>=3.3.6",
+    "tree-sitter==0.26.0",
+    "tree-sitter-solidity==1.2.13",
 ]
 
 [dependency-groups]
