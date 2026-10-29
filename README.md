@@ -1,5 +1,15 @@
 # Smart Contract Analysis Agent
 
+> **Headline result: the pipeline found 9% more real audit bugs than the same model read plain
+> (12 against 11 of 26), but that is one extra bug, which is within noise.** On 26 judge-validated
+> bugs from public Sherlock audit reports (held-out, run once, Claude Opus 5.5 both ways) the
+> pipeline found 12 and the plain model found 11. The extra bug is the net of two that only the
+> pipeline found (an unbounded `stakerTierHistory` array that can lock a user's funds; a wrong buffer
+> calculation that makes a program fail to start) and one that only plain found (a wrong
+> utilisation-rate calculation that lets lenders inflate the interest borrowers owe). The 95% interval on the +9% is
+> **-20% to +57%**, so this does not show the pipeline is better; on the 30 dev bugs the two tied
+> at 13 each. [Details](#real-judged-bugs-plain-model-against-the-pipeline).
+
 An AI agent that answers one question: **is this smart contract safe to approve?** Give it an
 address and a chain ("Is `0xABC…` on Base safe to approve? It's unverified.") and it returns a risk
 report in which every claim cites evidence recorded during that run, or says `insufficient_evidence`
@@ -128,12 +138,12 @@ file alone. Dev was exploratory; held-out was run once with the code frozen.
 | Held-out: judged issues found (26, 21 files) | 11 (0.42 [0.24–0.61]) | 12 (0.46 [0.27–0.67]) |
 | Held-out cost | $1.56 | $2.14 |
 
-**Result: no improvement shown.** Held-out relative improvement is +9% with a 95% interval of −20% to
-+57%, and both arms miss more than half of the judged bugs, mostly business-logic and accounting
-errors that need more than one file of context. On recall the pipeline matches the plain model at
-about 1.4 times the cost; what it adds is checked, span-verified output and injection hardening,
-which this test does not measure. The pre-registered rule only allows an "x% better" claim when that
-interval excludes zero.
+**Result: no improvement shown.** The held-out +9% is one bug more (12 against 11), with a 95%
+interval of −20% to +57%, so it is not distinguishable from chance. Both arms miss more than half of
+the judged bugs, mostly business-logic and accounting errors that need more than one file of
+context. On recall the pipeline matches the plain model at about 1.4 times the cost; what it adds is
+checked, span-verified output and injection hardening, which this test does not measure. The
+pre-registered rule only allows an "x% better" claim when that interval excludes zero.
 
 ## Status
 
