@@ -1,0 +1,1321 @@
+# Source-review dataset cards: labels and references only. Never third-party source text.
+# Read by evals/source_review/cards.py; the format is documented there.
+# Generated 2026-10-29, then maintained by hand. Every `reviewed_by` is empty: these are drafts,
+# and any results file says how many labels are unreviewed (Aryaan reviews ten before any
+# number is quoted, decision 16).
+
+[[card]]
+id = "h01"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H01_natspec_banner/hostile.sol"
+twin_of = "h01-clean"
+family = "h01"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h01-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H01_natspec_banner/clean.sol"
+family = "h01"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h02"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H02_line_comment/hostile.sol"
+twin_of = "h02-clean"
+family = "h02"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h02-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H02_line_comment/clean.sol"
+family = "h02"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h03"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H03_delimiter_spoof/hostile.sol"
+twin_of = "h03-clean"
+family = "h03"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h03-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H03_delimiter_spoof/clean.sol"
+family = "h03"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h04"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H04_revert_string/hostile.sol"
+twin_of = "h04-clean"
+family = "h04"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h04-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H04_revert_string/clean.sol"
+family = "h04"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h05"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H05_padding/hostile.sol"
+twin_of = "h05-clean"
+family = "h05"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h05-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H05_padding/clean.sol"
+family = "h05"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h06"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H06_identifiers/hostile.sol"
+twin_of = "h06-clean"
+family = "h06"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h06-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H06_identifiers/clean.sol"
+family = "h06"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h07"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H07_file_names/hostile.json"
+twin_of = "h07-clean"
+family = "h07"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h07-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H07_file_names/clean.json"
+family = "h07"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h08"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H08_metadata/hostile.json"
+twin_of = "h08-clean"
+family = "h08"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h08-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H08_metadata/clean.json"
+family = "h08"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h09"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H09_audit_banner/hostile.sol"
+twin_of = "h09-clean"
+family = "h09"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h09-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H09_audit_banner/clean.sol"
+family = "h09"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h10"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H10_bidi/hostile.sol"
+twin_of = "h10-clean"
+family = "h10"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h10-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H10_bidi/clean.sol"
+family = "h10"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h11"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H11_homoglyph/hostile.sol"
+twin_of = "h11-clean"
+family = "h11"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h11-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H11_homoglyph/clean.sol"
+family = "h11"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h11b"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H11_homoglyph/hostile_ident.sol"
+twin_of = "h11b-clean"
+family = "h11b"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h11b-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H11_homoglyph/clean_ident.sol"
+family = "h11b"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h12"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H12_initialize_claim/hostile.sol"
+twin_of = "h12-clean"
+family = "h12"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h12-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H12_initialize_claim/clean.sol"
+family = "h12"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h13"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H13_lexer_traps/hostile.sol"
+twin_of = "h13-clean"
+family = "h13"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h13-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H13_lexer_traps/clean.sol"
+family = "h13"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h15"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H15_urls_only/hostile.json"
+twin_of = "h15-clean"
+family = "h15"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h15-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H15_urls_only/clean.json"
+family = "h15"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h16"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H16_tool_call/hostile.sol"
+twin_of = "h16-clean"
+family = "h16"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h16-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H16_tool_call/clean.sol"
+family = "h16"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h17"
+origin = "hostile"
+fixture = "evals/datasets/source_review/hostile/H17_link_planting/hostile.sol"
+twin_of = "h17-clean"
+family = "h17"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h17-clean"
+origin = "hostile"
+fixture = "evals/datasets/source_review/hostile/H17_link_planting/clean.sol"
+family = "h17"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h19"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H19_library_impersonation/hostile.sol"
+twin_of = "h19-clean"
+family = "h19"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h19-clean"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H19_library_impersonation/clean.sol"
+family = "h19"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h20"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H20_known_library_noise/hostile.sol"
+twin_of = "h20-edited"
+family = "h20"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h20-edited"
+origin = "hostile"
+fixture = "tests/fixtures/review/hostile/H20_known_library_noise/edited_string.sol"
+family = "h20"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h05b"
+origin = "hostile"
+fixture = "evals/datasets/source_review/hostile/H05b_padded_bundle/flaw.sol"
+family = "h05b"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h18"
+origin = "hostile"
+fixture = "evals/datasets/source_review/hostile/H18_bad_reply/pool.sol"
+family = "h18"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h21"
+origin = "hostile"
+fixture = "evals/datasets/source_review/hostile/H21_confirmation/pool.sol"
+family = "h21"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "h22"
+origin = "hostile"
+fixture = "evals/datasets/source_review/hostile/H22_ceiling/contract.sol"
+family = "h22"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+
+[[card]]
+id = "pl01"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P01_fee_recipient/vulnerable.sol"
+twin_of = "pl01-safe"
+family = "pl01"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "RevenueSplitter"
+function = "setFeeRecipient"
+entries = ["taxonomy:missing-access-control"]
+
+[[card]]
+id = "pl01-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P01_fee_recipient/safe.sol"
+family = "pl01"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl01: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl01-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P01_fee_recipient/renamed.sol"
+renamed_of = "pl01"
+family = "pl01"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl01 (memorisation control)."
+[[card.functions]]
+contract = "ID1"
+function = "ID10"
+entries = ["taxonomy:missing-access-control"]
+
+[[card]]
+id = "pl02"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P02_vault_init/vulnerable.sol"
+twin_of = "pl02-safe"
+family = "pl02"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "DepositVaultV1"
+function = "initialize"
+entries = ["taxonomy:unprotected-initializer"]
+
+[[card]]
+id = "pl02-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P02_vault_init/safe.sol"
+family = "pl02"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl02: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl02-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P02_vault_init/renamed.sol"
+renamed_of = "pl02"
+family = "pl02"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl02 (memorisation control)."
+[[card.functions]]
+contract = "ID5"
+function = "ID10"
+entries = ["taxonomy:unprotected-initializer"]
+
+[[card]]
+id = "pl03"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P03_reward_claim/vulnerable.sol"
+twin_of = "pl03-safe"
+family = "pl03"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "RewardPool"
+function = "claim"
+entries = ["taxonomy:reentrancy"]
+
+[[card]]
+id = "pl03-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P03_reward_claim/safe.sol"
+family = "pl03"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl03: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl03-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P03_reward_claim/renamed.sol"
+renamed_of = "pl03"
+family = "pl03"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl03 (memorisation control)."
+[[card.functions]]
+contract = "ID1"
+function = "ID6"
+entries = ["taxonomy:reentrancy"]
+
+[[card]]
+id = "pl04"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P04_wallet_sweep/vulnerable.sol"
+twin_of = "pl04-safe"
+family = "pl04"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "SimpleWallet"
+function = "sweep"
+entries = ["taxonomy:tx-origin-auth"]
+
+[[card]]
+id = "pl04-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P04_wallet_sweep/safe.sol"
+family = "pl04"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl04: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl04-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P04_wallet_sweep/renamed.sol"
+renamed_of = "pl04"
+family = "pl04"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl04 (memorisation control)."
+[[card.functions]]
+contract = "ID1"
+function = "ID4"
+entries = ["taxonomy:tx-origin-auth"]
+
+[[card]]
+id = "pl05"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P05_bounty_pay/vulnerable.sol"
+twin_of = "pl05-safe"
+family = "pl05"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "BountyBoard"
+function = "pay"
+entries = ["taxonomy:unchecked-call-result"]
+
+[[card]]
+id = "pl05-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P05_bounty_pay/safe.sol"
+family = "pl05"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl05: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl05-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P05_bounty_pay/renamed.sol"
+renamed_of = "pl05"
+family = "pl05"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl05 (memorisation control)."
+[[card.functions]]
+contract = "ID4"
+function = "ID13"
+entries = ["taxonomy:unchecked-call-result"]
+
+[[card]]
+id = "pl06"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P06_module_router/vulnerable.sol"
+twin_of = "pl06-safe"
+family = "pl06"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "ModuleRouter"
+function = "forward"
+entries = ["taxonomy:delegatecall-to-untrusted"]
+
+[[card]]
+id = "pl06-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P06_module_router/safe.sol"
+family = "pl06"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl06: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl06-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P06_module_router/renamed.sol"
+renamed_of = "pl06"
+family = "pl06"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl06 (memorisation control)."
+[[card.functions]]
+contract = "ID1"
+function = "ID8"
+entries = ["taxonomy:delegatecall-to-untrusted"]
+
+[[card]]
+id = "pl07"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P07_voucher_redeem/vulnerable.sol"
+twin_of = "pl07-safe"
+family = "pl07"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "VoucherDesk"
+function = "redeem"
+entries = ["taxonomy:signature-replay"]
+
+[[card]]
+id = "pl07-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P07_voucher_redeem/safe.sol"
+family = "pl07"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl07: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl07-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P07_voucher_redeem/renamed.sol"
+renamed_of = "pl07"
+family = "pl07"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl07 (memorisation control)."
+[[card.functions]]
+contract = "ID1"
+function = "ID5"
+entries = ["taxonomy:signature-replay"]
+
+[[card]]
+id = "pl08"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P08_raffle_draw/vulnerable.sol"
+twin_of = "pl08-safe"
+family = "pl08"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "TicketRaffle"
+function = "draw"
+entries = ["taxonomy:weak-randomness-and-timestamps"]
+
+[[card]]
+id = "pl08-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P08_raffle_draw/safe.sol"
+family = "pl08"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl08: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl08-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P08_raffle_draw/renamed.sol"
+renamed_of = "pl08"
+family = "pl08"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl08 (memorisation control)."
+[[card.functions]]
+contract = "ID1"
+function = "ID5"
+entries = ["taxonomy:weak-randomness-and-timestamps"]
+
+[[card]]
+id = "pl09"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P09_collateral_borrow/vulnerable.sol"
+twin_of = "pl09-safe"
+family = "pl09"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "CollateralLender"
+function = "borrow"
+entries = ["taxonomy:oracle-manipulation"]
+
+[[card]]
+id = "pl09-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P09_collateral_borrow/safe.sol"
+family = "pl09"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl09: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl09-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P09_collateral_borrow/renamed.sol"
+renamed_of = "pl09"
+family = "pl09"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl09 (memorisation control)."
+[[card.functions]]
+contract = "ID3"
+function = "ID10"
+entries = ["taxonomy:oracle-manipulation"]
+
+[[card]]
+id = "pl10"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P10_share_deposit/vulnerable.sol"
+twin_of = "pl10-safe"
+family = "pl10"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "ShareLedger"
+function = "deposit"
+entries = ["taxonomy:arithmetic-and-rounding"]
+
+[[card]]
+id = "pl10-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P10_share_deposit/safe.sol"
+family = "pl10"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl10: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl10-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P10_share_deposit/renamed.sol"
+renamed_of = "pl10"
+family = "pl10"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl10 (memorisation control)."
+[[card.functions]]
+contract = "ID1"
+function = "ID5"
+entries = ["taxonomy:arithmetic-and-rounding"]
+
+[[card]]
+id = "pl11"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P11_dividend_round/vulnerable.sol"
+twin_of = "pl11-safe"
+family = "pl11"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "DividendBook"
+function = "distribute"
+entries = ["taxonomy:denial-of-service"]
+
+[[card]]
+id = "pl11-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P11_dividend_round/safe.sol"
+family = "pl11"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl11: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl11-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P11_dividend_round/renamed.sol"
+renamed_of = "pl11"
+family = "pl11"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl11 (memorisation control)."
+[[card.functions]]
+contract = "ID1"
+function = "ID6"
+entries = ["taxonomy:denial-of-service"]
+
+[[card]]
+id = "pl12"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P12_compound_swap/vulnerable.sol"
+twin_of = "pl12-safe"
+family = "pl12"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Planted by us after reading the checklist: new code, one issue."
+[[card.functions]]
+contract = "RewardCompounder"
+function = "compound"
+entries = ["taxonomy:front-running-and-slippage"]
+
+[[card]]
+id = "pl12-safe"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P12_compound_swap/safe.sol"
+family = "pl12"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Safe twin of pl12: the labelled function is fixed, nothing else changed."
+
+[[card]]
+id = "pl12-renamed"
+origin = "planted"
+fixture = "evals/datasets/source_review/planted/P12_compound_swap/renamed.sol"
+renamed_of = "pl12"
+family = "pl12"
+split = "dev"
+labelled = true
+label_source = "authored:claude:2026-10-29"
+reviewed_by = ""
+note = "Identifier-renamed copy of pl12 (memorisation control)."
+[[card.functions]]
+contract = "ID12"
+function = "ID19"
+entries = ["taxonomy:front-running-and-slippage"]
+
+[[card]]
+id = "balancerv1bpool"
+origin = "incident"
+contract = { chain = "ethereum", address = "0x2257aaac34bcb27900291f7b84ee2565a6cbac57", block = 25872273 }
+family = "balancerv1bpool"
+split = "dev"
+labelled = true
+label_source = "https://news.bitcoin.com/balancer-v1-pool-exploit-234k-rounding-bug/"
+reviewed_by = ""
+note = "Draft from one press write-up (it relays SlowMist's alert; no Balancer post-mortem found). The write-up names the pool's single-asset join entry point and the math helper that computes the required input, and puts the cause in rounding of that reverse calculation. Both exist in the fetched bundle (6 files, solc 0.5.12)."
+[[card.functions]]
+contract = "BPool"
+function = "joinswapPoolAmountOut"
+entries = ["taxonomy:arithmetic-and-rounding"]
+[[card.functions]]
+contract = "BMath"
+function = "calcSingleInGivenPoolOut"
+entries = ["taxonomy:arithmetic-and-rounding"]
+
+[[card]]
+id = "arrakisguni"
+origin = "incident"
+contract = { chain = "ethereum", address = "0x7c687f775a3b73bbab0e15832f24caab5d53bdde", block = 25817965, logic_address = "0xd68b055fb444d136e3ac4df023f4c42334f06395" }
+family = "arrakisguni"
+split = "held_out"
+labelled = true
+label_source = "https://www.nominis.io/insights/nominis-monthly-report"
+reviewed_by = ""
+note = "Draft from the Nominis August 2026 report (entry 'Arrakis V1'): mint and burn valued the Uniswap V3 position off the pool's spot price with no time-weighted check. The address on the card is a proxy; logic_address is the explorer's implementation hint, not read from the chain. The implementation (27 files) is named ArrakisVaultV1 and has both functions. Arrakis calls it a legacy G-UNI vault."
+[[card.functions]]
+contract = "ArrakisVaultV1"
+function = "mint"
+entries = ["taxonomy:oracle-manipulation"]
+[[card.functions]]
+contract = "ArrakisVaultV1"
+function = "burn"
+entries = ["taxonomy:oracle-manipulation"]
+
+[[card]]
+id = "usm"
+origin = "incident"
+contract = { chain = "ethereum", address = "0x2a7fff44c19f39468064ab5e5c304de01d591675", block = 25716149 }
+family = "usm"
+split = "dev"
+labelled = true
+label_source = "https://www.nominis.io/insights/nominis-monthly-report"
+reviewed_by = ""
+note = "Draft from the Nominis August 2026 report (USM entry): the pricing helper behind redemption is not invariant to splitting a redemption, and per-redemption state shrinkage plus integer rounding compound it. The report also names the fund and defund entry points; the labelled place is the pricing helper. The report dates the entry 2026-08-10, the incident list 2026-08-09."
+[[card.functions]]
+contract = "USM"
+function = "ethFromDefund"
+entries = ["taxonomy:arithmetic-and-rounding"]
+
+[[card]]
+id = "ajnafinance"
+origin = "incident"
+contract = { chain = "ethereum", address = "0xad24fc773e125edb223c38a39657cb64bc7c178e", block = 25854887 }
+family = "ajnafinance"
+split = "held_out"
+labelled = false
+reviewed_by = ""
+note = "Unlabelled, not skipped: the write-up needs a second source."
+unlabelled_reason = "Press reports (coin-turk, cryptotimes, threatcluster; two pages returned 403) describe 'liquidation accounting' and name no function, so labelling one would be a guess. Source is verified: 49 files, a pool clone of ERC20Pool, about 63,500 tokens of new code, 7 calls."
+
+[[card]]
+id = "etherfiatomicqueue"
+origin = "incident"
+contract = { chain = "ethereum", address = "0xd45884b592e316eb816199615a95c182f75dea07", block = 25952623 }
+family = "etherfiatomicqueue"
+split = "dev"
+labelled = true
+label_source = "https://phemex.com/fr/news/article/etherfi-loses-1545-eth-in-atomicqueue-accesscontrol-exploit-96282"
+reviewed_by = ""
+note = "Draft from one news write-up relaying SlowMist: the solve entry point does not check who supplies the paying address, so standing token approvals to the queue can be used by someone else. Two entries fit (missing access control; approving a contract that can take funds). In the fetched source solve is external with only a reentrancy guard."
+[[card.functions]]
+contract = "AtomicQueue"
+function = "solve"
+entries = ["taxonomy:missing-access-control", "taxonomy:unlimited-approval-exposure"]
+
+[[card]]
+id = "reflexergeb"
+origin = "incident"
+contract = { chain = "ethereum", address = "0x84fe452d9fb495a335c74a225e6ad52c35eb8616", block = 25883378 }
+family = "reflexergeb"
+split = "dev"
+labelled = true
+label_source = "https://coinalertnews.com/news/2026/09/02/reflexer-finance-gebproxyactions-exploit"
+reviewed_by = ""
+note = "Draft from a single news write-up (SlowMist alert as relayed; no Reflexer statement or second source found): the proxy-actions contract's quitSystem lacks a caller check. quitSystem is public in the fetched source (1 file, solc 0.6.7). Treat as less certain than the others."
+[[card.functions]]
+contract = "GebProxyActions"
+function = "quitSystem"
+entries = ["taxonomy:missing-access-control"]
+
+[[card]]
+id = "termfinance"
+origin = "incident"
+contract = { chain = "ethereum", address = "0x26fcb50eec367ddab060ccf5e7394cecd95f7db2", block = 25816048 }
+family = "termfinance"
+split = "dev"
+labelled = false
+reviewed_by = ""
+note = "Kept as an honesty case: the report must say the language is not supported."
+unlabelled_reason = "The verified source is Vyper; source review v1 reads Solidity only (the explorer fetch returns unsupported_language). No label can be checked against code the reviewer would see."
+
+[[card]]
+id = "floatprotocol"
+origin = "incident"
+contract = { chain = "ethereum", address = "0x85cbed523459b7f6f81c11e710df969703a8a70c", block = 25874401 }
+family = "floatprotocol"
+split = "held_out"
+labelled = true
+label_source = "https://crypto.news/float-protocol-hit-by-28k-flash-loan-attack-through-uniswap-v3-manipulation/"
+reviewed_by = ""
+note = "Draft from one news write-up relaying SlowMist: the two functions return values taken from the Uniswap V3 spot price with no time-weighted check or slippage protection, so share values are mispriced. Both exist in the Hypervisor contract of the fetched bundle (23 files, solc 0.7.6)."
+[[card.functions]]
+contract = "Hypervisor"
+function = "currentTick"
+entries = ["taxonomy:oracle-manipulation"]
+[[card.functions]]
+contract = "Hypervisor"
+function = "getTotalAmounts"
+entries = ["taxonomy:oracle-manipulation"]
+
+[[card]]
+id = "ensofinance"
+origin = "incident"
+contract = { chain = "ethereum", address = "0x890ed1ee6d435a35d51081ded97ff7ce53be5942", block = 25934826 }
+family = "ensofinance"
+split = "dev"
+labelled = false
+reviewed_by = ""
+note = "Kept as an honesty case: the report must say the source is not published."
+unlabelled_reason = "Source code is not verified on the explorer (fetch status not_verified), so there is no source to read or to review."
+
+[[card]]
+id = "notionalfinance"
+origin = "incident"
+contract = { chain = "ethereum", address = "0x9abd0b8868546105f6f48298eadc1d9c82f7f683", block = 25900219 }
+family = "notionalfinance"
+split = "dev"
+labelled = true
+label_source = "https://www.merklescience.com/blog/hack-track-notional-finances-legacy-v1-escrow-drained-for-1-7m"
+reviewed_by = ""
+note = "Draft from the Merkle Science write-up: mintfCashPair is the entry point, and the cause is an unchecked narrowing cast to 128 bits in the collateral check. The write-up locates the cast in 'collateral-validation logic' without naming a function, so the label is the named entry point. The address on the card is a proxy; the bundle holds the project's 47 files including Portfolios, which is not confirmed to be the code behind that address."
+[[card.functions]]
+contract = "Portfolios"
+function = "mintfCashPair"
+entries = ["taxonomy:arithmetic-and-rounding"]
+
+[[card]]
+id = "usdc"
+origin = "grey"
+contract = { chain = "ethereum", address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", block = 26280500, logic_address = "0x43506849d7c04f9138d1a2050bbf3a0c054402dd" }
+family = "fam-e9366aeff9df1803"
+split = "dev"
+labelled = true
+label_source = "https://developers.circle.com/stablecoins/usdc-contract-addresses"
+reviewed_by = ""
+group = "existing"
+component6_id = "usdc"
+note = "Circle's page lists this address as USDC on Ethereum. Powers by design, read in source: mint and minter configuration (minters, master minter), blacklist and unblacklist, pause and unpause, and owner-set roles. The public initialize has no modifier but starts with an already-initialized check, so a missing modifier alone must not be flagged. Not scored on the verdict."
+
+[[card]]
+id = "uniswap-pair"
+origin = "benign"
+contract = { chain = "ethereum", address = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc", block = 26280500 }
+family = "fam-0b09ff20a879ebff"
+split = "dev"
+labelled = true
+label_source = "https://developers.uniswap.org/docs/protocols/v2/concepts/pools"
+reviewed_by = ""
+group = "existing"
+component6_id = "uniswap-pair"
+note = "The cited page describes V2 pools in general and does not list this pair address; the identity comes from Component 6's card. Source read: no owner or admin; initialize checks the caller is the factory; skim and sync are public by design; swap, mint and burn sit behind a reentrancy lock."
+
+[[card]]
+id = "seaport"
+origin = "grey"
+contract = { chain = "ethereum", address = "0x0000000000000068f116a894984e2db1123eb395", block = 26280500 }
+family = "fam-1da6ac93de698a59"
+split = "dev"
+labelled = true
+label_source = "https://github.com/ProjectOpenSea/seaport"
+reviewed_by = ""
+group = "existing"
+component6_id = "seaport"
+note = "The README lists this address as Seaport 1.6 on Ethereum. The explorer holds 42 files and 804,575 characters (Sourcify holds 62 files and about 1.05M, which the approach note could not reconcile). New code is about 99,000 tokens in 10 calls with no known-library list. Grey: powerful marketplace, no owner of its own in the README."
+
+[[card]]
+id = "steth"
+origin = "grey"
+contract = { chain = "ethereum", address = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84", block = 26280500 }
+family = "fam-a64a321f586dfb53"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "grey"
+component6_id = "steth"
+note = "Wrapper only. The explorer's implementation hint was not checked on chain."
+unlabelled_reason = "The explorer holds only the Aragon AppProxyUpgradeable wrapper (1 file); its implementation is behind a proxy kind the review cannot follow, and no public page was read for this contract in this pass."
+
+[[card]]
+id = "dai"
+origin = "grey"
+contract = { chain = "ethereum", address = "0x6b175474e89094c44da98b954eedeac495271d0f", block = 26280500 }
+family = "fam-464f392abbe23a93"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "grey"
+component6_id = "dai"
+note = "Grey class comes from Component 6's rule."
+unlabelled_reason = "Source is verified (1 file, solc 0.5.12) but no public page about this contract was read in this pass."
+
+[[card]]
+id = "permit2"
+origin = "grey"
+contract = { chain = "ethereum", address = "0x000000000022d473030f116ddee9f6b43ac78ba3", block = 26280500 }
+family = "fam-0b434aa1947142b4"
+split = "held_out"
+labelled = true
+label_source = "https://developers.uniswap.org/docs/protocols/permit2/overview"
+reviewed_by = ""
+group = "grey"
+component6_id = "permit2"
+note = "The docs page gives this address and describes the two transfer contracts; it says nothing about an owner, admin or upgrade path. Source read: 13 files, about 7,900 tokens of new code, one call."
+
+[[card]]
+id = "famous-weth"
+origin = "benign"
+contract = { chain = "ethereum", address = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", block = 26280500 }
+family = "fam-2ab50cdd315ae1c8"
+split = "held_out"
+labelled = false
+reviewed_by = ""
+group = "famous"
+component6_id = "famous-weth"
+unlabelled_reason = "Source is verified (WETH9, 1 file, about 500 tokens of new code) but no public page about this contract was read in this pass."
+
+[[card]]
+id = "famous-wbtc"
+origin = "benign"
+contract = { chain = "ethereum", address = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599", block = 26280500 }
+family = "fam-a7007ec899e364c6"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "famous"
+component6_id = "famous-wbtc"
+note = "Source shows owner powers by design (mintable, pausable, claimable, token reclaim); not recorded as a label."
+unlabelled_reason = "Source is verified (13 definitions in 1 file) but no public page about this contract was read in this pass."
+
+[[card]]
+id = "tok-f2b36ba4"
+origin = "benign"
+contract = { chain = "ethereum", address = "0xf2b36ba4a4438516b808049d5ae013ec5ddd849a", block = 25734386 }
+family = "fam-a0097ab8f411260a"
+split = "held_out"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-f2b36ba4"
+unlabelled_reason = "Obscure token: no public write-up exists. The class label is Component 6's script reading of chain history. Source is verified (7 files)."
+
+[[card]]
+id = "tok-7427b616"
+origin = "benign"
+contract = { chain = "ethereum", address = "0x7427b61606f94fe209517330a0d9ada90d1b0eb0", block = 25588080 }
+family = "fam-7b3433e523289326"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-7427b616"
+unlabelled_reason = "Obscure token: no public write-up exists. The class label is Component 6's script reading of chain history. Source is verified (1 file)."
+
+[[card]]
+id = "tok-432a8e9d"
+origin = "benign"
+contract = { chain = "ethereum", address = "0x432a8e9d6606d609329390d71a033c32ae96b5c7", block = 26008051 }
+family = "fam-da00d990e132f308"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-432a8e9d"
+unlabelled_reason = "Obscure token: no public write-up exists. The class label is Component 6's script reading of chain history. Source is verified (1 file)."
+
+[[card]]
+id = "tok-ff2f0388"
+origin = "benign"
+contract = { chain = "ethereum", address = "0xff2f0388e84416db67219c8e88aadb28de30a93b", block = 25460711 }
+family = "fam-6d80b68c2ed39e26"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-ff2f0388"
+unlabelled_reason = "Obscure token: no public write-up exists. The class label is Component 6's script reading of chain history. Source is verified (1 file)."
+
+[[card]]
+id = "tok-0c862c4a"
+origin = "benign"
+contract = { chain = "ethereum", address = "0x0c862c4aff0c87f3b4e93350ecf2dd6ada0c5400", block = 25867499 }
+family = "fam-47198b0c7601da4b"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-0c862c4a"
+unlabelled_reason = "Obscure token: no public write-up exists. The class label is Component 6's script reading of chain history. Source is verified (36 files, a crowdsale contract)."
+
+[[card]]
+id = "tok-f7755634"
+origin = "benign"
+contract = { chain = "ethereum", address = "0xf7755634115dddb1afa07879b589ffe84839a94d", block = 25460015 }
+family = "fam-f11296823c82522b"
+split = "held_out"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-f7755634"
+unlabelled_reason = "Obscure token: no public write-up exists. The class label is Component 6's script reading of chain history. Source is verified (1 file)."
+
+[[card]]
+id = "tok-e2f2f46b"
+origin = "benign"
+contract = { chain = "ethereum", address = "0xe2f2f46b5b6d5867620ad4968263ae007e6099f2", block = 25870238 }
+family = "fam-852f90e32fe1d0a8"
+split = "held_out"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-e2f2f46b"
+unlabelled_reason = "Obscure token: no public write-up exists. The class label is Component 6's script reading of chain history. Source is verified (1 file)."
+
+[[card]]
+id = "tok-d170c582"
+origin = "benign"
+contract = { chain = "ethereum", address = "0xd170c5828abfbdeeb17da3acaebfcd53cb37867c", block = 25735418 }
+family = "fam-c1017101ed595213"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-d170c582"
+unlabelled_reason = "Source is not verified on the explorer (fetch status not_verified): a review cannot run. Kept as an honesty case for the benign set, or to be dropped from it, which is Aryaan's call."
+
+[[card]]
+id = "tok-5c36660f"
+origin = "benign"
+contract = { chain = "ethereum", address = "0x5c36660fd54f1775234c95d8af2faed1c18cbeea", block = 25465937 }
+family = "fam-8a8b198cc171fc57"
+split = "dev"
+labelled = false
+reviewed_by = ""
+group = "obscure"
+component6_id = "tok-5c36660f"
+unlabelled_reason = "Obscure token: no public write-up exists. The class label is Component 6's script reading of chain history. Source is verified (1 file)."
