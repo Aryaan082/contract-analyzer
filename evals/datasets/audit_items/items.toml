@@ -1,0 +1,1115 @@
+# Audit-report items (pre-registration). Rules: evals/datasets/audit_items/README.md.
+# Generated 2026-10-29 from Sherlock judging repos; titles are the public report titles. No source text is stored in the repo.
+# `rank` orders the issues of a side: 1-30 are the selection, 31 and up are the reserve, used in order when an item fails a pre-registered check.
+
+[[contest]]
+slug = "2025-01-peapods-finance"
+commit = "d28eb19f4b39d3db7997477460f9f9c76839cb0c"
+split = "held_out"
+
+[[contest]]
+slug = "2025-02-rova"
+commit = "53fb6d71d253676bfbd00926e8f217f40c62d8c5"
+split = "dev"
+
+[[contest]]
+slug = "2025-02-yieldoor"
+commit = "b5a0f779dce4236b02665606adb610099451a51a"
+split = "dev"
+
+[[contest]]
+slug = "2025-03-crestal-network"
+commit = "27a3c28155702b3a68f29347efedffb048010e33"
+split = "dev"
+
+[[contest]]
+slug = "2025-03-symm-io-stacking"
+commit = "d7cf7fc96af1c25b53a7b500a98b411cd018c0d3"
+split = "held_out"
+
+[[contest]]
+slug = "2025-04-aegis-op-grant"
+commit = "4aceb235db96b2299bb95ebf16e83a24f987bf3e"
+split = "held_out"
+
+[[contest]]
+slug = "2025-04-burve"
+commit = "8f884ee9cc0b0ca139d389cc37fe35853edd2355"
+split = "held_out"
+
+[[contest]]
+slug = "2025-05-dodo-cross-chain-dex"
+commit = "d4834a468f7dad56b007b4450397289d4f767757"
+split = "dev"
+
+[[contest]]
+slug = "2025-05-layeredge"
+commit = "708c5b5345ed50cd0bde7b0a8a548c8936639683"
+split = "held_out"
+
+[[contest]]
+slug = "2025-05-lend-audit-contest"
+commit = "713372a1ccd8090ead836ca6b1acf92e97de4679"
+split = "dev"
+
+[[contest]]
+slug = "2025-05-yearn-ybold"
+commit = "88a3b89c05fd6e59ec130c79659195cd05d872af"
+split = "held_out"
+
+[[contest]]
+slug = "2025-06-notional-exponent"
+commit = "82c87105f6b32bb362d7523356f235b5b07509f9"
+split = "dev"
+
+[[contest]]
+slug = "2025-06-superfluid-locker-system"
+commit = "d8beaeed47f766659a1600a87372a7905109aa3c"
+split = "held_out"
+
+[[contest]]
+slug = "2025-07-cap"
+commit = "2bd34fa369d36af8ecc377090d3292ea74ccc669"
+split = "held_out"
+
+[[contest]]
+slug = "2025-07-malda"
+commit = "798d00b879b8412ca4049ba09dba5ae42464cfe7"
+split = "held_out"
+
+[[contest]]
+slug = "2025-07-mellow-flexible-vaults"
+commit = "eca8836d68d65bcbfc52c6f04cf6b4b1597555bf"
+split = "dev"
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-13"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 14
+title = "Incorrect Debt Tracking in `_updateRepaymentState`"
+path = "Lend-V2/src/LayerZero/CrossChainRouter.sol"
+ranges = [[505, 505]]
+bytes = 32738
+split = "dev"
+rank = 1
+
+[[issue]]
+id = "2025-06-notional-exponent:M-20"
+contest = "2025-06-notional-exponent"
+severity = "M"
+found_by = 11
+title = "Lack of minimum debt threshold enables unliquidatable small positions"
+path = "notional-v4/src/routers/AbstractLendingRouter.sol"
+ranges = [[56, 56]]
+bytes = 13553
+split = "dev"
+rank = 2
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:M-12"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "M"
+found_by = 24
+title = "An attacker will steal value from cross-chain swaps by manipulating liquidity used in `_swapAndSendERC20Tokens()`"
+path = "omni-chain-contracts/contracts/GatewayCrossChain.sol"
+ranges = [[309, 309]]
+bytes = 20404
+split = "dev"
+rank = 3
+
+[[issue]]
+id = "2025-02-yieldoor:M-5"
+contest = "2025-02-yieldoor"
+severity = "M"
+found_by = 1
+title = "`Strategy::checkPoolActivity()` does not look as far back as it should"
+path = "yieldoor/src/Strategy.sol"
+ranges = [[335, 337]]
+bytes = 25323
+split = "dev"
+rank = 4
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-18"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 7
+title = "Incorrect `srcEid` check in `borrowWithInterest()`"
+path = "Lend-V2/src/LayerZero/CrossChainRouter.sol"
+ranges = [[722, 722]]
+bytes = 32738
+split = "dev"
+rank = 5
+
+[[issue]]
+id = "2025-03-crestal-network:M-6"
+contest = "2025-03-crestal-network"
+severity = "M"
+found_by = 10
+title = "Non whitelisted user can also create agent by calling createAgentWithNFT instead of createAgentWithWhitelistUsers affecting the motive of protocol to only allow whitelisted user to create agent"
+path = "crestal-omni-contracts/src/BlueprintCore.sol"
+ranges = [[510, 510]]
+bytes = 29740
+split = "dev"
+rank = 6
+
+[[issue]]
+id = "2025-06-notional-exponent:H-3"
+contest = "2025-06-notional-exponent"
+severity = "H"
+found_by = 10
+title = "`DineroWithdrawRequestManager` vulnerable to token overwithdrawal via batch ID overlap"
+path = "notional-v4/src/withdraws/Dinero.sol"
+ranges = [[17, 17]]
+bytes = 3779
+split = "dev"
+rank = 7
+
+[[issue]]
+id = "2025-03-crestal-network:M-3"
+contest = "2025-03-crestal-network"
+severity = "M"
+found_by = 17
+title = "Signature Replay attack possible on `updateWorkerDeploymentConfigWithSig()` in Blueprintcore.sol which leads to users lose the funds"
+path = "crestal-omni-contracts/src/BlueprintCore.sol"
+ranges = [[672, 672]]
+bytes = 29740
+split = "dev"
+rank = 8
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:H-1"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "H"
+found_by = 12
+title = "Missing swap-withdrawal validation enables accumulated token drainage"
+path = "omni-chain-contracts/contracts/GatewayCrossChain.sol"
+ranges = [[371, 376], [431, 437], [465, 508]]
+bytes = 20404
+split = "dev"
+rank = 9
+
+[[issue]]
+id = "2025-02-rova:M-2"
+contest = "2025-02-rova"
+severity = "M"
+found_by = 14
+title = "`userTokens` accounting in `Launch.sol::updateParticipation` is updated incorrectly and can lead to loss of user funds, DOS and a broken invariant"
+path = "rova-contracts/src/Launch.sol"
+ranges = [[312, 397]]
+bytes = 41703
+split = "dev"
+rank = 10
+
+[[issue]]
+id = "2025-03-crestal-network:M-1"
+contest = "2025-03-crestal-network"
+severity = "M"
+found_by = 1
+title = "`createCommonProjectIDAndDeploymentRequest()` hardcodes request id index to 0, leading to lost requests for users"
+path = "crestal-omni-contracts/src/BlueprintCore.sol"
+ranges = [[373, 373]]
+bytes = 29740
+split = "dev"
+rank = 11
+
+[[issue]]
+id = "2025-07-mellow-flexible-vaults:M-9"
+contest = "2025-07-mellow-flexible-vaults"
+severity = "M"
+found_by = 3
+title = "Stuck `stETH` rewards in queue contracts"
+path = "flexible-vaults/src/queues/DepositQueue.sol"
+ranges = [[77, 77], [189, 189]]
+bytes = 7664
+split = "dev"
+rank = 12
+
+[[issue]]
+id = "2025-02-yieldoor:M-1"
+contest = "2025-02-yieldoor"
+severity = "M"
+found_by = 2
+title = "`Vault::_calcDeposit()` will overflow for low priced tokens"
+path = "yieldoor/src/Vault.sol"
+ranges = [[149, 149]]
+bytes = 9037
+split = "dev"
+rank = 13
+
+[[issue]]
+id = "2025-02-yieldoor:M-2"
+contest = "2025-02-yieldoor"
+severity = "M"
+found_by = 1
+title = "`ReserveLogic::_updateIndexes()` assumes the utilization rate was constant the whole time when calculating the new borrows"
+path = "yieldoor/src/libraries/ReserveLogic.sol"
+ranges = [[155, 156]]
+bytes = 7501
+split = "dev"
+rank = 14
+
+[[issue]]
+id = "2025-02-yieldoor:M-4"
+contest = "2025-02-yieldoor"
+severity = "M"
+found_by = 1
+title = "`Strategy::checkPoolActivity()` incorrect check leads to vulnerable price"
+path = "yieldoor/src/Strategy.sol"
+ranges = [[322, 324], [335, 337]]
+bytes = 25323
+split = "dev"
+rank = 15
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:M-3"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "M"
+found_by = 28
+title = "`onCall` function has missing fee deduction update prior swap."
+path = "omni-chain-contracts/contracts/GatewayTransferNative.sol"
+ranges = [[357, 357]]
+bytes = 23424
+split = "dev"
+rank = 16
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-26"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 6
+title = "Cross chain debt accrues incorrectly"
+path = "Lend-V2/src/LayerZero/LendStorage.sol"
+ranges = [[478, 503]]
+bytes = 30957
+split = "dev"
+rank = 17
+
+[[issue]]
+id = "2025-03-crestal-network:M-2"
+contest = "2025-03-crestal-network"
+severity = "M"
+found_by = 1
+title = "Signatures missing some parameters being vulnerable to attackers using them coupled with malicious parameters"
+path = "crestal-omni-contracts/src/BlueprintCore.sol"
+ranges = [[491, 491], [566, 566]]
+bytes = 29740
+split = "dev"
+rank = 18
+
+[[issue]]
+id = "2025-03-crestal-network:M-5"
+contest = "2025-03-crestal-network"
+severity = "M"
+found_by = 32
+title = "Worker-Induced Denial-of-Service in Deployment Requests Due to Lack of a Cancellation Mechanism"
+path = "crestal-omni-contracts/src/BlueprintCore.sol"
+ranges = [[283, 324]]
+bytes = 29740
+split = "dev"
+rank = 19
+
+[[issue]]
+id = "2025-06-notional-exponent:M-22"
+contest = "2025-06-notional-exponent"
+severity = "M"
+found_by = 1
+title = "Setup with `asset = WETH` and a Curve pool that contains Native ETH will lead to a loss for the users"
+path = "notional-v4/src/single-sided-lp/AbstractSingleSidedLP.sol"
+ranges = [[276, 276]]
+bytes = 18984
+split = "dev"
+rank = 20
+
+[[issue]]
+id = "2025-06-notional-exponent:M-9"
+contest = "2025-06-notional-exponent"
+severity = "M"
+found_by = 3
+title = "OETH Strategy Broken as Rebasing Not Enabled"
+path = "notional-v4/src/withdraws/Origin.sol"
+ranges = [[25, 25]]
+bytes = 2187
+split = "dev"
+rank = 21
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:M-4"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "M"
+found_by = 7
+title = "Bug in AccountEncoder causes wrong Solana account permissions"
+path = "omni-chain-contracts/contracts/libraries/AccountEncoder.sol"
+ranges = [[19, 19]]
+bytes = 1542
+split = "dev"
+rank = 22
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:H-2"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "H"
+found_by = 8
+title = "Any attacker will steal accumulated ZRC20 tokens from `GatewayTransferNative` contract"
+path = "omni-chain-contracts/contracts/GatewayTransferNative.sol"
+ranges = [[534, 537]]
+bytes = 23424
+split = "dev"
+rank = 23
+
+[[issue]]
+id = "2025-02-yieldoor:H-4"
+contest = "2025-02-yieldoor"
+severity = "H"
+found_by = 3
+title = "Base calculation in `Leverager::isLiquidateable()` is incorrect as the max leverage may be smaller"
+path = "yieldoor/src/Leverager.sol"
+ranges = [[467, 467]]
+bytes = 28874
+split = "dev"
+rank = 24
+
+[[issue]]
+id = "2025-02-yieldoor:M-7"
+contest = "2025-02-yieldoor"
+severity = "M"
+found_by = 1
+title = "`Vault::withdraw()` withdraws too much liquidity leading to idle capital and loss of fees"
+path = "yieldoor/src/Vault.sol"
+ranges = [[96, 99]]
+bytes = 9037
+split = "dev"
+rank = 25
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-11"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 6
+title = "Users will lose funds due to token decimal mismatches across chains"
+path = "Lend-V2/src/LayerZero/CrossChainRouter.sol"
+ranges = [[581, 581]]
+bytes = 32738
+split = "dev"
+rank = 26
+
+[[issue]]
+id = "2025-07-mellow-flexible-vaults:H-4"
+contest = "2025-07-mellow-flexible-vaults"
+severity = "H"
+found_by = 9
+title = "Protocol Fee Multiple Accrual in Oracle.submitReports"
+path = "flexible-vaults/src/oracles/Oracle.sol"
+ranges = [[103, 121]]
+bytes = 9548
+split = "dev"
+rank = 27
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-17"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 6
+title = "If CoreRouter is liquidated, some user may suffer more loss than expected"
+path = "Lend-V2/src/LayerZero/CoreRouter.sol"
+ranges = [[117, 118]]
+bytes = 19508
+split = "dev"
+rank = 28
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-16"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 8
+title = "`CoreRouter.sol`\u2019s `repayBorrowInternal` incorrectly updates `same chain` borrow balances on `cross chain` repayments"
+path = "Lend-V2/src/LayerZero/CoreRouter.sol"
+ranges = [[459, 504]]
+bytes = 19508
+split = "dev"
+rank = 29
+
+[[issue]]
+id = "2025-06-notional-exponent:H-6"
+contest = "2025-06-notional-exponent"
+severity = "H"
+found_by = 7
+title = "DoS might happen to `DineroWithdrawRequestManager#_initiateWithdrawImpl()` due to overflow on `++s_batchNonce`"
+path = "notional-v4/src/withdraws/Dinero.sol"
+ranges = [[17, 39]]
+bytes = 3779
+split = "dev"
+rank = 30
+
+[[issue]]
+id = "2025-03-crestal-network:M-4"
+contest = "2025-03-crestal-network"
+severity = "M"
+found_by = 2
+title = "Lack of access control in `setWorkerPublicKey()` in BlueprintCore.sol which results users to lose funds"
+path = "crestal-omni-contracts/src/BlueprintCore.sol"
+ranges = [[689, 689]]
+bytes = 29740
+split = "dev"
+rank = 31
+
+[[issue]]
+id = "2025-02-yieldoor:M-3"
+contest = "2025-02-yieldoor"
+severity = "M"
+found_by = 4
+title = "Strategy main ticks are not symmetric when the tick spacing is one due to incorrect isLowerSided inequality"
+path = "yieldoor/src/Strategy.sol"
+ranges = [[236, 236]]
+bytes = 25323
+split = "dev"
+rank = 32
+
+[[issue]]
+id = "2025-07-mellow-flexible-vaults:M-4"
+contest = "2025-07-mellow-flexible-vaults"
+severity = "M"
+found_by = 4
+title = "Protocol Fee Exponential Compounding in ShareModule.handleReport"
+path = "flexible-vaults/src/modules/ShareModule.sol"
+ranges = [[281, 284]]
+bytes = 12075
+split = "dev"
+rank = 33
+
+[[issue]]
+id = "2025-06-notional-exponent:M-11"
+contest = "2025-06-notional-exponent"
+severity = "M"
+found_by = 5
+title = "Users unable to claim rewards when Curve LP tokens are staked to Curve Gauge."
+path = "notional-v4/src/single-sided-lp/CurveConvex2Token.sol"
+ranges = [[291, 298]]
+bytes = 12703
+split = "dev"
+rank = 34
+
+[[issue]]
+id = "2025-07-mellow-flexible-vaults:H-5"
+contest = "2025-07-mellow-flexible-vaults"
+severity = "H"
+found_by = 5
+title = "Incorrect performance fee calculation in `FeeManager`"
+path = "flexible-vaults/src/managers/FeeManager.sol"
+ranges = [[78, 78]]
+bytes = 6096
+split = "dev"
+rank = 35
+
+[[issue]]
+id = "2025-02-yieldoor:H-1"
+contest = "2025-02-yieldoor"
+severity = "H"
+found_by = 7
+title = "Liquidation fee will not be claimed due to incorrect decimal handling"
+path = "yieldoor/src/Leverager.sol"
+ranges = [[318, 318]]
+bytes = 28874
+split = "dev"
+rank = 36
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:H-3"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "H"
+found_by = 11
+title = "Attacker can steal an  high-value token due to lack of swap execution"
+path = "omni-chain-contracts/contracts/GatewayTransferNative.sol"
+ranges = [[395, 395], [425, 425], [530, 530]]
+bytes = 23424
+split = "dev"
+rank = 37
+
+[[issue]]
+id = "2025-06-notional-exponent:H-11"
+contest = "2025-06-notional-exponent"
+severity = "H"
+found_by = 11
+title = "Missing Slippage Protection in Expired PT Redemption Causes User Fund Loss"
+path = "notional-v4/src/staking/PendlePTLib.sol"
+ranges = [[87, 87]]
+bytes = 2962
+split = "dev"
+rank = 38
+
+[[issue]]
+id = "2025-02-yieldoor:M-10"
+contest = "2025-02-yieldoor"
+severity = "M"
+found_by = 13
+title = "`Leverager::deposit`, does not support multi-hop swaps with `exactOutput`"
+path = "yieldoor/src/Leverager.sol"
+ranges = [[568, 568]]
+bytes = 28874
+split = "dev"
+rank = 39
+
+[[issue]]
+id = "2025-02-yieldoor:M-6"
+contest = "2025-02-yieldoor"
+severity = "M"
+found_by = 15
+title = "Incorrect modulo calculation in secondary position ticks leads to active position and division by zero"
+path = "yieldoor/src/Strategy.sol"
+ranges = [[232, 232], [235, 235], [366, 366], [367, 367]]
+bytes = 25323
+split = "dev"
+rank = 40
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-2"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 16
+title = "Protocol rewards tokens permanently stuck"
+path = "Lend-V2/src/LayerZero/CoreRouter.sol"
+ranges = [[300, 300]]
+bytes = 19508
+split = "dev"
+rank = 41
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-20"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 17
+title = "Multiple Cross-Chain borrows using same collateral"
+path = "Lend-V2/src/LayerZero/CrossChainRouter.sol"
+ranges = [[113, 113]]
+bytes = 32738
+split = "dev"
+rank = 42
+
+[[issue]]
+id = "2025-06-notional-exponent:M-2"
+contest = "2025-06-notional-exponent"
+severity = "M"
+found_by = 21
+title = "Incorrect `tokensClaimed` calculation in `EthenaCooldownHolder::_finalizeCooldown()` blocks withdrawals"
+path = "notional-v4/src/withdraws/Ethena.sol"
+ranges = [[16, 16], [30, 30]]
+bytes = 4360
+split = "dev"
+rank = 43
+
+[[issue]]
+id = "2025-02-yieldoor:H-5"
+contest = "2025-02-yieldoor"
+severity = "H"
+found_by = 24
+title = "Contradiction between high-leverage and liquidation check of position"
+path = "yieldoor/src/Leverager.sol"
+ranges = [[411, 411], [464, 467]]
+bytes = 28874
+split = "dev"
+rank = 44
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-28"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 24
+title = "Subsequent Cross\u2010Chain Borrows don\u2019t Accrue interest on existing principal when borrowing the same Asset"
+path = "Lend-V2/src/LayerZero/CrossChainRouter.sol"
+ranges = [[631, 632], [708, 715]]
+bytes = 32738
+split = "dev"
+rank = 45
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-22"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 25
+title = "The liquidation validation logic is wrong"
+path = "Lend-V2/src/LayerZero/CrossChainRouter.sol"
+ranges = [[431, 436]]
+bytes = 32738
+split = "dev"
+rank = 46
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:M-7"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "M"
+found_by = 30
+title = "Attacker can overwrite legitimate refundsInfo by triggering `GatewayTransferNative::onRevert`"
+path = "omni-chain-contracts/contracts/GatewayTransferNative.sol"
+ranges = [[622, 629]]
+bytes = 23424
+split = "dev"
+rank = 47
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:H-4"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "H"
+found_by = 31
+title = "`GatewayTransferNative.withdrawToNativeChain` Allows Swapping Arbitrary Contract ZRC20s by Misusing Deposited Token Amount"
+path = "omni-chain-contracts/contracts/GatewayTransferNative.sol"
+ranges = [[530, 534]]
+bytes = 23424
+split = "dev"
+rank = 48
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-7"
+contest = "2025-05-lend-audit-contest"
+severity = "H"
+found_by = 33
+title = "CoreRouter Prone to Fund Depletion or Trapping Due to Miscalculated Redemption Payouts"
+path = "Lend-V2/src/LayerZero/CoreRouter.sol"
+ranges = [[100, 100]]
+bytes = 19508
+split = "dev"
+rank = 49
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:H-5"
+contest = "2025-05-dodo-cross-chain-dex"
+severity = "H"
+found_by = 62
+title = "Unauthorized Claim of Non-EVM Chain Refunds in `claimRefund` Function"
+path = "omni-chain-contracts/contracts/GatewayCrossChain.sol"
+ranges = [[571, 571]]
+bytes = 20404
+split = "dev"
+rank = 50
+
+[[issue]]
+id = "2025-06-superfluid-locker-system:H-1"
+contest = "2025-06-superfluid-locker-system"
+severity = "H"
+found_by = 15
+title = "Staked tokens inside FluidLocker can be withdrawn without calling Unstake"
+path = "fluid/packages/contracts/src/FluidLocker.sol"
+ranges = [[420, 444]]
+bytes = 36899
+split = "held_out"
+rank = 1
+
+[[issue]]
+id = "2025-01-peapods-finance:M-17"
+contest = "2025-01-peapods-finance"
+severity = "M"
+found_by = 3
+title = "Partial Liquidators can Cause the Last Liquidator to Suffer a Loss"
+path = "fraxlend/src/contracts/FraxlendPairCore.sol"
+ranges = [[1100, 1100]]
+bytes = 69642
+split = "held_out"
+rank = 2
+
+[[issue]]
+id = "2025-03-symm-io-stacking:H-1"
+contest = "2025-03-symm-io-stacking"
+severity = "H"
+found_by = 25
+title = "USDC rewards will not be distributed if `_updateRewardsStates` is triggered too often"
+path = "token/contracts/staking/SymmStaking.sol"
+ranges = [[412, 412], [413, 413]]
+bytes = 14963
+split = "held_out"
+rank = 3
+
+[[issue]]
+id = "2025-05-layeredge:M-1"
+contest = "2025-05-layeredge"
+severity = "M"
+found_by = 26
+title = "stakerTierHistory is an unbound array that can be extended such that a user's funds are permamently lost"
+path = "edgen-staking/src/stake/LayerEdgeStaking.sol"
+ranges = [[419, 426]]
+bytes = 33699
+split = "held_out"
+rank = 4
+
+[[issue]]
+id = "2025-06-superfluid-locker-system:M-5"
+contest = "2025-06-superfluid-locker-system"
+severity = "M"
+found_by = 1
+title = "Program start failure due to incorrect buffer calculation"
+path = "fluid/packages/contracts/src/FluidEPProgramManager.sol"
+ranges = [[265, 268]]
+bytes = 29847
+split = "held_out"
+rank = 5
+
+[[issue]]
+id = "2025-05-yearn-ybold:H-1"
+contest = "2025-05-yearn-ybold"
+severity = "H"
+found_by = 1
+title = "A malicious attacker can steal 25% of the funds of the first depositor in a strategy"
+path = "yv3-liquityv2-sp-strategy/src/Strategy.sol"
+ranges = [[13, 13]]
+bytes = 10045
+split = "held_out"
+rank = 6
+
+[[issue]]
+id = "2025-04-aegis-op-grant:M-2"
+contest = "2025-04-aegis-op-grant"
+severity = "M"
+found_by = 18
+title = "A whale adversary can grief the redeem functionality through redeem limit consumption"
+path = "aegis-contracts/contracts/AegisMinting.sol"
+ranges = [[785, 803]]
+bytes = 30562
+split = "held_out"
+rank = 7
+
+[[issue]]
+id = "2025-01-peapods-finance:M-3"
+contest = "2025-01-peapods-finance"
+severity = "M"
+found_by = 4
+title = "`_protocolFees` can be applied multiple times in `AutoCompoundingPodLp` contract"
+path = "contracts/contracts/AutoCompoundingPodLp.sol"
+ranges = [[221, 222], [341, 342]]
+bytes = 19431
+split = "held_out"
+rank = 8
+
+[[issue]]
+id = "2025-01-peapods-finance:M-19"
+contest = "2025-01-peapods-finance"
+severity = "M"
+found_by = 3
+title = "Incorrect `minAnswer` check doesn't protect the protocol from massive price drops"
+path = "contracts/contracts/oracle/ChainlinkSinglePriceOracle.sol"
+ranges = [[117, 117]]
+bytes = 5445
+split = "held_out"
+rank = 9
+
+[[issue]]
+id = "2025-07-cap:M-5"
+contest = "2025-07-cap"
+severity = "M"
+found_by = 1
+title = "Agents can evade the full extent of a slash"
+path = "cap-contracts/contracts/delegation/Delegation.sol"
+ranges = [[150, 150]]
+bytes = 8626
+split = "held_out"
+rank = 10
+
+[[issue]]
+id = "2025-04-burve:H-5"
+contest = "2025-04-burve"
+severity = "H"
+found_by = 5
+title = "Attacker captures unclaimed fees by timing deposit with range re-entry and price manipulation"
+path = "Burve/src/single/Burve.sol"
+ranges = [[848, 920]]
+bytes = 37943
+split = "held_out"
+rank = 11
+
+[[issue]]
+id = "2025-04-burve:H-9"
+contest = "2025-04-burve"
+severity = "H"
+found_by = 1
+title = "Reserve Share Overflows Due to Too Strict Reward Calculation Mechanism"
+path = "Burve/src/multi/vertex/Reserve.sol"
+ranges = [[46, 46]]
+bytes = 3042
+split = "held_out"
+rank = 12
+
+[[issue]]
+id = "2025-04-burve:H-2"
+contest = "2025-04-burve"
+severity = "H"
+found_by = 4
+title = "Incorrect implementation of `ERC4626ViewAdjustor`"
+path = "Burve/src/integrations/adjustor/E4626ViewAdjustor.sol"
+ranges = [[29, 71]]
+bytes = 2391
+split = "held_out"
+rank = 13
+
+[[issue]]
+id = "2025-07-malda:M-1"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 1
+title = "Wrong direction of rounding in redeem may lead to drain if exchange rate grows large"
+path = "malda-lending/src/mToken/mToken.sol"
+ranges = [[614, 630], [699, 707]]
+bytes = 31375
+split = "held_out"
+rank = 14
+
+[[issue]]
+id = "2025-07-malda:M-10"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 2
+title = "Unenforced maxFee and ttl Parameters in sendMsg Function"
+path = "malda-lending/src/rebalancer/bridges/EverclearBridge.sol"
+ranges = [[79, 79]]
+bytes = 5180
+split = "held_out"
+rank = 15
+
+[[issue]]
+id = "2025-07-malda:M-5"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 1
+title = "Rebalancer can send to unallowed destination chains through EverclearBridge"
+path = "malda-lending/src/rebalancer/bridges/EverclearBridge.sol"
+ranges = [[40, 50], [95, 102]]
+bytes = 5180
+split = "held_out"
+rank = 16
+
+[[issue]]
+id = "2025-07-cap:M-10"
+contest = "2025-07-cap"
+severity = "M"
+found_by = 9
+title = "`ViewLogic::maxLiquidatable()` doesn't take the bonus into account, making the agent liquidatable again"
+path = "cap-contracts/contracts/lendingPool/libraries/ViewLogic.sol"
+ranges = [[91, 93], [192, 192]]
+bytes = 9368
+split = "held_out"
+rank = 17
+
+[[issue]]
+id = "2025-01-peapods-finance:M-6"
+contest = "2025-01-peapods-finance"
+severity = "M"
+found_by = 1
+title = "Open fee is overcharged in `_addLeveragePostCallback` function"
+path = "contracts/contracts/lvf/LeverageManager.sol"
+ranges = [[315, 318]]
+bytes = 31678
+split = "held_out"
+rank = 18
+
+[[issue]]
+id = "2025-07-malda:M-11"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 4
+title = "There is no endpoint for triggering `liquidateExternal` from extension chain to be executed by proof forwarder"
+path = "malda-lending/src/mToken/extension/mTokenGateway.sol"
+ranges = [[224, 252]]
+bytes = 12134
+split = "held_out"
+rank = 19
+
+[[issue]]
+id = "2025-05-yearn-ybold:M-1"
+contest = "2025-05-yearn-ybold"
+severity = "M"
+found_by = 1
+title = "No maximum on `dustThreshold` allows management to lock user funds"
+path = "yv3-liquityv2-sp-strategy/src/Strategy.sol"
+ranges = [[155, 155]]
+bytes = 10045
+split = "held_out"
+rank = 20
+
+[[issue]]
+id = "2025-03-symm-io-stacking:M-4"
+contest = "2025-03-symm-io-stacking"
+severity = "M"
+found_by = 100
+title = "Malicious User can dilute staking Rewards to a longer timeframe"
+path = "token/contracts/staking/SymmStaking.sol"
+ranges = [[374, 374]]
+bytes = 14963
+split = "held_out"
+rank = 21
+
+[[issue]]
+id = "2025-06-superfluid-locker-system:M-1"
+contest = "2025-06-superfluid-locker-system"
+severity = "M"
+found_by = 3
+title = "User can instantly `unlock` most of his funds with less fee when he is unique `staker`/`liquidityProvider`"
+path = "fluid/packages/contracts/src/FluidLocker.sol"
+ranges = [[337, 343]]
+bytes = 36899
+split = "held_out"
+rank = 22
+
+[[issue]]
+id = "2025-01-peapods-finance:M-16"
+contest = "2025-01-peapods-finance"
+severity = "M"
+found_by = 6
+title = "Malicious Lenders can Increase the Interest owed by Borrowers Due to Wrong `UtilizationRate` Calculation"
+path = "fraxlend/src/contracts/FraxlendPairCore.sol"
+ranges = [[457, 457]]
+bytes = 69642
+split = "held_out"
+rank = 23
+
+[[issue]]
+id = "2025-01-peapods-finance:H-3"
+contest = "2025-01-peapods-finance"
+severity = "H"
+found_by = 2
+title = "Pod DoS if the LEAVE_AS_PAIRED_LP_TOKEN option is enabled"
+path = "contracts/contracts/TokenRewards.sol"
+ranges = [[152, 152], [215, 215]]
+bytes = 14084
+split = "held_out"
+rank = 24
+
+[[issue]]
+id = "2025-07-cap:M-3"
+contest = "2025-07-cap"
+severity = "M"
+found_by = 7
+title = "Lender DoS if all asset is borrowed or realized"
+path = "cap-contracts/contracts/lendingPool/libraries/BorrowLogic.sol"
+ranges = [[201, 219]]
+bytes = 11743
+split = "held_out"
+rank = 25
+
+[[issue]]
+id = "2025-07-malda:M-8"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 3
+title = "mErc20Host: It is not possible to permissionlessly call \"external\" endpoints when source chain is Eth mainnet, because l1Inclusion flag cannot be set to true"
+path = "malda-lending/src/mToken/host/mErc20Host.sol"
+ranges = [[378, 399]]
+bytes = 17231
+split = "held_out"
+rank = 26
+
+[[issue]]
+id = "2025-07-cap:M-9"
+contest = "2025-07-cap"
+severity = "M"
+found_by = 7
+title = "Missing slippage protection in liquidation allows unexpected collateral loss"
+path = "cap-contracts/contracts/lendingPool/libraries/LiquidationLogic.sol"
+ranges = [[61, 96]]
+bytes = 4454
+split = "held_out"
+rank = 27
+
+[[issue]]
+id = "2025-04-burve:M-4"
+contest = "2025-04-burve"
+severity = "M"
+found_by = 1
+title = "The value of each closure is not the same, and the same ValueToken cannot be used for all cids"
+path = "Burve/src/multi/facets/ValueTokenFacet.sol"
+ranges = [[16, 32]]
+bytes = 1784
+split = "held_out"
+rank = 28
+
+[[issue]]
+id = "2025-07-malda:M-3"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 8
+title = "Migrator severily underestimates slippage by using underlying instead of shares"
+path = "malda-lending/src/migration/Migrator.sol"
+ranges = [[90, 100]]
+bytes = 8464
+split = "held_out"
+rank = 29
+
+[[issue]]
+id = "2025-06-superfluid-locker-system:M-2"
+contest = "2025-06-superfluid-locker-system"
+severity = "M"
+found_by = 1
+title = "User can't `unlock` when `getTotalUnits == 0` even though tax is zero."
+path = "fluid/packages/contracts/src/StakingRewardController.sol"
+ranges = [[180, 180]]
+bytes = 11717
+split = "held_out"
+rank = 30
+
+[[issue]]
+id = "2025-07-malda:H-1"
+contest = "2025-07-malda"
+severity = "H"
+found_by = 9
+title = "Rebalancer can steal funds from markets by sending to custom receiver through Everclear Bridge"
+path = "malda-lending/src/rebalancer/bridges/EverclearBridge.sol"
+ranges = [[40, 50], [111, 121]]
+bytes = 5180
+split = "held_out"
+rank = 31
+
+[[issue]]
+id = "2025-01-peapods-finance:M-34"
+contest = "2025-01-peapods-finance"
+severity = "M"
+found_by = 9
+title = "Improper Handling of Paused Tokens in `TokenRewards._resetExcluded()` Function"
+path = "contracts/contracts/TokenRewards.sol"
+ranges = [[97, 97]]
+bytes = 14084
+split = "held_out"
+rank = 32
+
+[[issue]]
+id = "2025-07-malda:M-9"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 13
+title = "The rebalancing system is broken when everclear bridge contract is used"
+path = "malda-lending/src/rebalancer/bridges/EverclearBridge.sol"
+ranges = [[110, 110]]
+bytes = 5180
+split = "held_out"
+rank = 33
+
+[[issue]]
+id = "2025-07-malda:M-14"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 15
+title = "MixedPriceOracleV4.sol :: getUnderlyingPrice()/getPirce() will not work for some tokens because API3 and EO oracles return prices using different decimals, causing DOS scenario."
+path = "malda-lending/src/oracles/MixedPriceOracleV4.sol"
+ranges = [[114, 114]]
+bytes = 7032
+split = "held_out"
+rank = 34
+
+[[issue]]
+id = "2025-07-malda:M-4"
+contest = "2025-07-malda"
+severity = "M"
+found_by = 17
+title = "Blacklist can be completely bypassed on outHere endpoint in mTokenGateway"
+path = "malda-lending/src/mToken/extension/mTokenGateway.sol"
+ranges = [[254, 262], [281, 286]]
+bytes = 12134
+split = "held_out"
+rank = 35
+
+[[issue]]
+id = "2025-04-burve:H-3"
+contest = "2025-04-burve"
+severity = "H"
+found_by = 22
+title = "Incorrect Netting Logic Leads to Excessive Withdrawal Amounts"
+path = "Burve/src/multi/vertex/E4626.sol"
+ranges = [[71, 73]]
+bytes = 8177
+split = "held_out"
+rank = 36

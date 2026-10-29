@@ -1,0 +1,570 @@
+# Labels for the accepted audit issues, from the parser after the fetch (rule 6 and 7).
+# Draft: every label is unreviewed. `status` is the outcome of the pre-registered check.
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-13"
+split = "dev"
+rank = 1
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-06-notional-exponent:M-20"
+split = "dev"
+rank = 2
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:M-12"
+split = "dev"
+rank = 3
+status = "unverified position"
+functions = [["GatewayCrossChain", "_swapAndSendERC20Tokens"]]
+file_sha256 = "4ea30fa515b57d0615d0f74a5e715df401613c40e9f0d238b09e2ec1c0cbfa80"
+
+[[issue]]
+id = "2025-02-yieldoor:M-5"
+split = "dev"
+rank = 4
+status = "unverified position"
+functions = [["Strategy", "checkPoolActivity"]]
+file_sha256 = "8c12b1c6e71384f67502da3dd4634ed838672202b2a892491f4dca5ecd5171fa"
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-18"
+split = "dev"
+rank = 5
+status = "unverified position"
+functions = [["CrossChainRouter", "_handleValidBorrowRequest"]]
+file_sha256 = "0270cd970e9eb3a2f22ef685eb07a3ca5c7437fa8896d418c93bd1e689aae48b"
+
+[[issue]]
+id = "2025-03-crestal-network:M-6"
+split = "dev"
+rank = 6
+status = "unverified position"
+functions = [["BlueprintCore", "createAgentWithNFT"]]
+file_sha256 = "d15a88e4fe328e5e1d173a26ffedcbdcc04bc92bce7bb823e01f76f3090bb3ee"
+
+[[issue]]
+id = "2025-06-notional-exponent:H-3"
+split = "dev"
+rank = 7
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-03-crestal-network:M-3"
+split = "dev"
+rank = 8
+status = "ok"
+functions = [["BlueprintCore", "updateWorkerDeploymentConfigWithSig"]]
+file_sha256 = "d15a88e4fe328e5e1d173a26ffedcbdcc04bc92bce7bb823e01f76f3090bb3ee"
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:H-1"
+split = "dev"
+rank = 9
+status = "ok"
+functions = [["GatewayCrossChain", "_handleBitcoinWithdraw"], ["GatewayCrossChain", "_handleEvmOrSolanaWithdraw"], ["GatewayCrossChain", "onCall"]]
+file_sha256 = "4ea30fa515b57d0615d0f74a5e715df401613c40e9f0d238b09e2ec1c0cbfa80"
+
+[[issue]]
+id = "2025-02-rova:M-2"
+split = "dev"
+rank = 10
+status = "unverified position"
+functions = [["Launch", "updateParticipation"]]
+file_sha256 = "27d9913dd32690d7f6605226f1eb2608ee323b7bf8abde85a2d7bb138a006211"
+
+[[issue]]
+id = "2025-03-crestal-network:M-1"
+split = "dev"
+rank = 11
+status = "unverified position"
+functions = [["BlueprintCore", "createCommonProjectIDAndDeploymentRequest"]]
+file_sha256 = "d15a88e4fe328e5e1d173a26ffedcbdcc04bc92bce7bb823e01f76f3090bb3ee"
+
+[[issue]]
+id = "2025-07-mellow-flexible-vaults:M-9"
+split = "dev"
+rank = 12
+status = "unverified position"
+functions = [["DepositQueue", "deposit"], ["DepositQueue", "_handleReport"]]
+file_sha256 = "9e0106c9d46c31a525f0fd429439df3ce6067b4f0af1bc04f21e2a3294f42c1e"
+
+[[issue]]
+id = "2025-02-yieldoor:M-1"
+split = "dev"
+rank = 13
+status = "unverified position"
+functions = [["Vault", "_calcDeposit"]]
+file_sha256 = "3e0bfd366ae731820d078f9b1712064a64d08ff76e8e85da2767eda2bc5cceca"
+
+[[issue]]
+id = "2025-02-yieldoor:M-2"
+split = "dev"
+rank = 14
+status = "ok"
+functions = [["ReserveLogic", "_updateIndexes"]]
+file_sha256 = "39a28e3c858a8485b3a4cbb373c016f7e8d2cc5b1e2de1beff4953de9170f394"
+
+[[issue]]
+id = "2025-02-yieldoor:M-4"
+split = "dev"
+rank = 15
+status = "unverified position"
+functions = [["Strategy", "checkPoolActivity"]]
+file_sha256 = "8c12b1c6e71384f67502da3dd4634ed838672202b2a892491f4dca5ecd5171fa"
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:M-3"
+split = "dev"
+rank = 16
+status = "unverified position"
+functions = [["GatewayTransferNative", "onCall"]]
+file_sha256 = "9dfb7304764bb276a7c938ce75b1eef3d5d769df244a00f0cc78443f67c834b1"
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-26"
+split = "dev"
+rank = 17
+status = "ok"
+functions = [["LendStorage", "borrowWithInterest"]]
+file_sha256 = "06c3f19cc081c5d79b4e698fb92721d969e3426c6c7293cabcf9cf8a4bfea792"
+
+[[issue]]
+id = "2025-03-crestal-network:M-2"
+split = "dev"
+rank = 18
+status = "unverified position"
+functions = [["BlueprintCore", "createAgentWithTokenWithSig"], ["BlueprintCore", "createAgentWithSigWithNFT"]]
+file_sha256 = "d15a88e4fe328e5e1d173a26ffedcbdcc04bc92bce7bb823e01f76f3090bb3ee"
+
+[[issue]]
+id = "2025-03-crestal-network:M-5"
+split = "dev"
+rank = 19
+status = "unverified position"
+functions = [["BlueprintCore", "deploymentRequest"]]
+file_sha256 = "d15a88e4fe328e5e1d173a26ffedcbdcc04bc92bce7bb823e01f76f3090bb3ee"
+
+[[issue]]
+id = "2025-06-notional-exponent:M-22"
+split = "dev"
+rank = 20
+status = "unverified position"
+functions = [["AbstractSingleSidedLP", "__initiateWithdraw"]]
+file_sha256 = "17f2aa8fdefccff821776517209f094028a7fd281764dfdd3ca9dd8eccb669ae"
+
+[[issue]]
+id = "2025-06-notional-exponent:M-9"
+split = "dev"
+rank = 21
+status = "unverified position"
+functions = [["OriginWithdrawRequestManager", "_stakeTokens"]]
+file_sha256 = "e7fc3e396379c6be0b42ad0a825176df6cecd25b5490ba3ee5617063925ad8fe"
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:M-4"
+split = "dev"
+rank = 22
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-05-dodo-cross-chain-dex:H-2"
+split = "dev"
+rank = 23
+status = "ok"
+functions = [["GatewayTransferNative", "withdrawToNativeChain"]]
+file_sha256 = "9dfb7304764bb276a7c938ce75b1eef3d5d769df244a00f0cc78443f67c834b1"
+
+[[issue]]
+id = "2025-02-yieldoor:H-4"
+split = "dev"
+rank = 24
+status = "unverified position"
+functions = [["Leverager", "_checkWithinlimits"]]
+file_sha256 = "3ba4a258cf5005960ebabfe9ca1522476779b33a78c64e37664222526bc3d85d"
+
+[[issue]]
+id = "2025-02-yieldoor:M-7"
+split = "dev"
+rank = 25
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-11"
+split = "dev"
+rank = 26
+status = "unverified position"
+functions = [["CrossChainRouter", "_handleBorrowCrossChainRequest"]]
+file_sha256 = "0270cd970e9eb3a2f22ef685eb07a3ca5c7437fa8896d418c93bd1e689aae48b"
+
+[[issue]]
+id = "2025-07-mellow-flexible-vaults:H-4"
+split = "dev"
+rank = 27
+status = "unverified position"
+functions = [["Oracle", "submitReports"]]
+file_sha256 = "62c4694f9ec072eecc0a788758339fdfd4624129ab69deaffe5643838fa84060"
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-17"
+split = "dev"
+rank = 28
+status = "unverified position"
+functions = [["CoreRouter", "redeem"]]
+file_sha256 = "90408b932503e3b9df09a191d22ce4d7d761177a1a3729f5e378b7c0b51bfa45"
+
+[[issue]]
+id = "2025-05-lend-audit-contest:H-16"
+split = "dev"
+rank = 29
+status = "unverified position"
+functions = [["CoreRouter", "repayBorrowInternal"]]
+file_sha256 = "90408b932503e3b9df09a191d22ce4d7d761177a1a3729f5e378b7c0b51bfa45"
+
+[[issue]]
+id = "2025-06-notional-exponent:H-6"
+split = "dev"
+rank = 30
+status = "ok"
+functions = [["DineroWithdrawRequestManager", "_initiateWithdrawImpl"]]
+file_sha256 = "9e042084c33bcf3e868c9cc41bc8be9739296d53c4ff26528899dae4a038ad17"
+
+[[issue]]
+id = "2025-03-crestal-network:M-4"
+split = "dev"
+rank = 31
+status = "ok"
+functions = [["BlueprintCore", "setWorkerPublicKey"]]
+file_sha256 = "d15a88e4fe328e5e1d173a26ffedcbdcc04bc92bce7bb823e01f76f3090bb3ee"
+
+[[issue]]
+id = "2025-02-yieldoor:M-3"
+split = "dev"
+rank = 32
+status = "ok"
+functions = [["Strategy", "_setMainTicks"]]
+file_sha256 = "8c12b1c6e71384f67502da3dd4634ed838672202b2a892491f4dca5ecd5171fa"
+
+[[issue]]
+id = "2025-07-mellow-flexible-vaults:M-4"
+split = "dev"
+rank = 33
+status = "ok"
+functions = [["ShareModule", "handleReport"]]
+file_sha256 = "4eec207baeb83a0c79621cb0c758bfb8a17d1e5b18e583a25b05934d8e86fea4"
+
+[[issue]]
+id = "2025-06-notional-exponent:M-11"
+split = "dev"
+rank = 34
+status = "unverified position"
+functions = [["CurveConvexLib", "_stakeLpTokens"]]
+file_sha256 = "fb1114af847bc492dbddb045b70246d65cefce5d8ca540d527f08a54fb0d0480"
+
+[[issue]]
+id = "2025-07-mellow-flexible-vaults:H-5"
+split = "dev"
+rank = 35
+status = "unverified position"
+functions = [["FeeManager", "calculateFee"]]
+file_sha256 = "1c0df8e84892f835efe6e4dc937d1b59be13034ebac702458755727fada0d94c"
+
+[[issue]]
+id = "2025-06-superfluid-locker-system:H-1"
+split = "held_out"
+rank = 1
+status = "unverified position"
+functions = [["FluidLocker", "provideLiquidity"]]
+file_sha256 = "4190f28e9ef4acf6484987a1774b5f261e8ba3481323effc3ff334470c3953ac"
+
+[[issue]]
+id = "2025-01-peapods-finance:M-17"
+split = "held_out"
+rank = 2
+status = "unverified position"
+functions = [["FraxlendPairCore", "liquidate"]]
+file_sha256 = "bf3a4e93bb68c950fc208abd4900824a178819d77aa78cd8295e2642a7f25a57"
+
+[[issue]]
+id = "2025-03-symm-io-stacking:H-1"
+split = "held_out"
+rank = 3
+status = "unverified position"
+functions = [["SymmStaking", "_updateRewardsStates"]]
+file_sha256 = "a200f0748c37441e901dbeb2c96336102e42bb33ab02c59a4c21f0e4f8cd06c9"
+
+[[issue]]
+id = "2025-05-layeredge:M-1"
+split = "held_out"
+rank = 4
+status = "ok"
+functions = [["LayerEdgeStaking", "calculateUnclaimedInterest"]]
+file_sha256 = "59f51b292b961cd378448bf5b5708cce058745497630340f42feea8648fdf3e1"
+
+[[issue]]
+id = "2025-06-superfluid-locker-system:M-5"
+split = "held_out"
+rank = 5
+status = "unverified position"
+functions = [["FluidEPProgramManager", "cancelProgram"]]
+file_sha256 = "6ec288814127bc2b85f64000eea18051425b9317eb8f76658e2b5b345dbc75c2"
+
+[[issue]]
+id = "2025-05-yearn-ybold:H-1"
+split = "held_out"
+rank = 6
+status = "no function"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-04-aegis-op-grant:M-2"
+split = "held_out"
+rank = 7
+status = "ok"
+functions = [["AegisMinting", "_checkMintRedeemLimit"]]
+file_sha256 = "2adf20c87dd15b50b683ed237a38fd96add9cd61b779e2e3fba868f589de9431"
+
+[[issue]]
+id = "2025-01-peapods-finance:M-3"
+split = "held_out"
+rank = 8
+status = "unverified position"
+functions = [["AutoCompoundingPodLp", "_processRewardsToPodLp"], ["AutoCompoundingPodLp", "_pairedLpTokenToPodLp"]]
+file_sha256 = "10be421b77971065b8166d95a550629794a7a1c4e694e13ab7487447dd938e60"
+
+[[issue]]
+id = "2025-01-peapods-finance:M-19"
+split = "held_out"
+rank = 9
+status = "ok"
+functions = [["ChainlinkSinglePriceOracle", "_isValidAnswer"]]
+file_sha256 = "7d36ca727217e0c332b4eef30597db9108e9986b6c5a54f17280520295b16548"
+
+[[issue]]
+id = "2025-07-cap:M-5"
+split = "held_out"
+rank = 10
+status = "unverified position"
+functions = [["Delegation", "slashTimestamp"]]
+file_sha256 = "b78bae0790b118b989898ba859d8f240d5d33fb367605cfb205c4d9020d84ce2"
+
+[[issue]]
+id = "2025-04-burve:H-5"
+split = "held_out"
+rank = 11
+status = "file missing"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-04-burve:H-9"
+split = "held_out"
+rank = 12
+status = "file missing"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-04-burve:H-2"
+split = "held_out"
+rank = 13
+status = "file missing"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-07-malda:M-1"
+split = "held_out"
+rank = 14
+status = "ok"
+functions = [["mToken", "__redeem"], ["mToken", "__mint"]]
+file_sha256 = "25c939b9759ac074033eb130444cd6919e62d3d5ce78dfcafc665a02ac6975c7"
+
+[[issue]]
+id = "2025-07-malda:M-10"
+split = "held_out"
+rank = 15
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-07-malda:M-5"
+split = "held_out"
+rank = 16
+status = "ok"
+functions = [["EverclearBridge", "sendMsg"]]
+file_sha256 = "25d2c58003c07a4b7bbef2da344f982aefa10bc62039e795dbd4f741647c7ad4"
+
+[[issue]]
+id = "2025-07-cap:M-10"
+split = "held_out"
+rank = 17
+status = "ok"
+functions = [["ViewLogic", "maxLiquidatable"], ["ViewLogic", "bonus"]]
+file_sha256 = "f04fbd39aeaaa1fa815fdfd3f7a65125eefa328d51df3bbf4bacacd544952a1f"
+
+[[issue]]
+id = "2025-01-peapods-finance:M-6"
+split = "held_out"
+rank = 18
+status = "ok"
+functions = [["LeverageManager", "_addLeveragePostCallback"]]
+file_sha256 = "14be324d36e23695b296113f8f22557b77b0593032b800f84295c82d244da80b"
+
+[[issue]]
+id = "2025-07-malda:M-11"
+split = "held_out"
+rank = 19
+status = "ok"
+functions = [["mTokenGateway", "supplyOnHost"]]
+file_sha256 = "cae770ceef0c86bf1583fee3c8fce993fbfc078ca1816a39792b1ed0419e5265"
+
+[[issue]]
+id = "2025-05-yearn-ybold:M-1"
+split = "held_out"
+rank = 20
+status = "unverified position"
+functions = [["LiquityV2SPStrategy", "setDustThreshold"]]
+file_sha256 = "537431b7f8eb23dc503dcdadc3cc14efc883fa03170392ff1d2115079f285723"
+
+[[issue]]
+id = "2025-03-symm-io-stacking:M-4"
+split = "held_out"
+rank = 21
+status = "unverified position"
+functions = [["SymmStaking", "_addRewardsForToken"]]
+file_sha256 = "a200f0748c37441e901dbeb2c96336102e42bb33ab02c59a4c21f0e4f8cd06c9"
+
+[[issue]]
+id = "2025-06-superfluid-locker-system:M-1"
+split = "held_out"
+rank = 22
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-01-peapods-finance:M-16"
+split = "held_out"
+rank = 23
+status = "ok"
+functions = [["FraxlendPairCore", "_addInterest"]]
+file_sha256 = "bf3a4e93bb68c950fc208abd4900824a178819d77aa78cd8295e2642a7f25a57"
+
+[[issue]]
+id = "2025-01-peapods-finance:H-3"
+split = "held_out"
+rank = 24
+status = "unverified position"
+functions = [["TokenRewards", "depositFromPairedLpToken"], ["TokenRewards", "_depositRewards"]]
+file_sha256 = "a674b1d8b4615089b83bec7a0de5f56d71e108e66d5a50424ebdd066247ec733"
+
+[[issue]]
+id = "2025-07-cap:M-3"
+split = "held_out"
+rank = 25
+status = "unverified position"
+functions = [["BorrowLogic", "realizeRestakerInterest"]]
+file_sha256 = "256690dd3d1fd008cc39324fbebdc58918757b80e4c832a91f3925b996a5d028"
+
+[[issue]]
+id = "2025-07-malda:M-8"
+split = "held_out"
+rank = 26
+status = "ok"
+functions = [["mErc20Host", "_verifyProof"]]
+file_sha256 = "daae054dea69212b132e38a5bcc2432f09c997baab056036ffd470b882832d6b"
+
+[[issue]]
+id = "2025-07-cap:M-9"
+split = "held_out"
+rank = 27
+status = "ok"
+functions = [["LiquidationLogic", "liquidate"]]
+file_sha256 = "6e6f55a0202af0f3089cb0ba3bdae19a96d04ff275357b2de9e702ba5d437157"
+
+[[issue]]
+id = "2025-04-burve:M-4"
+split = "held_out"
+rank = 28
+status = "file missing"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-07-malda:M-3"
+split = "held_out"
+rank = 29
+status = "ok"
+functions = [["Migrator", "migrateAllPositions"]]
+file_sha256 = "ad0f6b368cec2a8d99c8b624c78485418a6e6b2f73fe088ed00da07d45bce441"
+
+[[issue]]
+id = "2025-06-superfluid-locker-system:M-2"
+split = "held_out"
+rank = 30
+status = "unverified position"
+functions = [["StakingRewardController", "setTaxAllocation"]]
+file_sha256 = "df671d33a033bc9e4b00b7ba05a44ed7d232e9c552a609af60eb5f55a74017c8"
+
+[[issue]]
+id = "2025-07-malda:H-1"
+split = "held_out"
+rank = 31
+status = "ok"
+functions = [["EverclearBridge", "sendMsg"]]
+file_sha256 = "25d2c58003c07a4b7bbef2da344f982aefa10bc62039e795dbd4f741647c7ad4"
+
+[[issue]]
+id = "2025-01-peapods-finance:M-34"
+split = "held_out"
+rank = 32
+status = "unverified position"
+functions = [["TokenRewards", "setShares"]]
+file_sha256 = "a674b1d8b4615089b83bec7a0de5f56d71e108e66d5a50424ebdd066247ec733"
+
+[[issue]]
+id = "2025-07-malda:M-9"
+split = "held_out"
+rank = 33
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-07-malda:M-14"
+split = "held_out"
+rank = 34
+status = "quote not found"
+functions = []
+file_sha256 = ""
+
+[[issue]]
+id = "2025-07-malda:M-4"
+split = "held_out"
+rank = 35
+status = "ok"
+functions = [["mTokenGateway", "outHere"], ["mTokenGateway", "_outHere"]]
+file_sha256 = "cae770ceef0c86bf1583fee3c8fce993fbfc078ca1816a39792b1ed0419e5265"
+
+[[issue]]
+id = "2025-04-burve:H-3"
+split = "held_out"
+rank = 36
+status = "file missing"
+functions = []
+file_sha256 = ""
