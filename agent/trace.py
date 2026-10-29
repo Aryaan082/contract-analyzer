@@ -7,7 +7,11 @@ The keys added for Component 6 (the older traces have none of them, and the scor
 `calls` (one entry per tool call: seconds, fingerprints), `attempts` (one per `submit_report`),
 `metrics` (where the time went, store hits, fingerprints of the prompt and tools), `environment`
 (code version, settings file, machine) and `tags` (free labels from the caller, for example
-`{"concurrent": true}`)."""
+`{"concurrent": true}`).
+
+A run with a source reviewer also has `review`: the coverage block, every span the reviewer
+flagged (quote, note and path included, for the viewer), the second-pass records, the reviewer's
+calls and the fingerprints of its prompt, checklist and lexer. Runs without one have no such key."""
 
 import json
 from datetime import UTC, datetime
@@ -30,6 +34,7 @@ def write_trace(
     report = run.report
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     directory.mkdir(parents=True, exist_ok=True)
+    reviewed = {"review": run.review} if run.review is not None else {}
     text = (
         json.dumps(
             {
@@ -40,6 +45,7 @@ def write_trace(
                 "calls": run.calls,
                 "attempts": run.attempts,
                 "metrics": run.metrics,
+                **reviewed,
                 "environment": environment() if env is None else env,
                 "tags": tags or {},
                 "evidence": [item.model_dump(mode="json") for item in run.registry],

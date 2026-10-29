@@ -3,8 +3,9 @@
 The first of the two ways the agent examines a contract:
 1. Recognise it with tools. Read the code, work out which standard interfaces it speaks (chain/
    kinds.py), and ask the protocols' own registries whether they list it (chain/registry.py).
-2. Read it. Whatever is not an official deployment is read for risky functions and known
-   vulnerability patterns by the other components.
+2. Read it. Whatever is not an official deployment has its bytecode scanned for risky functions
+   (references/), and, where its source is verified, that source can be read by a model for known
+   vulnerability patterns (review/). A reading, not proof.
 
 A behavioural rehearsal runs only where its kind of contract fits: today the sell rehearsal, and
 only for something shaped like a token. The gate is the interface, not "is it a copy of a known
@@ -137,15 +138,17 @@ def _review_check(summary: Summary) -> Check:
             name="code_review",
             applies=False,
             reason="The protocol's own record lists this address, so it is the protocol's "
-            "deployed code, not an unknown contract to read.",
+            "deployed code, not an unknown contract to read. Its source is not reviewed unless "
+            "the person asks for it.",
         )
     if summary == "no_code":
         return Check(name="code_review", applies=False, reason="There is no contract here.")
     return Check(
         name="code_review",
         applies=True,
-        reason="It is not an official deployment, so its code is read for risky functions and "
-        "known vulnerability patterns.",
+        reason="It is not an official deployment, so its bytecode is scanned for risky functions "
+        "and, where its source is verified on the explorer and a source reader is configured, a "
+        "model reads that source for known vulnerability patterns (a reading, not proof).",
     )
 
 

@@ -29,6 +29,7 @@ from web3 import Web3
 from agent.evidence import EvidenceRegistry
 from agent.llm import ToolCall
 from agent.report import Unavailable
+from agent.review_stage import ReviewOutcome, ReviewSettings, SourceEntry, run_source_review
 from agent.untrusted import clean_chain_text, looks_like_instructions
 from chain.code import read_code
 from chain.errors import ChainError, ToolError
@@ -51,6 +52,7 @@ from retrieval.embedders import ModelMissing
 from retrieval.filters import Filters
 from retrieval.index import IndexUnavailable
 from retrieval.search import Hit, Searcher, citation_text, open_searcher, render_quoted
+from review.bundle import BundleStore
 
 log = logging.getLogger(__name__)
 
@@ -195,6 +197,14 @@ class RunContext:
     _codes: dict[str, bytes] = field(default_factory=dict)
     _lookups: dict[str, ToolResult[LookupData]] = field(default_factory=dict)
     _seen: dict[tuple[str, str], str] = field(default_factory=dict)
+    # Source review (agent/review_stage.py). All of it is off unless a reviewer is wired in:
+    # without `review` the tool is not offered and nothing about the run changes.
+    review: ReviewSettings | None = None
+    bundle_store: BundleStore | None = None  # the source-bundle cache (Postgres), or None
+    target: str | None = None  # the address under analysis; run_agent sets it
+    dollars_left: float | None = None  # the cost cap less what is spent; run_agent keeps it current
+    tool_cost_usd: float = 0.0  # dollars a tool spent itself; the loop moves it into the run's cost
+    _reviews: dict[str, ReviewOutcome] = field(default_factory=dict)  # by logic address
     # How often the stores answered instead of the network, for the trace (never read by a tool).
     counters: dict[str, int] = field(default_factory=dict)
 
@@ -282,6 +292,10 @@ class ToolOutput:
     kind: Literal["fact", "knowledge"] = "fact"
     # Knowledge a tool showed: (record id, citation, text). Recorded once the model has seen it.
     records: tuple[tuple[str, str, str], ...] = ()
+    # Dollars the tool spent on a model of its own (review_source); the loop counts them in the cap.
+    cost_usd: float = 0.0
+    # Source records (S ids) the tool produced, recorded right after the tool's own T id.
+    sources: tuple[SourceEntry, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -604,6 +618,13 @@ def _taxonomy(ctx: RunContext, args: TaxonomyArgs) -> ToolOutput:
     return _knowledge_output(hits, extra)
 
 
+def _review_source(ctx: RunContext, args: AddressArgs) -> ToolOutput:
+    out = run_source_review(ctx, args.address, signals_from_evidence(ctx.registry))
+    return ToolOutput(
+        out.data, out.provenance, ok=out.ok, cost_usd=out.cost_usd, sources=out.entries
+    )
+
+
 TOOLS: tuple[Tool, ...] = (
     Tool(
         "identify_contract",
@@ -732,6 +753,21 @@ TOOLS: tuple[Tool, ...] = (
     ),
 )
 
+# Not in TOOLS: offered only to a run with a reviewer wired in (`RunContext.review`) and an
+# explorer, so a run without one offers, fingerprints and counts exactly the tools it did before.
+REVIEW_TOOL = Tool(
+    "review_source",
+    "Read the verified source of this contract with a separate model and get back closed records "
+    "(S ids) of places that resemble an entry of the vulnerability checklist: file id, line range, "
+    "function name, entry, severity, confidence. It finds a proxy's implementation itself and "
+    "returns no source text. A reading by a model, not proof; no S id means nothing was flagged, "
+    "not that the code is safe. Run it when identify_contract says the code_review check applies "
+    "and get_verified_source says the source is verified. It can take minutes.",
+    AddressArgs,
+    _review_source,
+    needs_explorer=True,
+)
+
 # Component 1 tools that do not exist yet. Reports list them as "not available". (All of Component
 # 1's tools are wired in; to add a planned tool, put its row here until it is built.)
 PLANNED: tuple[Unavailable, ...] = ()
@@ -743,12 +779,16 @@ NEEDS_EXPLORER = {
 
 
 def tool_map(ctx: RunContext | None = None) -> dict[str, Tool]:
-    """The tools offered in a run: all of them, less those that need a service the run lacks."""
-    return {
+    """The tools offered in a run: all of them, less those that need a service the run lacks. The
+    source reviewer is added when the run has one and an explorer to fetch the source from."""
+    offered = {
         t.name: t
         for t in TOOLS
         if not (ctx is not None and t.needs_explorer and ctx.services.explorer is None)
     }
+    if ctx is not None and ctx.review is not None and ctx.services.explorer is not None:
+        offered[REVIEW_TOOL.name] = REVIEW_TOOL
+    return offered
 
 
 def unavailable_tools(ctx: RunContext) -> tuple[Unavailable, ...]:
@@ -761,6 +801,14 @@ def unavailable_tools(ctx: RunContext) -> tuple[Unavailable, ...]:
         for t in TOOLS
         if t.needs_explorer and ctx.services.explorer is None
     )
+    if ctx.review is not None and ctx.services.explorer is None:
+        withheld += (
+            Unavailable(
+                tool=REVIEW_TOOL.name,
+                what="a model's reading of the verified source "
+                "(no ETHERSCAN_API_KEY is configured)",
+            ),
+        )
     return (*PLANNED, *withheld)
 
 
@@ -830,6 +878,11 @@ def execute(ctx: RunContext, call: ToolCall, tools: Mapping[str, Tool]) -> str:
         tool.name, arguments, output.provenance, output.data, ok=output.ok
     )
     ctx._seen[key] = evidence.id
+    for entry in output.sources:
+        ctx.registry.add_source(
+            entry.id, entry.citation, entry.shown, entry.record, output.provenance
+        )
+    ctx.tool_cost_usd += output.cost_usd
     shown = {
         "evidence_id": evidence.id,
         "tool": tool.name,

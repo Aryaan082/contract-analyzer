@@ -35,6 +35,7 @@ from agent.prompts import (
 )
 from agent.report import (
     SUBMIT_REPORT_SCHEMA,
+    SUBMIT_REPORT_SCHEMA_WITH_REVIEW,
     CitedEvidence,
     Problem,
     Report,
@@ -47,10 +48,12 @@ from agent.report import (
     Unavailable,
     Validation,
 )
+from agent.review_stage import coverage_block, review_records
 from agent.runmeta import digest
 from agent.tools import RunContext, execute, tool_map, unavailable_tools
-from agent.validator import parse_submission, valid_findings, validate
+from agent.validator import NO_REVIEW, ReviewRules, parse_submission, valid_findings, validate
 from chain.models import normalize_address
+from review.types import ReviewSummary
 
 WRAP_UP_SHARE = 0.8  # of the cost cap or the time limit, after which only submit_report is offered
 MAX_REMINDERS = 2
@@ -63,6 +66,12 @@ SUBMIT_TOOL: dict[str, Any] = {
         "seen every result you need. Every claim must cite evidence ids from this run.",
         "parameters": SUBMIT_REPORT_SCHEMA,
     },
+}
+
+# What a run with a source reviewer offers: the same tool, with `source_review` among the kinds.
+SUBMIT_TOOL_WITH_REVIEW: dict[str, Any] = {
+    "type": "function",
+    "function": {**SUBMIT_TOOL["function"], "parameters": SUBMIT_REPORT_SCHEMA_WITH_REVIEW},
 }
 
 _STOP_TEXT: dict[str, str] = {
@@ -89,6 +98,7 @@ class AgentRun:
     )  # per tool call: seconds, fingerprints
     attempts: list[dict[str, Any]] = field(default_factory=list)  # per submit_report attempt
     metrics: dict[str, Any] = field(default_factory=dict)  # where the time went, store hits
+    review: dict[str, Any] | None = None  # the source review, for the trace (None: no reviewer)
 
 
 def _call_record(
@@ -125,12 +135,13 @@ def _attempt_record(
     submission: Submission | None,
     problems: list[Problem],
     registry: EvidenceRegistry,
+    rules: ReviewRules = NO_REVIEW,
 ) -> dict[str, Any]:
     """One try at `submit_report`: whether the arguments parsed, how many claims, how many of them
     failed on their own, and every problem by place and code."""
     findings = submission.findings[:25] if submission is not None else None
     failing = (
-        len(findings) - len(valid_findings(submission, registry))
+        len(findings) - len(valid_findings(submission, registry, rules))
         if submission is not None and findings is not None
         else None
     )
@@ -145,20 +156,22 @@ def _attempt_record(
     }
 
 
+_CITED_KIND = {"tool": "chain", "source": "source", "knowledge": "knowledge"}
+_CITED_ORDER = {"tool": 0, "source": 1, "knowledge": 2}
+
+
 def _cited(findings, checked, registry: EvidenceRegistry) -> tuple[CitedEvidence, ...]:
     """Every id the report cites, resolved to a citation: tool results in order (T1, T2, ...), then
-    knowledge records in order of first use."""
+    source records (S1, ...), then knowledge records in order of first use."""
     ids: list[str] = []
     for source in (*(f.evidence_ids for f in findings), *(c.evidence_ids for c in checked)):
         ids += [i for i in source if i not in ids and i in registry]
     items = [registry.get(i) for i in ids]
-    items.sort(key=lambda e: (e.source != "tool", int(e.id[1:]) if e.source == "tool" else 0))
+    items.sort(
+        key=lambda e: (_CITED_ORDER[e.source], int(e.id[1:]) if e.source != "knowledge" else 0)
+    )
     return tuple(
-        CitedEvidence(
-            id=item.id,
-            kind="chain" if item.source == "tool" else "knowledge",
-            citation=item.citation,
-        )
+        CitedEvidence(id=item.id, kind=_CITED_KIND[item.source], citation=item.citation)
         for item in items
         if item is not None
     )
@@ -176,6 +189,8 @@ def _report(
     stop: StoppedBecause,
     unavailable: tuple[Unavailable, ...],
     run: RunInfo,
+    source_review: ReviewSummary | None = None,
+    rules: ReviewRules = NO_REVIEW,
 ) -> Report:
     if accepted and submission is not None:
         verdict, summary = submission.verdict, submission.summary
@@ -189,7 +204,7 @@ def _report(
             f"No validated report: {_STOP_TEXT[stop]}. The findings listed, if any, are the ones "
             "that passed the citation validator on their own; nothing else can be relied on."
         )
-        findings = valid_findings(submission, ctx.registry) if submission is not None else []
+        findings = valid_findings(submission, ctx.registry, rules) if submission is not None else []
         checked = []
         not_checked = [
             ReportNotChecked(what="The analysis as a whole", why=_STOP_TEXT[stop].capitalize())
@@ -214,6 +229,7 @@ def _report(
         evidence=_cited(findings, checked, ctx.registry),
         validation=Validation(accepted=accepted, attempts=attempts, problems=tuple(problems)),
         run=run,
+        source_review=source_review,
     )
 
 
@@ -233,12 +249,14 @@ def run_agent(
     # not, so a gap between them marks a run that slept.
     began, began_wall = clock(), wall()
     address = normalize_address(address)
+    ctx.target = address
     block = ctx.client.pin()
     tools = tool_map(ctx)
     unavailable = unavailable_tools(ctx)
-    offered_all = [tool.schema() for tool in tools.values()] + [SUBMIT_TOOL]
+    submit_tool = SUBMIT_TOOL if ctx.review is None else SUBMIT_TOOL_WITH_REVIEW
+    offered_all = [tool.schema() for tool in tools.values()] + [submit_tool]
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": system_prompt(unavailable)},
+        {"role": "system", "content": system_prompt(unavailable, review=ctx.review is not None)},
         {"role": "user", "content": user_message(address, ctx.chain, block, question)},
     ]
     started = clock()
@@ -247,7 +265,7 @@ def run_agent(
     turns: list[dict[str, Any]] = []
     call_log: list[dict[str, Any]] = []
     attempt_log: list[dict[str, Any]] = []
-    model_seconds = tool_seconds = 0.0
+    model_seconds = tool_seconds = review_seconds = 0.0
     tool_calls = attempts = reminders = 0
     stop: StoppedBecause = "turn_limit"
     wrapped = False
@@ -257,7 +275,8 @@ def run_agent(
     error: str | None = None
 
     def elapsed() -> float:
-        return clock() - started
+        # The review has its own time limit ([reviewer] in models.toml); it is not the writer's.
+        return clock() - started - review_seconds
 
     while True:
         if len(turns) >= limits.max_turns:
@@ -282,7 +301,7 @@ def run_agent(
         try:
             reply = model.complete(
                 messages,
-                [SUBMIT_TOOL] if wrap_up else offered_all,
+                [submit_tool] if wrap_up else offered_all,
                 max_tokens=limits.max_output_tokens,
             )
         except ModelUnavailable as err:
@@ -338,6 +357,8 @@ def run_agent(
                 )
                 continue
             tool_calls += 1
+            if ctx.review is not None:
+                ctx.dollars_left = limits.max_cost_usd - totals.cost_usd
             ran, ran_wall = clock(), wall()
             results[call.id] = execute(ctx, call, tools)
             tool_took = clock() - ran
@@ -345,6 +366,13 @@ def run_agent(
             call_log.append(
                 _call_record(len(turns), call, results[call.id], tool_took, wall() - ran_wall)
             )
+            # Dollars a tool spent on a model of its own count in the run's cost and its cap.
+            spent, ctx.tool_cost_usd = ctx.tool_cost_usd, 0.0
+            if spent:
+                totals = totals.model_copy(update={"cost_usd": totals.cost_usd + spent})
+                call_log[-1]["cost_usd"] = round(spent, 6)
+            if call.name == "review_source":
+                review_seconds += tool_took
 
         finished = exhausted = False
         for index, call in enumerate(submits):
@@ -353,11 +381,16 @@ def run_agent(
                 continue
             attempts += 1
             submission, problems = parse_submission(call.arguments)
+            rules = (
+                ctx.review.rules(can_still_run=not wrap_up and tool_calls < limits.max_tool_calls)
+                if ctx.review is not None
+                else NO_REVIEW
+            )
             if submission is not None:
                 last = submission
-                problems = validate(submission, ctx.registry)
+                problems = validate(submission, ctx.registry, rules)
             attempt_log.append(
-                _attempt_record(attempts, len(turns), submission, problems, ctx.registry)
+                _attempt_record(attempts, len(turns), submission, problems, ctx.registry, rules)
             )
             if not problems:
                 accepted, finished = submission, True
@@ -383,7 +416,7 @@ def run_agent(
             stop = "report_rejected"
             break
 
-    loop_seconds = elapsed()
+    loop_seconds = elapsed() + review_seconds
     wall_seconds = wall() - began_wall
     metrics = {
         "schema": 2,
@@ -404,6 +437,10 @@ def run_agent(
         "tools_sha": digest(json.dumps(offered_all, sort_keys=True, default=str)),
         "counters": dict(ctx.counters),
     }
+    coverage = coverage_block(ctx)
+    review_trace = None
+    if coverage is not None:
+        review_trace, metrics["review"] = review_records(ctx, coverage, review_seconds)
     info = RunInfo(
         model=model.name,
         turns=len(turns),
@@ -412,7 +449,7 @@ def run_agent(
         completion_tokens=totals.completion_tokens,
         cached_tokens=totals.cached_tokens,
         cost_usd=round(totals.cost_usd, 6),
-        seconds=round(elapsed(), 1),
+        seconds=round(elapsed() + review_seconds, 1),
         stopped_because=stop,
     )
     report = _report(
@@ -426,6 +463,8 @@ def run_agent(
         stop=stop,
         unavailable=unavailable,
         run=info,
+        source_review=coverage,
+        rules=ctx.review.rules(can_still_run=False) if ctx.review is not None else NO_REVIEW,
     )
     return AgentRun(
         report=report,
@@ -436,4 +475,5 @@ def run_agent(
         calls=call_log,
         attempts=attempt_log,
         metrics=metrics,
+        review=review_trace,
     )

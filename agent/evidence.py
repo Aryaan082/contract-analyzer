@@ -7,6 +7,10 @@ findings) are recorded under their own stable IDs (`taxonomy:privileged-mint`,
 The citation validator checks every ID in a report against this registry, so a claim can point
 only at something the runner saw happen, and the report prints each ID as a real citation: chain,
 address, block and source for a tool result; document, finding and page for knowledge.
+
+Source review adds a third kind: `S1`, `S2`, ... are closed records of places a reviewer model
+flagged in a contract's source (agent/review_stage.py). They carry `data` (exactly what the writer
+was shown) and `record` (the full span, for the validator and the screen, never shown to a model).
 """
 
 import json
@@ -19,17 +23,21 @@ from pydantic import BaseModel
 from chain.models import Provenance
 
 TOOL_ID = re.compile(r"^T[1-9][0-9]*$")
+SOURCE_ID = re.compile(r"^S[1-9][0-9]*$")
 
 
 class Evidence(BaseModel, frozen=True):
     id: str
-    source: Literal["tool", "knowledge"]
+    source: Literal["tool", "knowledge", "source"]
     ok: bool  # False for a tool that failed: it records that, and supports no observation
     citation: str  # one line a reader can check
     tool: str | None = None
     arguments: dict[str, Any] | None = None
     provenance: Provenance | None = None
     data: Any = None  # tool: the result as JSON; knowledge: the text the model was shown
+    # source only: the full SourceSpan as JSON (quote, note, path). Not part of `text()` and never
+    # given to a model; the validator reads its severity and `confirmed_by`, the screen the rest.
+    record: Any = None
 
     def text(self) -> str:
         """Everything this evidence says, lower-cased, for the validator's grounding check."""
@@ -90,6 +98,37 @@ class EvidenceRegistry:
         item = Evidence(id=record_id, source="knowledge", ok=True, citation=citation, data=text)
         self._items[record_id] = item
         return item
+
+    def add_source(
+        self,
+        span_id: str,
+        citation: str,
+        shown: dict[str, Any],
+        record: dict[str, Any],
+        provenance: Provenance | None,
+    ) -> Evidence:
+        """Record a source span the writer has been shown. `shown` is what it saw, `record` the full
+        span. Recording the same id twice keeps the first."""
+        if not SOURCE_ID.match(span_id):
+            raise ValueError(f"{span_id!r} is not a source evidence id")
+        existing = self._items.get(span_id)
+        if existing is not None:
+            return existing
+        item = Evidence(
+            id=span_id,
+            source="source",
+            ok=True,
+            citation=citation,
+            tool="review_source",
+            provenance=provenance,
+            data=shown,
+            record=record,
+        )
+        self._items[span_id] = item
+        return item
+
+    def sources(self) -> list[Evidence]:
+        return [e for e in self if e.source == "source"]
 
     def __contains__(self, evidence_id: object) -> bool:
         return evidence_id in self._items

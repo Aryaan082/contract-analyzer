@@ -7,6 +7,14 @@
 # fallback: OpenRouter reports the cost of every reply, and that figure is what the cap counts.
 default_model = "sonnet"
 
+# Source review (review/, agent/review_stage.py): a second model reads a verified contract's source
+# and the writer sees only closed records of what it flagged. It runs only when asked for
+# (`python -m agent analyze --review`); nothing below is used otherwise.
+reviewer_model = "eval"            # a tier below or a slug (decision 9: cheap to start, compare Sonnet)
+confirmation_model = "haiku"       # the blind second reader. A placeholder, not measured: Aryaan picks
+review_may_set_high_risk = false   # decision 11. On: a finding a second reader (another company) agrees
+                                   # with may be rated high. Off until the benign set shows no false high.
+
 [model.sonnet]
 name = "anthropic/claude-sonnet-5.5"
 input_per_mtok = 2.0
@@ -37,3 +45,13 @@ wall_clock_seconds = 420   # a sell rehearsal alone can take a minute
 max_cost_usd = 0.75        # checked before every model call, from the cost OpenRouter reports
 max_report_attempts = 3    # tries at a report that passes the citation validator
 request_timeout_seconds = 90
+
+# One source review. The review's dollars count in the run's max_cost_usd above (the review is also held
+# to what the run has left); its seconds do not count in wall_clock_seconds, it has its own.
+[reviewer]
+ceiling_tokens = 300000         # new code over this is not reviewed at all, never half (decision 10)
+chunk_tokens = 12000            # one reviewer call, about
+max_cost_usd = 0.50             # per review (decision 9's development ceiling)
+max_output_tokens = 8192        # per reviewer call; a model that thinks first bills that as output
+wall_clock_seconds = 600        # unmeasured: 20 to 60 s a call was a guess
+request_timeout_seconds = 180

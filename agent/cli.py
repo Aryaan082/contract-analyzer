@@ -12,6 +12,7 @@ from agent.llm import OpenRouterModel
 from agent.loop import run_agent
 from agent.prompts import DEFAULT_QUESTION
 from agent.report import render_text
+from agent.review_stage import build_settings, bundle_store_from_env
 from agent.tools import RunContext
 from agent.trace import write_trace
 from chain.config import DEFAULT_CHAIN, load_env
@@ -38,6 +39,7 @@ def cmd_analyze(args: argparse.Namespace, env: Mapping[str, str]) -> int:
     if args.max_cost is not None:
         limits = limits.model_copy(update={"max_cost_usd": args.max_cost})
     address, chain, block, question = args.address, args.chain, args.block, args.question
+    reviewing = args.review or args.review_model is not None
     if args.contract:
         chosen = find_contract(args.contract)
         if chosen is None:
@@ -54,12 +56,23 @@ def cmd_analyze(args: argparse.Namespace, env: Mapping[str, str]) -> int:
         model = OpenRouterModel(
             config.resolve_model(args.model), timeout=limits.request_timeout_seconds
         )
+        # Source review calls a second model and costs money, so it runs only when asked for.
+        review = build_settings(config, model=args.review_model) if reviewing else None
         # Postgres (the code store, the selector cache) and the explorer are optional: a missing
         # one is reported as not available, not an error.
-        ctx = RunContext(client, chain, services=Services.from_env(env))
+        ctx = RunContext(
+            client,
+            chain,
+            services=Services.from_env(env),
+            review=review,
+            bundle_store=bundle_store_from_env(env) if review else None,
+        )
         run = run_agent(model, ctx, address, question, limits=limits)
     except ChainError as err:
         print(err.message, file=sys.stderr)
+        return 2
+    except ValueError as err:
+        print(err, file=sys.stderr)
         return 2
     if run.error:
         print(run.error, file=sys.stderr)
@@ -86,6 +99,15 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
     analyze.add_argument("--question", default=DEFAULT_QUESTION)
     analyze.add_argument("--model", help="a tier from models.toml (sonnet, haiku) or a slug")
     analyze.add_argument("--max-cost", type=float, help="cost cap in USD for this run")
+    analyze.add_argument(
+        "--review",
+        action="store_true",
+        help="also read the verified source with a reviewer model (costs money; off by default)",
+    )
+    analyze.add_argument(
+        "--review-model",
+        help="the reviewer: a tier or a slug (default reviewer_model); implies --review",
+    )
     analyze.add_argument("--json", action="store_true", help="print the report as JSON")
     analyze.add_argument("--no-trace", action="store_true", help="do not write agent/runs/*.json")
     args = parser.parse_args(argv)

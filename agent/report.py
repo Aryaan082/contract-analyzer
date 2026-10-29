@@ -10,16 +10,21 @@ Verdicts. There is deliberately no "safe": the tools cannot prove safety, so the
 `no_red_flags_found`, which always comes with `not_checked`.
 """
 
+import copy
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+
+from review.types import ReviewSummary
 
 Verdict = Literal["high_risk", "elevated_risk", "no_red_flags_found", "insufficient_evidence"]
 Severity = Literal["info", "low", "medium", "high"]
 # observation: a fact about THIS contract, from tool output. context: what a known pattern is or
 # why it matters, from the knowledge base. A retrieved audit finding shows that a pattern exists
 # somewhere, never that this contract has it, so it can back a context claim but not an observation.
-Kind = Literal["observation", "context"]
+# source_review: a model's reading of this contract's source (review_source), cites S ids. The
+# renderer, not the model, labels it as an unchecked reading.
+Kind = Literal["observation", "context", "source_review"]
 
 VERDICTS: tuple[str, ...] = (
     "high_risk",
@@ -130,6 +135,24 @@ SUBMIT_REPORT_SCHEMA: dict[str, Any] = {
 }
 
 
+def submit_report_schema(with_review: bool) -> dict[str, Any]:
+    """The `submit_report` input schema. With a source reviewer in the run the claim kinds gain
+    `source_review`; without one it is `SUBMIT_REPORT_SCHEMA` unchanged, so what a run without a
+    reviewer offers (and fingerprints) does not move."""
+    if not with_review:
+        return SUBMIT_REPORT_SCHEMA
+    schema = copy.deepcopy(SUBMIT_REPORT_SCHEMA)
+    kind = schema["properties"]["findings"]["items"]["properties"]["kind"]
+    kind["enum"] = ["observation", "context", "source_review"]
+    kind["description"] += (
+        " source_review: about THIS contract's source, cites S ids from review_source."
+    )
+    return schema
+
+
+SUBMIT_REPORT_SCHEMA_WITH_REVIEW: dict[str, Any] = submit_report_schema(True)
+
+
 class Problem(BaseModel, frozen=True):
     where: str  # "findings[2]", "verdict", "report"
     code: str
@@ -138,7 +161,7 @@ class Problem(BaseModel, frozen=True):
 
 class CitedEvidence(BaseModel, frozen=True):
     id: str
-    kind: Literal["chain", "knowledge"]
+    kind: Literal["chain", "knowledge", "source"]
     citation: str
 
 
@@ -206,6 +229,78 @@ class Report(BaseModel, frozen=True):
     evidence: tuple[CitedEvidence, ...]  # every id cited above, resolved
     validation: Validation
     run: RunInfo
+    # Written by the runner, never by the model: what the source reviewer read and did not. None
+    # when no reviewer was wired into the run.
+    source_review: ReviewSummary | None = None
+
+
+SOURCE_REVIEW_PREFIX = "Source reviewer (model {model}), unchecked reading:"
+NOT_EVIDENCE_OF_SAFETY = "Absence of a flag is not evidence of safety."
+AS_PUBLISHED = (
+    "Source is as published on the explorer, which can match similar rather than identical code."
+)
+
+
+def finding_label(report: Report, finding: ReportFinding) -> str:
+    """The words the runner puts in front of a finding. Only `source_review` has any: the model
+    cannot drop or change them, because they are not part of its claim."""
+    if finding.kind != "source_review":
+        return ""
+    model = report.source_review.reviewer_model if report.source_review else None
+    return SOURCE_REVIEW_PREFIX.format(model=model or "unknown")
+
+
+def source_review_lines(summary: ReviewSummary) -> list[str]:
+    """The coverage block, written by the runner from counts it kept. It says what was read and
+    what was not, and never that the contract is fine."""
+    reader = (
+        f"read by {summary.reviewer_model}, a model; a reading is not proof"
+        if summary.status in ("ran", "partial") and summary.reviewer_model
+        else "no source was read"
+    )
+    lines = [f"Source review ({reader})"]
+    if summary.status in ("ran", "partial"):
+        read = (
+            f"Read {summary.definitions_reviewed} of {summary.definitions_new} new definitions "
+            f"({summary.chars_reviewed:,} of {summary.chars_total:,} characters of the source)"
+        )
+        if summary.definitions_known:
+            libraries = ", ".join(
+                f"{k.library} {k.version}: {k.definitions}" for k in summary.known_libraries
+            )
+            read += (
+                f"; {summary.definitions_known} known-library definitions matched exactly and "
+                f"were not read ({libraries})"
+            )
+        lines.append(f"  {read}.")
+        if summary.status == "partial":
+            lines.append(f"  Partly read: {summary.reason}.")
+    else:
+        lines.append(f"  Not reviewed: {summary.reason}.")
+    lines.append(f"  {NOT_EVIDENCE_OF_SAFETY} {AS_PUBLISHED}")
+    extra = []
+    if summary.assembly_blocks:
+        extra.append(f"Assembly blocks: {summary.assembly_blocks} (read with lower confidence).")
+    if summary.scan_flags:
+        flags = ", ".join(f"{f.flag} x{f.count}" for f in summary.scan_flags)
+        extra.append(f"Scan flags (model-free): {flags}.")
+    not_fetched = sum(d.count for d in summary.dropped)
+    if not_fetched:
+        why = ", ".join(sorted({d.reason for d in summary.dropped}))
+        extra.append(f"Not fetched: {not_fetched} file(s) ({why}).")
+    if summary.unsupported:
+        extra.append(f"Unsupported: {summary.unsupported}.")
+    if summary.files_not_checked or summary.definitions_not_reviewed:
+        extra.append(
+            f"Could not be read safely: {summary.files_not_checked} file(s), "
+            f"{summary.definitions_not_reviewed} definition(s)."
+        )
+    if summary.confirmation_model:
+        extra.append(f"A second reader ({summary.confirmation_model}) re-read places rated high.")
+    if summary.cost_usd:
+        extra.append(f"Cost ${summary.cost_usd:.4f}.")
+    lines += [f"  {text}" for text in extra]
+    return lines
 
 
 def render_text(report: Report) -> str:
@@ -213,16 +308,21 @@ def render_text(report: Report) -> str:
     lines = [
         f"Contract {report.address} on {report.chain}, state at block {report.block}",
         f"Verdict: {report.verdict.replace('_', ' ').upper()}",
-        "",
-        report.summary,
     ]
+    if report.source_review is not None:
+        lines += source_review_lines(report.source_review)
+    lines += ["", report.summary]
     if not report.validation.accepted:
         lines += ["", "The report did not pass the citation validator:"]
         lines += [f"  - {p.where}: {p.message}" for p in report.validation.problems]
     lines += ["", "Findings"]
     for number, finding in enumerate(report.findings, start=1):
         cited = ", ".join(finding.evidence_ids)
-        lines.append(f"  {number}. [{finding.kind}, {finding.severity}] {finding.claim}  ({cited})")
+        label = finding_label(report, finding)
+        label = f"{label} " if label else ""
+        lines.append(
+            f"  {number}. [{finding.kind}, {finding.severity}] {label}{finding.claim}  ({cited})"
+        )
     if not report.findings:
         lines.append("  none")
     lines += ["", "Checked"]

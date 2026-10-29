@@ -28,10 +28,27 @@ class Limits(BaseModel, frozen=True):
     request_timeout_seconds: float = 90.0
 
 
+class ReviewerLimits(BaseModel, frozen=True):
+    """Bounds for one source review (the `[reviewer]` table). The first two equal review.known's
+    CEILING_TOKENS and CHUNK_TOKENS; a test keeps them in step."""
+
+    ceiling_tokens: int = 300_000  # new code over this is not reviewed at all (decision 10)
+    chunk_tokens: int = 12_000  # one reviewer call, about
+    max_cost_usd: float = 0.50  # per review (decision 9), also held to what the run has left
+    max_output_tokens: int = 8192
+    wall_clock_seconds: float = 600.0  # not counted against the writer's wall clock; unmeasured
+    request_timeout_seconds: float = 180.0
+
+
 class AgentConfig(BaseModel, frozen=True):
     default_model: str
     model: dict[str, ModelSpec]
     limits: Limits
+    # Source review. These have defaults so a settings file without them still loads.
+    reviewer_model: str = "eval"
+    confirmation_model: str = "haiku"  # the blind second reader; used only if the switch is on
+    review_may_set_high_risk: bool = False
+    reviewer: ReviewerLimits = ReviewerLimits()
 
     def resolve_model(self, tier_or_slug: str | None = None) -> ModelSpec:
         """A tier from models.toml, or a slug used as it is (its cost then comes only from what
