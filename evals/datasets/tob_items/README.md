@@ -357,7 +357,7 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   rewards writing more. The rule for the layered evaluation, fixed now: unit is the report; arms are
   A plain alone in its own severity order, C the layered union in plain-first order (the control for
   the union) and B the layered union in the verification-aware order. Primary metric: findings found
-  in the first K = 20 places of each report (`evals/source_review/precision.py`; K is taken from
+  in the first K = 20 places of each report (`precision.py`, since removed: see the note at the end of this entry; K is taken from
   plain's own curve, before any layered run). Guard: the share of those places with any evidence (an
   answer-key match, a sandbox confirmation, a deterministic check) must not be lower than A's.
   Improvement is shown only if the report-level bootstrap interval of B minus A at K = 20 excludes 0
@@ -576,4 +576,10 @@ were made with `tob screen` and `tob score --stages pipeline --pipeline two_pass
 `--runs` names (listed in the log). Request errors are printed: an OpenRouter 402 at a low balance
 with many workers shows up as unanswered flags, and the same command run again with fewer workers
 fills them in.
+
+Housekeeping (2026-11-06): `evals/source_review/precision.py` (recall at K, used by the first layered
+evaluation) was removed once `verifier_eval` replaced it; it is in git history at `85a6bf3`. The
+exploratory 2026-11-05 DeepSeek run records (`ds`, `ds2`, `ds3` and their wide-key reports, 19 files)
+were removed from `evals/source_review/results/`: nothing referenced them and their numbers are rows in
+`evals/results.md`. The pre-registered 2026-11-04 records stay.
 
