@@ -21,10 +21,10 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from evals.source_review import plain
 from evals.source_review.cards import DATASET_DIR
 from evals.source_review.compare import Source
 from evals.source_review.hostile import make_bundle
+from review import plain
 from review.lexer import Lexed, lex
 
 ITEMS_PATH = DATASET_DIR.parent / "audit_items" / "items.toml"

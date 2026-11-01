@@ -4,7 +4,6 @@ import hashlib
 import json
 
 from evals.source_review import costs, scoring
-from evals.source_review import plain as eval_plain
 from review import plain
 from review.reviewer import contract_at, flags_of
 from review.types import Flag
@@ -26,13 +25,6 @@ def test_the_pre_registered_plain_request_is_byte_for_byte_what_it_was():
     )
     schema = json.dumps(plain.PLAIN_SCHEMA, sort_keys=True)
     assert sha(schema) == "93375dfa6151cb1ccaa5aa20422d61d4f75f1804387e8144cf3185526f07224a"
-
-
-def test_the_old_module_is_the_same_reader_not_a_copy():
-    assert eval_plain.PLAIN_INSTRUCTION is plain.PLAIN_INSTRUCTION
-    assert eval_plain.run_plain is plain.run_plain and eval_plain.parse_reply is plain.parse_reply
-    assert eval_plain._members is plain._members  # noqa: SLF001
-    assert eval_plain.plain_prompts is plain.plain_prompts
 
 
 def test_the_figure_that_sizes_a_request_still_matches_the_eval_cost_model():

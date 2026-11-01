@@ -1,10 +1,10 @@
 """Head-to-head: one model reading contracts plain (arm P) and through our source review (arm A).
 
-Same model, same contract text, temperature 0, same output limit. Arm P (`plain.py`) sends the raw
-source with a short neutral instruction. Arm A is `review.reviewer.run_review` with the model as
-the reviewer (stripped view, 32-entry checklist, span checks), no blind second pass. A is NOT the
-full `python -m agent analyze`: planted variants are not deployed, so the full agent cannot see
-them; what is compared is the reading of source, not the whole agent.
+Same model, same contract text, temperature 0, same output limit. Arm P (`review/plain.py`)
+sends the raw source with a short neutral instruction. Arm A is `review.reviewer.run_review`
+with the model as the reviewer (stripped view, 32-entry checklist, span checks), no blind second
+pass. A is NOT the full `python -m agent analyze`: planted variants are not deployed, so the full
+agent cannot see them; what is compared is the reading of source, not the whole agent.
 
 Items (DEV split only; held-out items are never loaded here), in this order so that a run stopped
 by its cap still holds whole families: the planted variants (vulnerable, safe twin, renamed copy,
@@ -36,7 +36,7 @@ from typing import Any
 
 from agent.config import ModelSpec
 from evals.metrics import Interval, paired_difference
-from evals.source_review import costs, plain
+from evals.source_review import costs
 from evals.source_review.cards import REPO_ROOT, Card, CardSet
 from evals.source_review.hostile import Scenario, make_bundle, scripted_factory
 from evals.source_review.items import fetch_bundle, flaws_of
@@ -47,6 +47,7 @@ from evals.source_review.scoring import (
     ratio_interval,
     share_interval,
 )
+from review import plain
 from review.client import (
     UNAVAILABLE,
     ModelUnavailable,

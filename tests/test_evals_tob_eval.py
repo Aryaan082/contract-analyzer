@@ -655,7 +655,7 @@ def plain_screen(tmp_path, variant="plain"):
 
 
 def test_the_checklist_variant_adds_the_checklist_to_the_plain_request_and_nothing_else(tmp_path):
-    from evals.source_review import plain
+    from review import plain
     from review.pack import build_checklist
 
     text = build_checklist().text

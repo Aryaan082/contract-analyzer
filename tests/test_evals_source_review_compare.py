@@ -7,9 +7,10 @@ from pathlib import Path
 import pytest
 
 from evals.source_review import compare as cmp
-from evals.source_review import compare_cli, plain
+from evals.source_review import compare_cli
 from evals.source_review.cards import load_cards
 from evals.source_review.scoring import Flag, flags_of, run_counts
+from review import plain
 from review.client import ModelUnavailable, ReviewerCall, ScriptedReviewer
 from review.lexer import lex
 
