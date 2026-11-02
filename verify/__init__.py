@@ -8,11 +8,8 @@ person (`review_list`); `verify.queue` holds what a person approves before anyth
 directory.
 
 The funnel (`verify.funnel`) credits a flag that matches a known audit finding, then one a
-deterministic rule confirms (`verify.mechanical`), then asks a cheap model whether the rest are
-logic bugs (`verify.triage`). An optional last step writes a Foundry test and runs it offline
-(`verify.poc`, `verify.runner`, `verify.sandbox`); it is off by default.
+deterministic rule confirms (`verify.mechanical`); everything else goes to the verifier.
 
 Nothing is dropped: a place that is not shown stays in the output with its verdict. A model's
-sentences are untrusted text and are never stored in a record of ours; test code stays OUTSIDE the
-repo, and only a verdict and the test's hash are kept (`verify.types`).
+sentences are untrusted text and are never stored in a record of ours.
 """

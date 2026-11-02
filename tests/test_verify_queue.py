@@ -18,7 +18,7 @@ def annotated(function, verdict="valid", *, report="rep", credit=None, note="cla
         verdict, "high", "c", "who calls what", "someone loses funds", "check the balance",
         category="Configuration", severity="low", difficulty="high", root_cause="_update line 3",
     )  # fmt: skip
-    return Annotated(Planned(c, "unverified", "r", credit), None, reasoned=reasoned)
+    return Annotated(Planned(c, "unverified", "r", credit), reasoned)
 
 
 def entries(**kw):

@@ -1,4 +1,4 @@
-"""The mechanical checks and the funnel that decides which flags are simulated."""
+"""The mechanical checks and the funnel that decides which flags the verifier reads."""
 
 import json
 
@@ -7,7 +7,6 @@ import pytest
 from tests.verify_common import candidate
 from verify import funnel as fn
 from verify.mechanical import code_without_comments, mechanical_rule
-from verify.triage import Triage
 from verify.types import Credit
 
 ORIGIN = "require(tx.origin == owner);"
@@ -58,10 +57,6 @@ def test_comments_and_line_numbers_are_removed_before_matching():
     ]
 
 
-def t(kind="logic", confidence="high") -> Triage:
-    return Triage(kind, confidence)
-
-
 def make(i: int, **kw):
     kw.setdefault("note", f"note {i}")
     return candidate(function=f"f{i}", **kw)
@@ -72,70 +67,25 @@ def dispositions(planned):
 
 
 def test_each_flag_goes_to_the_first_place_that_takes_it():
-    cs = [make(1), make(2, note="uses tx.origin"), make(3), make(4), make(5), make(6)]
+    cs = [make(1), make(2, note="uses tx.origin"), make(3)]
     codes = {cs[1].id: ORIGIN}
-    tri = {cs[2].id: t("admin_by_design"), cs[3].id: t("best_practice"),
-           cs[4].id: t("logic"), cs[5].id: t("unclear")}  # fmt: skip
-    matched = {cs[0].place: "TOB-1"}
-    got = fn.plan(cs, matched=matched, codes=codes, triage=tri)
-    assert dispositions(got) == {"f1": "report", "f2": "check", "f3": "skipped", "f4": "skipped",
-                                 "f5": "queued", "f6": "skipped"}  # fmt: skip
-    assert got[0].credit == Credit("report", "TOB-1") and got[1].credit == Credit(
-        "check", "tx-origin-auth"
-    )
-    assert got[2].reason == "triage: admin_by_design" and got[4].credit is None
+    got = fn.plan(cs, matched={cs[0].place: "TOB-1"}, codes=codes)
+    assert dispositions(got) == {"f1": "report", "f2": "check", "f3": "unverified"}
+    assert got[0].credit == Credit("report", "TOB-1")
+    assert got[1].credit == Credit("check", "tx-origin-auth")
+    assert got[2].credit is None and got[2].reason == "nothing vouches for it"
 
 
-def test_a_flag_that_was_not_triaged_is_unverified_not_dropped():
-    got = fn.plan([make(1)], matched={}, codes={}, triage={})
-    assert [(p.disposition, p.reason) for p in got] == [("unverified", "not triaged")]
-
-
-def test_a_matched_flag_is_never_simulated_even_if_triage_says_logic():
-    c = make(1)
-    got = fn.plan([c], matched={c.place: "TOB-1"}, codes={}, triage={c.id: t()})
+def test_a_matched_flag_is_credited_by_the_report_even_if_a_check_would_fire_too():
+    c = make(1, note="uses tx.origin")
+    got = fn.plan([c], matched={c.place: "TOB-1"}, codes={c.id: ORIGIN})
     assert got[0].disposition == "report"
 
 
-def test_the_queue_is_ranked_by_agreement_then_confidence_then_severity_then_id():
-    both = frozenset({"plain", "pipeline"})
-    cs = [
-        make(1, layers=frozenset({"plain"}), severity="high"),
-        make(2, layers=both, severity="low"),
-        make(3, layers=frozenset({"plain"}), severity="high"),
-        make(4, layers=frozenset({"plain"}), severity="medium"),
-    ]
-    tri = {cs[0].id: t(confidence="low"), cs[1].id: t(confidence="low"),
-           cs[2].id: t(confidence="high"), cs[3].id: t(confidence="high")}  # fmt: skip
-    got = fn.plan(cs, matched={}, codes={}, triage=tri, per_report=10)
-    ranks = {p.candidate.function: p.rank for p in got}
-    assert ranks == {
-        "f2": 1,
-        "f3": 2,
-        "f4": 3,
-        "f1": 4,
-    }  # both layers, then high confidence, then low
-
-
-def test_the_cap_is_per_report_and_the_rest_stay_unverified():
-    cs = [candidate(report=r, function=f"f{i}", note=f"n{i}") for r in ("a", "b") for i in range(4)]
-    tri = {c.id: t() for c in cs}
-    got = fn.plan(cs, matched={}, codes={}, triage=tri, per_report=3)
-    for report in ("a", "b"):
-        mine = [p for p in got if p.candidate.report == report]
-        assert sorted(p.rank for p in mine if p.disposition == "queued") == [1, 2, 3]
-        assert [p.reason for p in mine if p.disposition == "unverified"] == [
-            "testable but over the cap"
-        ]
-    assert fn.summary(got) == {"queued": 6, "unverified": 2}
-
-
-def test_a_plan_is_the_same_every_time_whatever_the_input_order():
-    cs = [make(i) for i in range(6)]
-    tri = {c.id: t() for c in cs}
-    a = fn.plan(cs, matched={}, codes={}, triage=tri, per_report=3)
-    b = fn.plan(list(reversed(cs)), matched={}, codes={}, triage=tri, per_report=3)
-    assert {p.candidate.function: p.rank for p in a} == {p.candidate.function: p.rank for p in b}
+def test_every_flag_is_returned_and_none_is_dropped():
+    cs = [make(i) for i in range(5)]
+    got = fn.plan(cs, matched={}, codes={})
+    assert len(got) == 5 and fn.summary(got) == {"unverified": 5}
 
 
 def test_flags_at_one_place_are_merged_with_both_layers_and_the_higher_severity():
@@ -152,12 +102,10 @@ def test_flags_at_one_place_are_merged_with_both_layers_and_the_higher_severity(
 
 def test_the_record_of_a_flag_has_no_sentence_and_is_json():
     c = make(1, layers=frozenset({"plain", "pipeline"}))
-    (p,) = fn.plan([c], matched={c.place: "TOB-9"}, codes={}, triage={})
+    (p,) = fn.plan([c], matched={c.place: "TOB-9"}, codes={})
     rec = fn.record(p)
     assert "note" not in rec and c.note not in json.dumps(rec)
-    assert rec["credit"] == {"kind": "report", "ref": "TOB-9"} and rec["layers"] == [
-        "pipeline",
-        "plain",
-    ]
-    (q,) = fn.plan([make(2)], matched={}, codes={}, triage={})
+    assert rec["credit"] == {"kind": "report", "ref": "TOB-9"}
+    assert rec["layers"] == ["pipeline", "plain"]
+    (q,) = fn.plan([make(2)], matched={}, codes={})
     assert fn.record(q)["credit"] is None

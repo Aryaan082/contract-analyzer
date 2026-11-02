@@ -10,10 +10,9 @@ Results and how they were measured: the root [README](../README.md) and
 |---|---|
 | `reason.py` | **The verifier (v3).** Reads the claim, the flagged file, the files it inherits from and an outline of the rest, all fenced as untrusted text. |
 | `definitions.py` | Trail of Bits' 14 types, severity levels and difficulty levels, in our words. |
-| `stage.py` | Runs the funnel over a report's places, orders the output without the answer key, splits it for a person (`review_list`). |
+| `funnel.py`, `mechanical.py` | Credit a flag that matches a known audit finding, then one a deterministic rule confirms (tx.origin auth, `transfer`'s 2300 gas); everything else goes to the verifier. |
+| `stage.py` | Runs the funnel and the verifier over a report's places, orders the output without the answer key, splits it for a person (`review_list`). |
 | `queue.py` | The review queue: pending, approved, rejected. Only an approved entry of a non-held-out report can become a directory record. |
-| `funnel.py`, `triage.py`, `mechanical.py` | Credit by report match, a deterministic rule check, a cheap triage call. |
-| `sandbox.py`, `poc.py`, `runner.py` | Optional and off by default: a model writes a Foundry test, a second model reviews it, `forge` runs it offline. |
 | `source.py`, `types.py` | The code shown to a model; the shapes passed around. |
 
 ## The verifier (v3)
@@ -43,17 +42,13 @@ The user's approval is the only gate to the directory. Valid places become pendi
 report can be shown but never approved. Nothing writes the directory yet and there is no command
 for it.
 
-## The sandbox (optional)
+## Removed
 
-A model writes a Foundry test that asserts the bad outcome; a model from another company reads each
-passing test (it must show a harm and not be documented design); `forge test` runs it on an in-process
-EVM, offline, in a throwaway folder (`sandbox-exec` with the network denied, no keys, `ffi = false`,
-no file or fork cheatcodes, `vm.store`/`etch`/`load` banned, a timeout that kills the process
-group). The test text stays outside the repo; only a verdict and the test's hash are kept. See
-[`CLAUDE.md`](../CLAUDE.md) (Guardrails) for the one exception this makes to "no exploit code".
-On Radius EVMAuth it confirmed 3 of the 4 High findings over all runs, never RADIUS-4, and nothing
-Low or Medium: a reliable promoter, an unreliable finder. The compiler and libraries must already be
-installed by hand; nothing here downloads them.
+A sandbox verifier (a model wrote a Foundry test, a second model reviewed it, `forge` ran it offline)
+and the cheap triage call that chose which flags to simulate were removed on 2026-11-06: no
+evaluation or flow used them once the reasoning verifier replaced them. On Radius EVMAuth the sandbox
+confirmed 3 of the 4 High findings over all runs, never RADIUS-4, and nothing Low or Medium. Both are in
+git history, last present at `c2ecc2f` (`verify/sandbox.py`, `poc.py`, `runner.py`, `triage.py`).
 
 ## Not done
 

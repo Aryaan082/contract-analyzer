@@ -1,9 +1,9 @@
-"""Step 2 of the funnel: a flag a deterministic check can confirm (no model, no simulation).
+"""Step 2 of the funnel: a flag a deterministic check can confirm (no model, nothing run).
 
 A rule has two patterns and both must match: one on the reviewer's sentence (what the flag claims)
-and one on the function's code (the construct that makes the claim true). The credit is `check`, a
-weaker word than `sandbox`: it says the construct the flag names is there, not that it can be
-exploited. This is a starting set; a rule is added only when its construct IS the claim.
+and one on the function's code (the construct that makes the claim true). The credit is `check`: it
+says the construct the flag names is there, not that it can be exploited. This is a starting
+set; a rule is added only when its construct IS the claim.
 """
 
 import re

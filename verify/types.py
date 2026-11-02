@@ -1,11 +1,9 @@
-"""The shapes the verification funnel passes around. No model text is stored in a verdict: the
-reason is always one of our own fixed words."""
+"""The shapes the verification funnel passes around."""
 
 import hashlib
 from dataclasses import dataclass, field
 
-CREDIT_KINDS = ("report", "check", "sandbox")
-STATUSES = ("confirmed", "not_confirmed", "unverifiable")
+CREDIT_KINDS = ("report", "check")
 LAYERS = ("plain", "pipeline")  # the readers that raise flags; two agreeing ranks a flag up
 
 
@@ -36,8 +34,8 @@ class Candidate:
 
 @dataclass(frozen=True)
 class Credit:
-    """Who vouches for a flag: an auditor's report (`ref` is its finding id), a deterministic
-    check (`ref` is the rule id) or a sandbox test (`ref` is the test's hash)."""
+    """Who vouches for a flag: an auditor's report (`ref` is its finding id) or a deterministic
+    check (`ref` is the rule id)."""
 
     kind: str
     ref: str
@@ -45,22 +43,3 @@ class Credit:
     def __post_init__(self) -> None:
         if self.kind not in CREDIT_KINDS:
             raise ValueError(f"unknown credit kind {self.kind!r}; use one of {CREDIT_KINDS}")
-
-
-@dataclass(frozen=True)
-class Verdict:
-    """What the sandbox made of one flag. `not_confirmed` means no working test in the attempts
-    allowed, not that the flag is false; `unverifiable` means no test could be run at all (does not
-    compile, a tool is missing) or the model said a unit test cannot show it."""
-
-    status: str
-    reason: str  # fixed words of ours
-    attempts: int = 0
-    test_sha: str = ""
-
-    def __post_init__(self) -> None:
-        if self.status not in STATUSES:
-            raise ValueError(f"unknown status {self.status!r}; use one of {STATUSES}")
-
-    def credit(self) -> Credit | None:
-        return Credit("sandbox", self.test_sha) if self.status == "confirmed" else None

@@ -5,20 +5,11 @@ import json
 
 from review.client import ModelUnavailable
 from review.layered import LayerFlag, Place
-from tests.verify_common import (
-    FILES,
-    GOOD_TEST,
-    PASSED,
-    StubRunner,
-    poc_reply,
-    reader,
-    triage_reply,
-    verdict_reply,
-    writer,
-)
+from tests.verify_common import CODE, FILES, writer
 from verify import stage
-from verify.triage import Triage
-from verify.types import Credit
+from verify.funnel import Planned
+from verify.reason import Reasoned
+from verify.types import Candidate, Credit
 
 
 def place(
@@ -26,22 +17,6 @@ def place(
 ):
     flags = tuple(LayerFlag(layer, severity, 6, 10, "e", False, note) for layer in layers)
     return Place(file, "Vault", function, flags)
-
-
-def kinds(annotated):
-    return {a.candidate.function: (a.planned.disposition, a.tier) for a in annotated}
-
-
-def triage_by_function(**by_function):
-    """A triage client that answers by the function named in the prompt."""
-
-    def answer(prompt):
-        for name, kind in by_function.items():
-            if f"Vault.{name} in" in prompt.user:
-                return triage_reply(kind, "high")
-        return "words"
-
-    return writer([answer])
 
 
 def test_one_candidate_per_place_with_the_most_severe_flags_lines_and_both_layers():
@@ -60,102 +35,52 @@ def test_one_candidate_per_place_with_the_most_severe_flags_lines_and_both_layer
     assert c.layers == {"plain", "pipeline"}
 
 
-def test_every_place_comes_back_with_a_disposition_and_a_tier_and_none_is_dropped():
-    places = [
-        place("withdraw", ("plain", "pipeline")),
-        place("deposit"),
-        place("mint"),
-        place("burn"),
-    ]
-    cands = stage.candidates_of("rep", places)
-    tri = triage_by_function(withdraw="logic", deposit="admin_by_design", mint="best_practice")
-    out = stage.annotate(cands, FILES, triage_client=tri, per_report=10)
+def test_with_no_verifier_every_place_comes_back_unverified_and_none_is_dropped():
+    places = [place("withdraw", ("plain", "pipeline")), place("deposit"), place("mint")]
+    out = stage.annotate(stage.candidates_of("rep", places), FILES)
     assert len(out) == len(places)
-    assert kinds(out) == {"withdraw": ("queued", 3), "deposit": ("skipped", 7),
-                          "mint": ("skipped", 7), "burn": ("unverified", 6)}  # fmt: skip
-    assert all(a.verdict is None for a in out)  # no writer, no simulation
-
-
-def test_the_testable_places_are_simulated_and_a_confirmed_one_leads_the_output():
-    places = [
-        place("withdraw"),
-        place("deposit", ("plain", "pipeline")),
-        place("mint", severity="low"),
-    ]
-    cands = stage.candidates_of("rep", places)
-    tri = triage_by_function(withdraw="logic", deposit="logic", mint="best_practice")
-    w, r = writer([poc_reply()]), reader([verdict_reply("accept")])
-    out = stage.annotate(cands, FILES, triage_client=tri, writer=w, reviewer=r,
-                         runner=StubRunner(PASSED), solc="0.8.20")  # fmt: skip
-    assert {a.candidate.function for a in out if a.verdict and a.verdict.status == "confirmed"} == {
-        "withdraw",
-        "deposit",
+    assert {a.candidate.function: (a.planned.disposition, a.tier, a.status) for a in out} == {
+        f: ("unverified", 4, "unchecked") for f in ("withdraw", "deposit", "mint")
     }
-    ordered = stage.output_order(out)
-    assert [a.candidate.function for a in ordered] == ["deposit", "withdraw", "mint"]
-    assert (
-        ordered[0].credit == Credit("sandbox", ordered[0].verdict.test_sha)
-        and ordered[0].test_file == GOOD_TEST
-    )
 
 
-def test_a_place_that_could_not_be_confirmed_stays_in_the_output_marked_unverified_in_tier_three():
-    cands = stage.candidates_of("rep", [place("withdraw")])
-    tri = triage_by_function(withdraw="logic")
-    out = stage.annotate(
-        cands, FILES, triage_client=tri, writer=writer(['{"feasible": false}']),
-        reviewer=reader([verdict_reply()]), runner=StubRunner(PASSED), solc="0.8.20",
-    )  # fmt: skip
-    (a,) = out
-    assert a.verdict.status == "unverifiable" and a.credit is None and a.tier == 3
-    assert a.planned.disposition == "queued"
+def test_a_place_a_deterministic_check_confirms_is_credited_without_the_verifier():
+    files = {"src/Vault.sol": CODE.replace("require(ok);", "require(tx.origin == msg.sender);")}
+    cands = stage.candidates_of("rep", [place("withdraw", note="authorises with tx.origin")])
+    r = reasoner_by_function(withdraw="invalid")
+    (a,) = stage.annotate(cands, files, reasoner=r)
+    assert a.planned.disposition == "check" and a.credit == Credit("check", "tx-origin-auth")
+    assert a.tier == 1 and a.status == "credited" and not r.prompts
 
 
-def test_the_output_order_puts_evidence_first_agreement_next_and_noise_last():
-    def ann(function, disposition, *, credit=None, triage=None, layers=("plain",), severity="high"):
-        from verify.funnel import Planned
-        from verify.types import Candidate
+def ann(function, *, credit=None, reasoned=None, layers=("plain",), severity="high"):
+    c = Candidate("rep", "src/Vault.sol", "Vault", function, 1, 2, function, severity,
+                  frozenset(layers))  # fmt: skip
+    return stage.Annotated(Planned(c, "unverified", "r", credit), reasoned)
 
-        c = Candidate(
-            "rep", "src/Vault.sol", "Vault", function, 1, 2, function, severity, frozenset(layers)
-        )
-        return stage.Annotated(Planned(c, disposition, "r", credit), triage)
 
+def test_the_output_order_puts_evidence_first_agreement_next_and_rejections_last():
     items = [
-        ann("noise", "skipped", triage=Triage("best_practice", "high")),
-        ann("untriaged", "unverified"),
-        ann("over_cap", "unverified", triage=Triage("logic", "high")),
-        ann("plain_logic", "queued", triage=Triage("logic", "high")),
-        ann("both_logic", "queued", triage=Triage("logic", "low"), layers=("plain", "pipeline")),
-        ann("checked", "check", credit=Credit("check", "tx-origin-auth")),
-        ann("confirmed", "queued", credit=Credit("sandbox", "abc")),
+        ann("rejected", reasoned=Reasoned("invalid", "high")),
+        ann("unchecked"),
+        ann("uncertain", reasoned=Reasoned("uncertain", "low")),
+        ann("plain_valid", reasoned=Reasoned("valid", "high")),
+        ann("both_valid", reasoned=Reasoned("valid", "low"), layers=("plain", "pipeline")),
+        ann("checked", credit=Credit("check", "tx-origin-auth")),
+        ann("matched", credit=Credit("report", "AUDIT-1")),
     ]
     assert [a.candidate.function for a in stage.output_order(items)] == [
-        "confirmed", "checked", "both_logic", "plain_logic", "over_cap", "untriaged", "noise"
+        "matched", "checked", "both_valid", "plain_valid", "uncertain", "unchecked", "rejected"
     ]  # fmt: skip
 
 
 def test_ranking_and_annotating_never_see_the_answer_key():
     assert "label" not in inspect.signature(stage.output_order).parameters
     cands = stage.candidates_of("rep", [place("withdraw"), place("deposit")])
-    tri = triage_by_function(withdraw="logic", deposit="logic")
-    plain_out = stage.annotate(cands, FILES, triage_client=tri)
+    plain_out = stage.annotate(cands, FILES)
     assert all(a.credit is None for a in plain_out)  # the default `matched` is empty
-    known = stage.annotate(cands, FILES, triage_client=tri,
-                           matched={cands[0].place: "AUDIT-1"})  # fmt: skip
+    known = stage.annotate(cands, FILES, matched={cands[0].place: "AUDIT-1"})
     assert known[0].credit == Credit("report", "AUDIT-1") and known[0].tier == 0
-
-
-def test_the_record_keeps_words_ids_and_hashes_and_no_sentence_or_test_text():
-    cands = stage.candidates_of("rep", [place("withdraw", note="SECRET SENTENCE")])
-    out = stage.annotate(cands, FILES, triage_client=triage_by_function(withdraw="logic"),
-                         writer=writer([poc_reply()]), reviewer=reader([verdict_reply()]),
-                         runner=StubRunner(PASSED), solc="0.8.20")  # fmt: skip
-    text = json.dumps(stage.record(out[0]))
-    assert "SECRET SENTENCE" not in text and "PocTest" not in text
-    rec = stage.record(out[0])
-    assert rec["verdict"]["status"] == "confirmed" and rec["credit"]["kind"] == "sandbox"
-    assert rec["tier"] == 0 and rec["triage"] == {"kind": "logic", "confidence": "high"}
 
 
 def reasoner_by_function(**by_function):
@@ -176,11 +101,7 @@ def reasoner_by_function(**by_function):
 
 def reasoned_run(**kw):
     places = [place(f) for f in ("withdraw", "deposit", "mint", "burn", "pause")]
-    cands = stage.candidates_of("rep", places)
-    tri = triage_by_function(
-        withdraw="logic", deposit="admin_by_design", mint="logic", burn="logic"
-    )
-    return stage.annotate(cands, FILES, triage_client=tri, **kw)
+    return stage.annotate(stage.candidates_of("rep", places), FILES, **kw)
 
 
 def test_the_reasoning_verifier_reads_every_place_that_nothing_else_vouches_for():
@@ -191,29 +112,15 @@ def test_the_reasoning_verifier_reads_every_place_that_nothing_else_vouches_for(
         "pause": "unchecked",
     }  # fmt: skip
     assert {k: v.tier for k, v in out.items()} == {
-        "withdraw": 2,
-        "deposit": 2,
-        "mint": 8,
-        "burn": 4,
-        "pause": 6,
-    }  # triage called deposit by-design; the verifier's answer decides the tier
+        "withdraw": 2, "deposit": 2, "mint": 5, "burn": 3, "pause": 4
+    }  # fmt: skip
     assert len(r.prompts) == 6  # five places; the one it cannot read is asked a second time
 
 
-def test_the_verifier_can_be_limited_to_the_places_triage_calls_logic():
-    r = reasoner_by_function(withdraw="valid", deposit="valid", mint="valid", burn="valid")
-    out = {a.candidate.function: a for a in reasoned_run(reasoner=r, reason_only_logic=True)}
-    assert len(r.prompts) == 3
-    assert out["deposit"].reasoned is None and out["deposit"].tier == 7
-    assert out["withdraw"].status == "valid"
-
-
-def test_a_place_a_report_or_a_check_already_vouches_for_is_not_sent_to_the_verifier():
+def test_a_place_a_report_vouches_for_is_not_sent_to_the_verifier():
     cands = stage.candidates_of("rep", [place("withdraw"), place("deposit")])
     r = reasoner_by_function(withdraw="invalid", deposit="invalid")
-    tri = triage_by_function(withdraw="logic", deposit="logic")
-    out = stage.annotate(cands, FILES, triage_client=tri,
-                         matched={cands[0].place: "AUDIT-1"}, reasoner=r)  # fmt: skip
+    out = stage.annotate(cands, FILES, matched={cands[0].place: "AUDIT-1"}, reasoner=r)
     assert len(r.prompts) == 1 and "Vault.deposit in" in r.prompts[0].user
     assert out[0].status == "credited" and out[0].tier == 0 and out[0].reasoned is None
 
@@ -239,35 +146,23 @@ def test_a_verifier_that_cannot_answer_leaves_every_place_unchecked_and_shown_no
 
 
 def test_the_record_has_the_verdict_words_and_none_of_the_models_sentences():
-    out = reasoned_run(reasoner=reasoner_by_function(withdraw="valid"))
-    first = next(a for a in out if a.candidate.function == "withdraw")
+    cands = stage.candidates_of("rep", [place("withdraw", note="SECRET SENTENCE")])
+    (first,) = stage.annotate(cands, FILES, reasoner=reasoner_by_function(withdraw="valid"))
     rec = stage.record(first)
     assert rec["reasoned"] == {"verdict": "valid", "confidence": "high", "downgraded": False}
-    assert rec["status"] == "valid" and rec["tier"] == 2
-    assert "SECRET COUNTER" not in json.dumps(rec)
+    assert rec["status"] == "valid" and rec["tier"] == 2 and rec["disposition"] == "unverified"
+    text = json.dumps(rec)
+    assert "SECRET COUNTER" not in text and "SECRET SENTENCE" not in text
 
 
 def test_a_valid_place_below_severity_low_goes_to_minor_and_nothing_is_deleted():
-    from verify.reason import Reasoned
-
     def with_severity(function, severity):
-        a = annotated_valid(function)
-        a.reasoned = Reasoned("valid", "high", "c", "s", "h", "f", category="Timing",
-                              severity=severity, difficulty="low")  # fmt: skip
-        return a
+        reasoned = Reasoned("valid", "high", "c", "s", "h", "f", category="Timing",
+                            severity=severity, difficulty="low")  # fmt: skip
+        return ann(function, reasoned=reasoned)
 
     levels = (("a", "high"), ("b", "low"), ("c", "informational"), ("d", "undetermined"))
-    items = [with_severity(f, s) for f, s in levels]
-    got = stage.review_list(items)
+    got = stage.review_list([with_severity(f, s) for f, s in levels])
     assert sorted(a.candidate.function for a in got.shown) == ["a", "b"]
     assert sorted(a.candidate.function for a in got.minor) == ["c", "d"]
     assert len(got.shown + got.minor) == 4 and not got.uncertain and not got.rejected
-
-
-def annotated_valid(function):
-    from verify.funnel import Planned
-    from verify.reason import Reasoned
-    from verify.types import Candidate
-
-    c = Candidate("rep", "src/Vault.sol", "Vault", function, 1, 2, function, "high", frozenset())
-    return stage.Annotated(Planned(c, "unverified", "r"), None, reasoned=Reasoned("valid", "high"))

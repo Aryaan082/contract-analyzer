@@ -1,10 +1,10 @@
-"""The shapes, the code shown to a model and the outline: no model, no forge."""
+"""The shapes, the code shown to a model and the outline: no model."""
 
 import pytest
 
 from tests.verify_common import CODE, FILES, candidate
 from verify import source
-from verify.types import Credit, Verdict
+from verify.types import Credit
 
 
 def test_a_candidate_id_is_stable_and_depends_on_the_place_the_lines_and_the_sentence():
@@ -17,17 +17,12 @@ def test_a_candidate_id_is_stable_and_depends_on_the_place_the_lines_and_the_sen
     assert a.id == candidate(severity="low", layers=frozenset({"pipeline"})).id  # not part of it
 
 
-def test_credit_and_verdict_refuse_unknown_words():
+def test_credit_refuses_an_unknown_word_and_knows_only_a_report_and_a_check():
     with pytest.raises(ValueError, match="unknown credit kind"):
         Credit("trust me", "x")
-    with pytest.raises(ValueError, match="unknown status"):
-        Verdict("probably", "x")
-
-
-def test_only_a_confirmed_verdict_carries_credit():
-    assert Verdict("confirmed", "r", 1, "abc").credit() == Credit("sandbox", "abc")
-    for status in ("not_confirmed", "unverifiable"):
-        assert Verdict(status, "r", 1, "abc").credit() is None
+    with pytest.raises(ValueError, match="unknown credit kind"):
+        Credit("sandbox", "x")  # the sandbox was removed
+    assert Credit("report", "T-1").kind == "report" and Credit("check", "r").kind == "check"
 
 
 def test_the_flagged_function_is_shown_numbered_and_only_that_function():
