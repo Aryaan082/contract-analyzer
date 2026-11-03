@@ -23,7 +23,7 @@ The project has two goals, and one rule that covers both:
 | Role | Model | Used for |
 |---|---|---|
 | Agent (default) | Claude Sonnet 5.5, `anthropic/claude-sonnet-5.5` (cheap tier: Haiku 5.5) | the tool-calling loop and the final report |
-| Agent evals, triage, **verifier v3**, source-review dev runs | DeepSeek V4.1 Flash, `deepseek/deepseek-v4.1-flash-1017`, thinking off | every benchmark marked DeepSeek below |
+| Agent evals, **verifier v3**, source-review dev runs | DeepSeek V4.1 Flash, `deepseek/deepseek-v4.1-flash-1017`, thinking off | every benchmark marked DeepSeek below |
 | Source-review head-to-heads | Claude Opus 5.5, `anthropic/claude-opus-5.5` | planted bugs, Sherlock issues, pre-registered Trail of Bits runs |
 | Embeddings | Qwen3-Embedding-8B | retrieval |
 | Reranker (optional, off by default) | MiniLM cross-encoder, local | retrieval |
@@ -268,7 +268,7 @@ on held-out. Not quotable (draft rubric, DeepSeek also judges). Reproduce, free 
 
 ## Status
 
-About 2,500 tests, none needing a network or a model. Built: chain tools, reference library,
+About 2,400 tests, none needing a network or a model. Built: chain tools, reference library,
 knowledge base, retrieval, the agent, the evals, source review, the layered run, the verifier and the
 review queue. Not built: the FastAPI service, web UI, tracing dashboard and a public deployment; the
 layered run and the queue are not reachable from `python -m agent`; nothing writes approved findings

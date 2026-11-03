@@ -582,4 +582,8 @@ evaluation) was removed once `verifier_eval` replaced it; it is in git history a
 exploratory 2026-11-05 DeepSeek run records (`ds`, `ds2`, `ds3` and their wide-key reports, 19 files)
 were removed from `evals/source_review/results/`: nothing referenced them and their numbers are rows in
 `evals/results.md`. The pre-registered 2026-11-04 records stay.
+Also removed (2026-11-06): the sandbox verifier (`verify/sandbox.py`, `poc.py`, `runner.py`) and the
+triage call (`verify/triage.py`), with the funnel's "queued" and "skipped" places that existed only for
+them. Nothing measured used them: the dev and held-out tables of `verifier_eval` are identical before and
+after. Last present at `c2ecc2f`.
 
