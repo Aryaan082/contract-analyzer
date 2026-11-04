@@ -766,3 +766,15 @@ def test_found_by_majority_but_not_unanimously_is_flagged_in_the_verdict(rubric)
     _, refs, labels_of, records, srcs, cache = setup_run(rubric, answers)
     v = tr.verdicts(rubric, three, refs, labels_of, records, srcs, cache)[("r", "r:T-1")]
     assert v.found and v.found_lenient and not v.found_unanimous and v.kind == "found"
+
+
+def test_judge_cost_counts_only_the_reports_of_the_side():
+    rows = [
+        {"report": "a", "cost_usd": 0.1},
+        {"report": "b", "cost_usd": 0.2},
+        {"report": "a", "cost_usd": 0.05},
+        {"cost_usd": 9.0},  # a row with no report is nobody's
+    ]
+    assert cli.judge_cost(rows, {"a"}) == pytest.approx(0.15)
+    assert cli.judge_cost(rows, {"a", "b"}) == pytest.approx(0.35)
+    assert cli.judge_cost(rows, set()) == 0.0

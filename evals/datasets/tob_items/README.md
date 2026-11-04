@@ -224,3 +224,9 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   report also shows how often each judge is the minority of a 2 to 1 split and whether it was the more
   generous or the stricter one, so a judge that differs from the others shows. The first 249 dev
   screening pairs were judged by glm and qwen before this change; DeepSeek judges the same pairs.
+- **Report-time accounting (2026-11-04, after the held-out run; no arm or judge was affected).** The
+  judge cost shown in a report counts only the cached judgements of that side's reports (it first
+  counted the whole cache). A judge pair that one judge could not answer after several tries stays
+  unanswered: two glm pairs (one dev, Cap-6; one held-out, Bunni-15). In both the verdict kind of the
+  finding is `unjudged` unless another pair settles it; for Bunni-15 the other two judges said
+  `same_place`, so a `same` from glm could not have made it found by a majority.

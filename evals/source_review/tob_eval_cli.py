@@ -256,6 +256,12 @@ def cmd_judge(args: argparse.Namespace, out: Callable[[str], None]) -> int:
 # ---- hand-check --------------------------------------------------------------------------------
 
 
+def judge_cost(rows: list[dict], slugs: set[str]) -> float:
+    """Dollars the judge cache holds for the pairs of these reports (one row per pair; the failed
+    tries of a pair that was asked again are not in the cache and are not counted)."""
+    return sum(r.get("cost_usd", 0.0) for r in rows if r.get("report") in slugs)
+
+
 def all_pairs(ctx: Context, rubric, judges, cache, records) -> list[tp.PairView]:
     """Every pair that every judge has answered, over the records of all stages."""
     out: list[tp.PairView] = []
@@ -340,7 +346,7 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         for s in tr.STAGES
     }
     label, quotable = policy_label(judges, load_policy())
-    judge_usd = sum(r.get("cost_usd", 0.0) for r in cache.rows())
+    judge_usd = judge_cost(cache.rows(), {r.slug for r in ctx.reports})
     agreement = tp.judge_agreement(all_pairs(ctx, rubric, judges, cache, records), judges)
     meta = {
         "model": cmp.OPUS.name, "date": tp.today(), "side": args.side, "judges": list(judges),
