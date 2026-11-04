@@ -251,3 +251,8 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   keep their records; the same three judges with the same rubric judge the new flags. Every result
   from this re-run is labelled "after the reply-reading fix, post-hoc". The held-out re-run is not a
   second blind test: the code was changed after its results were seen.
+  Result of the re-run (judged with the draft rubric, so not quotable): dev pipeline 2/21 against
+  fresh plain 1/21 (the first run: 5/21), held-out pipeline 1/20 against 1/20 (the first run: 0/20);
+  neither shows an improvement. Only held-out needed the retry, twice in about 30 requests, and the
+  two failed replies were a paragraph before a fenced block and an invalid JSON object, which a
+  fence rule alone would not have read. Reports are `*-2026-11-04-fixed.*` next to the originals.
