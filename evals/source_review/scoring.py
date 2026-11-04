@@ -77,6 +77,9 @@ class Flag:
     file_id: str
     start_line: int
     end_line: int
+    # The reviewer's own one line (untrusted text). Only the Trail of Bits eval reads it, to show a
+    # judge; it is not part of a flag's identity, and results files made for the repo strip it.
+    note: str = field(default="", compare=False)
 
     @property
     def key(self) -> tuple[str | None, str | None]:
@@ -121,6 +124,7 @@ def flags_of(result: ReviewResult, *, min_severity: str = "low") -> tuple[Flag, 
                 file_id=span.file.file_id,
                 start_line=span.range.start_line,
                 end_line=span.range.end_line,
+                note=span.explanation.text if span.explanation else "",
             )
         )
     return tuple(out)

@@ -1,0 +1,3333 @@
+# In-scope Solidity files of each kept report: path, bytes, git blob hash.
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "deploy.sol"
+size = 1476
+blob = "3b50b91f6e055e602f14326b524bbc78b79630b7"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/ERC20Pool.sol"
+size = 17766
+blob = "f139b8ce54a0a3196ec729fa0e3796e56bb1a24e"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/ERC20PoolFactory.sol"
+size = 2926
+blob = "6098ea68213511f39031200709dd686ff4408b46"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/ERC721Pool.sol"
+size = 23291
+blob = "386055912569eb6ddb0a3ea372f2b6ef3bda888b"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/ERC721PoolFactory.sol"
+size = 4982
+blob = "ef1da0440eb7285832840cd9da4ccc6ae78ed82c"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/PoolInfoUtils.sol"
+size = 15505
+blob = "f395952d6ac5da17f72bcd322b49c5c40694db1a"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/PositionManager.sol"
+size = 15220
+blob = "d1caa295b690a420a3e18e8b19e69ae78a5cbde9"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/RewardsManager.sol"
+size = 29428
+blob = "bd406c5a672a77968729af8f331dad1d820f99c6"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/base/FlashloanablePool.sol"
+size = 3444
+blob = "22e70da69ec94b353b6f63a33562f1b62d93f853"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/base/PermitERC721.sol"
+size = 5478
+blob = "41084f4104e9b99cf900a9617ad6dd44c41ed18c"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/base/Pool.sol"
+size = 25744
+blob = "36a7a7e84b8fa5dfee8a2a8cad93aa4323c06c94"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/base/PoolDeployer.sol"
+size = 2375
+blob = "2ae7459c6c26777fa757145d0e5ec00f2aa2fed5"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/IERC3156FlashBorrower.sol"
+size = 715
+blob = "8e23435e732256fbf303be09d0051217c012ee08"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/IERC3156FlashLender.sol"
+size = 1326
+blob = "84f0b8ecd0c67d44ea24e535c5840c249140143e"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/IPool.sol"
+size = 1572
+blob = "8ced68587bce97522f32bf7c94f9b9bf891c74a6"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/IPoolFactory.sol"
+size = 850
+blob = "993c4eeef50638fa627fba2311896e218a1ee289"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolDerivedState.sol"
+size = 1135
+blob = "e97109c3a5e69faed75fece84185a48326e4a6be"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolErrors.sol"
+size = 5720
+blob = "a0803f5f351e0915b355b2f2baa03e55e65381da"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolEvents.sol"
+size = 8785
+blob = "49927d9b6cab7bfb1325574545dbcf5f39156674"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolImmutables.sol"
+size = 947
+blob = "addf29a6b04489f6b99f86da9a09853adb05406c"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolInternals.sol"
+size = 4894
+blob = "576f3a721acd757ff5969a2ff538c934cba516bd"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolLenderActions.sol"
+size = 3909
+blob = "d291727519b1969be846b52dd4eceaed14efffde"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolLiquidationActions.sol"
+size = 2744
+blob = "8f20c9047ea91e91b31514ec7fb347435f6aecb1"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolReserveAuctionActions.sol"
+size = 993
+blob = "6ceed46dc3e70b6e2e6fd3a7b54fe2e7d7f670ce"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/commons/IPoolState.sol"
+size = 14313
+blob = "bfda7af77857bfd0824888141dcd81fba1937067"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc20/IERC20Pool.sol"
+size = 1147
+blob = "76b945e5478c75db5a91b0df8b289254a03ac324"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc20/IERC20PoolBorrowerActions.sol"
+size = 2083
+blob = "d92a95712cb4b60d0b5a36231dcdc95d16787d8e"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc20/IERC20PoolEvents.sol"
+size = 1189
+blob = "569616300d46a2b9c7c84826531d653012aeaf04"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc20/IERC20PoolFactory.sol"
+size = 907
+blob = "de3b49feaf4a5945bcd4da3ffc087cc0d30e9dba"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc20/IERC20PoolImmutables.sol"
+size = 351
+blob = "d7aa2096457d83b2890c9b0a1639b8f5ce1f4c37"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc20/IERC20PoolLenderActions.sol"
+size = 718
+blob = "ce0831efb1196e3911b6080a63a4746e5917738b"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc20/IERC20Taker.sol"
+size = 718
+blob = "fa60b2cb7d499db0675a90f449f480832883ed14"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721Pool.sol"
+size = 1085
+blob = "edc8721d6d1e6ed626e35d3229b022884c13319b"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721PoolBorrowerActions.sol"
+size = 2047
+blob = "9206c9b5ef857b49e79bb44926e398ae6ffba61d"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721PoolErrors.sol"
+size = 269
+blob = "5f9db47929c188c5f7bb80fa75a31616c8caeb70"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721PoolEvents.sol"
+size = 1658
+blob = "b785da5b1c6999911a383c92f81f51976c72b173"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721PoolFactory.sol"
+size = 1370
+blob = "30d842cbf6ae5289e3564b503639423dd5d18bca"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721PoolImmutables.sol"
+size = 302
+blob = "53b74ae89b644cf11ab5ad4cc16a18cb6a98ba42"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721PoolLenderActions.sol"
+size = 1651
+blob = "cf068b95142dd221a4328334750a9dddae3d520a"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721PoolState.sol"
+size = 1139
+blob = "ce76f45c9ef5c0f93c89040844df3f85fe04cb97"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/pool/erc721/IERC721Taker.sol"
+size = 691
+blob = "48668411643514237e09f4a00af26ba9f125e73c"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/position/IPositionManager.sol"
+size = 686
+blob = "f04c8ef42e874d2bc3456b3a049ecb9b59bf2bf7"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/position/IPositionManagerDerivedState.sol"
+size = 1355
+blob = "a2123b17495779f3d62411267d6184cc8bd82578"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/position/IPositionManagerErrors.sol"
+size = 797
+blob = "cb87acb7e3be7f10784b94681bba5997fa1fb439"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/position/IPositionManagerEvents.sol"
+size = 1483
+blob = "d6a17ce3a4d5aa9c43899b3fde8db8ccaa54b30c"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/position/IPositionManagerOwnerActions.sol"
+size = 4620
+blob = "60e7e61106f2b6a26b425c26e0ee7c44860db71e"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/position/IPositionManagerState.sol"
+size = 842
+blob = "03559e0073b8adc691a442fd3bb49b5a51a56111"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/rewards/IRewardsManager.sol"
+size = 624
+blob = "0d51a502d589b21fb83b5a0cea63604f26788c8f"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/rewards/IRewardsManagerDerivedState.sol"
+size = 629
+blob = "2e1a53e8a41b261f138443cadde3321ae07441a8"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/rewards/IRewardsManagerErrors.sol"
+size = 658
+blob = "f9f1bb33d18d7fbcf2d08583b26362d91a216e84"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/rewards/IRewardsManagerEvents.sol"
+size = 2289
+blob = "c754fd016d56f626a3d6c38fd4174f2dbc595629"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/rewards/IRewardsManagerOwnerActions.sol"
+size = 1825
+blob = "22490037b89b5b60fc2a4ab14e76aa98ff6ec3c3"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/interfaces/rewards/IRewardsManagerState.sol"
+size = 3197
+blob = "0367f3cab3a7188607079ae808441187f88e20fd"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/external/Auctions.sol"
+size = 64630
+blob = "16153864a49da2a5d5919914b00011f3e9e72c36"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/external/BorrowerActions.sol"
+size = 17145
+blob = "04e5b020ea45e41b572e6784ab773d6bf52c5daa"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/external/LenderActions.sol"
+size = 30914
+blob = "91fbf4d6f22d2fe6a577af99171178e60b389794"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/external/PoolCommons.sol"
+size = 10840
+blob = "e883fbf787637ef4db80d3db29d1db5301f5a3de"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/external/PositionNFTSVG.sol"
+size = 14519
+blob = "22692b17549fdade73109274380c81a80a3d15c7"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/helpers/PoolHelper.sol"
+size = 12039
+blob = "dcb7a79f716c7fb20dee97007ee1ab860bc7cec8"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/helpers/RevertsHelper.sol"
+size = 4164
+blob = "fe2fc1bc7fd8e0d9d66ceeef2691848254dfb848"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/helpers/SafeTokenNamer.sol"
+size = 4185
+blob = "325eba2e4891240decbdacfeca2c20416cff593a"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/internal/Buckets.sol"
+size = 5912
+blob = "8075f93078742927eff0e8ade6cd9ffc467cd661"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/internal/Deposits.sol"
+size = 16746
+blob = "1da848440d83de8fa8c31c3ece35f1fcca7fc7a2"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/internal/Loans.sol"
+size = 9745
+blob = "ff1bf1200672bf3ee1717fb2d8c9fed2dffb16ad"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "contracts"
+path = "src/libraries/internal/Maths.sol"
+size = 1615
+blob = "c01f6e059c5b0954cb2573c835b7bf0b2c23cdf9"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/grants/GrantFund.sol"
+size = 16310
+blob = "f21188b2bd643caa99bdb5ee50983bb27491209a"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/grants/base/ExtraordinaryFunding.sol"
+size = 7972
+blob = "be7fb3e08b805cb7ab220c89a1ea5a3b63fe3e6c"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/grants/base/Funding.sol"
+size = 4725
+blob = "570c406c39730cd34324c9f3a414a207353106a7"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/grants/base/StandardFunding.sol"
+size = 32073
+blob = "1bf65b92746d95a9ded8355bebe136b3ef1dd0eb"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/grants/interfaces/IExtraordinaryFunding.sol"
+size = 4448
+blob = "47c2dbdd9619c098d351dbfa134d98e5c519d5d8"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/grants/interfaces/IGrantFund.sol"
+size = 286
+blob = "b8e1cf7ce11c7bd11f74b05f39268d2a4a6cdac9"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/grants/interfaces/IStandardFunding.sol"
+size = 13636
+blob = "944b5cd7aa5f844be90634dc9028086d7b8ec9ef"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/grants/libraries/Maths.sol"
+size = 1690
+blob = "6da39e9e031f98fea7a163c89c78979472c01c2d"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/token/AjnaToken.sol"
+size = 2421
+blob = "c4612a1fa9f16adb1bdcb6169fbff53023623e76"
+
+[[file]]
+report = "2023-04-ajnalabs"
+repo = "ecosystem-coordination"
+path = "src/token/BurnWrapper.sol"
+size = 1915
+blob = "78b91400b8a86f78ec4dbba022bfd4466d54b55f"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Dependencies/IStETH.sol"
+size = 445
+blob = "440c2ef9d01f6ece63180ad4d658be801e2f0ae0"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Dependencies/ITellor.sol"
+size = 1181
+blob = "f4234ae7e52ec76cc55e3798fed9dc9379427f09"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Dependencies/IWstETH.sol"
+size = 2003
+blob = "23ab8908072c9c59a06ba5b0f80e427bed9fad8b"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Dependencies/MathUtils.sol"
+size = 3884
+blob = "0a64af21b6a808f09f39e1eb19187f67e853718f"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/ERC20Indexable.sol"
+size = 2900
+blob = "ff58448acfe9fb01cdcdff5830b43c04e8fea3a7"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/FeeCollector.sol"
+size = 930
+blob = "7f45ca44cdc8b8713a33740d6f84c85ea725067b"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IAMM.sol"
+size = 1105
+blob = "84c7b4c34e6a0158c8796c756d04777082f1c575"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IERC20Indexable.sol"
+size = 1726
+blob = "97111470edd0d7320763b4f2be9f9f942fd7f8b9"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IFeeCollector.sol"
+size = 810
+blob = "78f0cb89e3a4d86965412f00a41992a189d0e70c"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IOneStepLeverage.sol"
+size = 3028
+blob = "cc9a77ee86549cb445e2959da53f037672010467"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IPositionManager.sol"
+size = 16790
+blob = "154909d6e2ac891b86d1702902c06cfc5ef248bd"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IPositionManagerDependent.sol"
+size = 460
+blob = "85ed372db394fba284d4dbb26df0006422070395"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IPositionManagerStETH.sol"
+size = 3174
+blob = "f5806c07600fb2aabe27cc6c5d4f96116f5b5cfb"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IPriceFeed.sol"
+size = 2910
+blob = "7ca8e3d2be39c221116f7d075e2186062268686b"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/IRToken.sol"
+size = 2620
+blob = "21b69dd1b25bf35636bdadfd2da89b52bd73b83d"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Interfaces/ISplitLiquidationCollateral.sol"
+size = 947
+blob = "3952307f2496c52cd863818e26206ac44ce0f37c"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/OneStepLeverage.sol"
+size = 5593
+blob = "e3564984396db5a93e3c42f00c952c2176f6a995"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Oracles/BasePriceOracle.sol"
+size = 1857
+blob = "c7f600443275eafb79a397d91768efdc8f8df3d3"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Oracles/ChainlinkPriceOracle.sol"
+size = 6829
+blob = "7558d7bd3e78cb5d5febee0278e14c744bbd9807"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Oracles/Interfaces/IChainlinkPriceOracle.sol"
+size = 915
+blob = "db3d6cccd26dc9134f931476642d009ed790be1b"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Oracles/Interfaces/IPriceOracle.sol"
+size = 1113
+blob = "654abb1d18147617bfb3a70dddfa2fa34d195013"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Oracles/Interfaces/ITellorPriceOracle.sol"
+size = 622
+blob = "f94cba7db72640149b36feb246d712505446dd7d"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/Oracles/TellorPriceOracle.sol"
+size = 2465
+blob = "a5e9f46e637d8bee0255c5e7d7262540aea605c9"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/PositionManager.sol"
+size = 24457
+blob = "a331a66660ab0c792ae1b40a8dcb1101d6943cf8"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/PositionManagerDependent.sol"
+size = 737
+blob = "18f3adfca1594a3f63e994a35fdb7a805505873f"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/PositionManagerStETH.sol"
+size = 4994
+blob = "b2c824a0cfb7998f83266fad1b2df14aa4166552"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/PriceFeed.sol"
+size = 7646
+blob = "23ee8809c6ec83fa19f89fd05dee158bc5c5e3d0"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/RToken.sol"
+size = 3404
+blob = "ea597a08cd3a1323396422c0bb069d1c4deaa815"
+
+[[file]]
+report = "2023-04-tempus-raft"
+repo = "raft-contracts"
+path = "contracts/SplitLiquidationCollateral.sol"
+size = 4642
+blob = "6242a5da6e67b8ee3fa71b68d57a32da7c5afd36"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/FraxGovernorAlpha.sol"
+size = 6832
+blob = "89b87c49a1cb2172f10143f99dd0ac1987b17202"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/FraxGovernorBase.sol"
+size = 14830
+blob = "21ec2450edcfeeb98f903ebeaa647c310d363568"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/FraxGovernorOmega.sol"
+size = 25569
+blob = "e3ab63faad4bc97ff3d776f9f6eafc40919b7276"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/FraxGuard.sol"
+size = 4470
+blob = "c20659ffadd4753cf1ba585ce4fd8a982cd54468"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/Governor.sol"
+size = 22311
+blob = "07af20ca21eab252dfa920446fc6c8dc9aa5acd0"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/GovernorCountingFractional.sol"
+size = 10168
+blob = "b516a7e8fe05dae2ce95218af334705dc7f1bdfb"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/GovernorSettings.sol"
+size = 3768
+blob = "bdcf8b657d9f917667e80194eb0a2d0c45d4ac14"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/GovernorTimelockControl.sol"
+size = 7610
+blob = "1930bd00cab00b1468c9b686d7dcb6e1fc6d0c29"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/GovernorVotes.sol"
+size = 2137
+blob = "39672f464474287bf44a857f3d08e934a1f4c8a9"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/GovernorVotesQuorumFraction.sol"
+size = 4383
+blob = "7db6aabd989b2edc255d9ce39111b12ac89687b3"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/VeFxsVotingDelegation.sol"
+size = 36480
+blob = "7da8860d8ddd49e1a7701df5adbf35d735c82852"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/interfaces/IFraxGovernorAlpha.sol"
+size = 6197
+blob = "ec8d719e42febc39f9806135ebf91d5e905ea8cc"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/interfaces/IFraxGovernorOmega.sol"
+size = 7492
+blob = "b8e88ffe8fb966cca1761375e05ad75e6e01e300"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/interfaces/ISafe.sol"
+size = 2440
+blob = "07f5407d57d72057a47714fba758975ee0c737f1"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/interfaces/IVeFxs.sol"
+size = 3204
+blob = "ef1ce8193e5807637631184e152c6285b75015f7"
+
+[[file]]
+report = "2023-05-fraxgov"
+repo = "frax-governance"
+path = "src/interfaces/IVeFxsVotingDelegation.sol"
+size = 3777
+blob = "60f9e13a061e04f26aed98f704ce8654d78a5ec2"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/FeeController.sol"
+size = 3493
+blob = "aa53558ae860d9896ffbdd7ffa8a1a6d3712b7ba"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/LoanCore.sol"
+size = 32491
+blob = "42e6702cd0955093826210a72a9db010207266bf"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/OriginationController.sol"
+size = 40563
+blob = "f0662dd0987a58edf4fa80d739e70d2c49fcab10"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/PromissoryNote.sol"
+size = 7735
+blob = "7b7477781567abaf1d8e9a33f602faa159dab127"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/RepaymentController.sol"
+size = 7273
+blob = "82de212fdb267d215fc67a27ef8ec26160d0ae45"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/errors/Lending.sol"
+size = 12970
+blob = "05db11b1faf02cc22f627910f035b54fd2e5e65c"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/errors/Vault.sol"
+size = 3642
+blob = "f33b97e8835035971e9fdb0d6483b320bb27f000"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/external/DelegationRegistry.sol"
+size = 18065
+blob = "88efc726bc7f212dc1591c8fbb649ce1c0b1ac54"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/external/GenArt721Core.sol"
+size = 21117
+blob = "e463857c3a3fda764bc967d2ea99892ec6277eee"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/external/interfaces/IArtBlocks.sol"
+size = 322
+blob = "4e2a0171cb7a88ff96a5465b08cefc87a94faca6"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/external/interfaces/IDelegationRegistry.sol"
+size = 7508
+blob = "dbc80cb260566bed2ec0d3628f7b4e185b213825"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/external/interfaces/ILendingPool.sol"
+size = 21752
+blob = "12fc6421085447da719ed0fc2ffcaf0bd9eee9f8"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/external/interfaces/IPunks.sol"
+size = 360
+blob = "787119771194dc1299f46fd5d051b172f0e82bc7"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/IAssetVault.sol"
+size = 2809
+blob = "3af9ae85156b1bcf63ba6d238dde95cde6d35ec3"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/ICallDelegator.sol"
+size = 224
+blob = "6a6bf4431b8cf4d32cde27b371ca1b60f8f58090"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/ICallWhitelist.sol"
+size = 610
+blob = "3a4a351a746ea030978b772134f1ddcd6e6a4a68"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/IERC721Permit.sol"
+size = 655
+blob = "38f5b31ae20fc438894357f2772fdd95ce30aeb3"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/IFeeController.sol"
+size = 429
+blob = "5c89227e026b0284ab426a67fd861c7dc63f156e"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/ILoanCore.sol"
+size = 3140
+blob = "6fab13431f96833c7c18a706ae876c4cd5ae4a5c"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/INFTDescriptor.sol"
+size = 179
+blob = "0376522d1b63a95fa68f5dadedf82758e99e2117"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/INFTWithDescriptor.sol"
+size = 409
+blob = "a67fe5be8af15150ad15c3c0e8f7c2ada085327f"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/IOriginationController.sol"
+size = 4311
+blob = "93808c59015fba02d6e8922a4afbcf67af79dda8"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/IPromissoryNote.sol"
+size = 524
+blob = "5c7ac018ec7203bbecb5e8181e62ea45c572f105"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/IRepaymentController.sol"
+size = 356
+blob = "2125720bb5bc3b11123d1a528616b6d16d826444"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/ISignatureVerifier.sol"
+size = 369
+blob = "6f8acb9ce2413c0e7451f92383ba75875a35cfd2"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/interfaces/IVaultFactory.sol"
+size = 786
+blob = "1f25651b2fdb73d9ceafab66d3c55fff9c6c11b4"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/libraries/FeeLookups.sol"
+size = 1149
+blob = "612cadc2c9bc3430755f8a5c7e4caa5dd968b421"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/libraries/InterestCalculator.sol"
+size = 1526
+blob = "179c7cae14256ddc1ec64eb898a47b5c23720238"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/libraries/LoanLibrary.sol"
+size = 4245
+blob = "b04bb62166438cb95ebf46ec5d5ea6c3156972e3"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/nft/BaseURIDescriptor.sol"
+size = 2029
+blob = "69abd90c2a583aef067945af659c8b519b7aa16a"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/nft/ERC721Permit.sol"
+size = 5699
+blob = "3ad444cce2ccf8061d112a2d33b0de1b3ceb02d7"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/vault/AssetVault.sol"
+size = 17355
+blob = "2b195581d1e76ed58d52f2cb3759a38d2f3d1d8a"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/vault/CallBlacklist.sol"
+size = 3372
+blob = "4d0760f17e573acb4ef22374801104f4165260c1"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/vault/CallWhitelist.sol"
+size = 3251
+blob = "0cbbeceec88a99cb10c3834679c5a2974ef89f78"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/vault/CallWhitelistAllExtensions.sol"
+size = 707
+blob = "f9f3ada3bf2a4b0e70157375be551da6ff08fc4d"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/vault/CallWhitelistApprovals.sol"
+size = 2139
+blob = "0f984301380dbbcba52126e62bad0c814251dea9"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/vault/CallWhitelistDelegation.sol"
+size = 3423
+blob = "0cee8330c72dacbf32803b2ac21f0286f8ab8d49"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/vault/OwnableERC721.sol"
+size = 2083
+blob = "ecdd60354f8e692b155c65ac6966e279ca9e0a98"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/vault/VaultFactory.sol"
+size = 10107
+blob = "6af41e64e96caf9957c6507cfb5385afd96751fc"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/verifiers/ArtBlocksVerifier.sol"
+size = 6044
+blob = "c776f17746155188e94b390bde463cd0af96d7eb"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/verifiers/CollectionWideOfferVerifier.sol"
+size = 2317
+blob = "8b6f2d8f82cdf32516e6fe75cd52632dca9206f0"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/verifiers/ItemsVerifier.sol"
+size = 6208
+blob = "5e0f0bc6c82cc998fedfbba8fe9cb4e2e2820960"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/verifiers/PunksVerifier.sol"
+size = 2988
+blob = "f37a8b14cc34e5575427419458bf7025527d54f6"
+
+[[file]]
+report = "2023-07-arcade"
+repo = "arcade-protocol"
+path = "contracts/verifiers/UnvaultedItemsVerifier.sol"
+size = 2632
+blob = "c1111c1a6bd5d9d287cca5e92dac3fea0357ff84"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/errors/scErrors.sol"
+size = 694
+blob = "f9bbefab187cb51ab08ea29816c40a4dead839eb"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/aave-v2/ILendingPool.sol"
+size = 4961
+blob = "2e87ff1b3b67e72d0755c22d1ee5760574130d5d"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/aave-v2/IProtocolDataProvider.sol"
+size = 609
+blob = "22dcfb1ebbcb79559767e4076aa60b6e96186439"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/balancer/IFlashLoanRecipient.sol"
+size = 825
+blob = "d9bca20ebe95c03cf3062ae47c7a314517dbff4c"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/balancer/IVault.sol"
+size = 821
+blob = "7bed3f0b5b73b33a2b52a1ead047b3d6b40109bb"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/chainlink/AggregatorV3Interface.sol"
+size = 630
+blob = "4c284e7799494566800f82a1ebf4b446c176ae7b"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/chainlink/IPriceFeed.sol"
+size = 143
+blob = "0656532c53af6aa67538184539ae9345b9f2ec67"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/compound-v3/IComet.sol"
+size = 1698
+blob = "d9d5f8c64eee1f395c33483e7a7dd44d2e519b54"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/curve/ICurveExchange.sol"
+size = 237
+blob = "b02d7738ebbea8d2c2403eb766607c8139e32d41"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/curve/ICurvePool.sol"
+size = 196
+blob = "b8853c95ce0cda8df3eede3e144822d76358dca0"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/lido/ILido.sol"
+size = 500
+blob = "7ec2bbf970353940886255476ba0b4b804f5df5f"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/lido/IwstETH.sol"
+size = 1523
+blob = "7df780cd6c6354b8df081816913105886d4b4dfa"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/liquity/IStabilityPool.sol"
+size = 2885
+blob = "b3d590dcfe878e123770e2607be1578bce429d29"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/morpho/IMorpho.sol"
+size = 5387
+blob = "5b89f4902803ac1ce82ad93be294836e4a913a9f"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/interfaces/uniswap/ISwapRouter.sol"
+size = 1467
+blob = "a26ed6fc4a325993d4c09e27900c736a4e6233f4"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/lib/Constants.sol"
+size = 3982
+blob = "c80e89e6e25346d5821f968754c2f13fefd583a1"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/lib/GoerliConstants.sol"
+size = 338
+blob = "08cde6995c6c49dc8d41e20ff35dbff713de98e1"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/liquity/scLiquity.sol"
+size = 4921
+blob = "f9c3655fdbd71d7c380103842c4d45fd7d13b7ac"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/sc4626.sol"
+size = 4274
+blob = "9d7b50d16eed261d0494ce1439ae5cb722672417"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/staking/BonusTracker.sol"
+size = 3721
+blob = "399cfce4ce9b475531babf10f6b2052a11f8974d"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/staking/DebtTracker.sol"
+size = 1661
+blob = "b3644c28ce6389e7b702825b75df385363239aaf"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/staking/RewardTracker.sol"
+size = 14788
+blob = "21a3f847af8361a2c7394f7741f38e5adad0dab5"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/BaseV2Vault.sol"
+size = 6282
+blob = "5153a6174b7757d68c272a8eb443f10b0c88c0c8"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/IAdapter.sol"
+size = 2173
+blob = "b73977c246a306c37fd99cf351e31599c88209c0"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/PriceConverter.sol"
+size = 3904
+blob = "f1e81b6c9c2ada4ba1345b5c8a22ce246edf76ef"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/Swapper.sol"
+size = 5364
+blob = "441968a28592be1777ab203b0b14a64d0718cb41"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scUSDC.sol"
+size = 15977
+blob = "b0524a3b6801a3757358b32af4486164e7cac160"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scUSDCv2.sol"
+size = 19424
+blob = "ce063fa491a80736a4a29c304599b4a908b6fffe"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scUsdcV2-adapters/AaveV2Adapter.sol"
+size = 3217
+blob = "70e459cbbbff2b86066933eb9b4f46cf1e7a11f3"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scUsdcV2-adapters/AaveV3Adapter.sol"
+size = 3055
+blob = "6667ea810d394f256b570f8e1350b1aae7086de5"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scUsdcV2-adapters/EulerAdapter.sol"
+size = 3483
+blob = "5a0f385293e73938ee37ceb07fea7cc6b1d432f5"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scWETH.sol"
+size = 15053
+blob = "374774514bce2adc5440ed497bdbc826f68ef0ee"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scWETHv2.sol"
+size = 18410
+blob = "8d7f0d2759613758601780d11c635a499431a119"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scWethV2-adapters/AaveV3Adapter.sol"
+size = 2319
+blob = "fc64d573fd1e8a2b517560b919b17032ec2adce7"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scWethV2-adapters/CompoundV3Adapter.sol"
+size = 2114
+blob = "7b39a8cbc4c8d3e838550b29d8424be8daf56130"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scWethV2-adapters/EulerAdapter.sol"
+size = 2651
+blob = "67a6770fdb20d01b407c060ee25a88a9c19f4a69"
+
+[[file]]
+report = "2023-07-sandclock"
+repo = "sandclock-contracts"
+path = "src/steth/scWethV2-adapters/MorphoAaveV3Adapter.sol"
+size = 2309
+blob = "3fba153a4060d30b53fb2dd5477e01b9cef8fc03"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L1/L1LiskToken.sol"
+size = 3204
+blob = "fb387dcca375baa9b2c4cce79568e77576a54426"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L2/L2Claim.sol"
+size = 11507
+blob = "a375fd9b462091b043f985ab454d00c2eee8e746"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L2/L2Governor.sol"
+size = 6304
+blob = "56a38752f1f60981546f8048958ec7c31abe36ef"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L2/L2LiskToken.sol"
+size = 6033
+blob = "764477a60f0993aabb0d2078367d4b003e6099e4"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L2/L2LockingPosition.sol"
+size = 12790
+blob = "e849a2ddb9dc29323e5328d7c1939779d84de1b5"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L2/L2Reward.sol"
+size = 23275
+blob = "0fac99e0ae9ff041e78c92a1a51c6488b4c54062"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L2/L2Staking.sol"
+size = 20893
+blob = "11d4eadbeb7d21db97eaf99ed222820d49b1cd11"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L2/L2VestingWallet.sol"
+size = 2948
+blob = "4ce0f67e88573fa398c4f736fc507fb1391870b4"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/L2/L2VotingPower.sol"
+size = 5836
+blob = "7091a2d41fd46130a6029cd57d860e058f18cf16"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L1/IL1LiskToken.sol"
+size = 4147
+blob = "f2fb67b4c49cefed65d9beb30581b0b3c13d7282"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L2/IL2Claim.sol"
+size = 2726
+blob = "888ebb1523d7cb809e562132dd724ad5554173bf"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L2/IL2Governor.sol"
+size = 8820
+blob = "b122a1a7ade9efed165765370b337b55ab634a7f"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L2/IL2LiskToken.sol"
+size = 3017
+blob = "5ae5736c55e9dcefd3595848adc8b5f14f21680f"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L2/IL2LockingPosition.sol"
+size = 5446
+blob = "be51ff9be6f9333f535aceb87722655ce41b5eb6"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L2/IL2Reward.sol"
+size = 4073
+blob = "d6fdbb8db7b9224f3854efc2283ad0b1620f939f"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L2/IL2Staking.sol"
+size = 3467
+blob = "9a35ce5da17474b3422518e20402d73e1418ca6f"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L2/IL2VestingWallet.sol"
+size = 2499
+blob = "10a6a5dd130beef2b1f15cae80bb0a67720b2a06"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/interfaces/L2/IL2VotingPower.sol"
+size = 5116
+blob = "99cb74442691c3aee4bb2b656b11e4ed78e8b2ee"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/utils/Ed25519.sol"
+size = 95576
+blob = "d3ee667e522cdc2648c6fa94f509b08817875602"
+
+[[file]]
+report = "2024-05-lisksmartcontracts"
+repo = "lisk-contracts"
+path = "src/utils/ISemver.sol"
+size = 498
+blob = "7c30a197bffe791ee58e6ed0acadf5e19a0fd9cf"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "biddog"
+path = "src/AmAmm.sol"
+size = 35927
+blob = "223df8eba51de134af90cd9df93a76557fc54a6a"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "biddog"
+path = "src/interfaces/IAmAmm.sol"
+size = 6244
+blob = "c432bebb05f8bbd5df7d16b0557b0bb2c1eefe9d"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/BunniHook.sol"
+size = 22323
+blob = "4c29b8b69b6076b9dc17406ef8b895ada3225f1d"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/BunniHub.sol"
+size = 21065
+blob = "7a16300a06803bc11a9630f98ac64bac513f9ba4"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/BunniToken.sol"
+size = 12436
+blob = "5cf0ed17c6fc272ca9804a948803590f8341ddf2"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/BunniZone.sol"
+size = 2329
+blob = "59373d3f8ac67861e72fd987c605b830a776b710"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/BaseHook.sol"
+size = 1112
+blob = "ecc8455ee98512a0e20a9a4591ee74e1326dea67"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/Constants.sol"
+size = 988
+blob = "8cd040673ad7df7c59cf282b0037d13b23a0ee99"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/ERC20.sol"
+size = 24520
+blob = "53295a363b7df8746fd3c8767c35de918f06adae"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/ERC20Referrer.sol"
+size = 29368
+blob = "bb42811addd2340e2d3a0b1225caa50e974d6c66"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/Errors.sol"
+size = 1153
+blob = "39ebb8e7ea7f645d8247a3c81b5ffbfdf98de9f4"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/Ownable.sol"
+size = 9715
+blob = "87140fe6481c29cafdecbb128defe8faab728127"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/Permit2Enabled.sol"
+size = 893
+blob = "6ead760a8758ad1bd03f59619fe6da64f6ac8660"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/ReentrancyGuard.sol"
+size = 1122
+blob = "9705d62f05b0625275a12e434007672f1620d3ba"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/base/SharedStructs.sol"
+size = 6405
+blob = "60b0011d4d0ecd6db459d4da5cc2b0103986a4cd"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IBaseHook.sol"
+size = 2206
+blob = "cb4baecf040a87a415db155063b37188f712b385"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IBunniHook.sol"
+size = 10905
+blob = "86f9a20a82fc970694c7bd76ba8f41a68d19bb8d"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IBunniHub.sol"
+size = 16153
+blob = "cb0bcae6bc8d308825b5634c25d92885a9539482"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IBunniQuoter.sol"
+size = 951
+blob = "87dd39156c94d4139f1b2e5c2908c018e1f179d3"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IBunniToken.sol"
+size = 2797
+blob = "ceba4cd4b8625ae86d278541a5918780feae50a3"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IBunniZone.sol"
+size = 443
+blob = "822943522f20df980842db27ff62d446e4b6c600"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IERC20.sol"
+size = 3377
+blob = "19e204ce5ebde03dcf7dd1332561087cc08e1121"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IERC20Lockable.sol"
+size = 2592
+blob = "3d63404a522d240c83ca5210b223a7256f54a715"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IERC20Referrer.sol"
+size = 711
+blob = "4538d4c826ef0eb6facc065b974c5781ca9e4e38"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IERC20Unlocker.sol"
+size = 1081
+blob = "ab6a6d84c8f5288569dc236cc8ffea23566497b7"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IHooklet.sol"
+size = 8091
+blob = "92345c9eb1471d53d88e242d4bd15a916bf0853e"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/ILiquidityDensityFunction.sol"
+size = 7151
+blob = "7360f9f0cc320f175acda77b226b2e95006cc836"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IOwnable.sol"
+size = 3430
+blob = "00596144226efb984535fa549c76202f28b43a4b"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/interfaces/IPermit2Enabled.sol"
+size = 388
+blob = "bcdf7783228c13f9e7773b12654af4dcd0a5fd40"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/BuyTheDipGeometricDistribution.sol"
+size = 6251
+blob = "e2fb7a88da705a167bafdcfa32277b78efc5307a"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/CarpetedDoubleGeometricDistribution.sol"
+size = 5612
+blob = "32839e85b11d120ab58238dac342ef95dd322489"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/CarpetedGeometricDistribution.sol"
+size = 5777
+blob = "7c109f25dd98db48354549c98af9fda088908b92"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/DoubleGeometricDistribution.sol"
+size = 6702
+blob = "12f9cd3d092e3dc0c831ef31d7bda3ea6bddf995"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/GeometricDistribution.sol"
+size = 5614
+blob = "02134a551cdbe0953f2e1b496807f12a3002e6f7"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/LibBuyTheDipGeometricDistribution.sol"
+size = 20471
+blob = "2ec296355c0de940180969fe8aab831c41e7a2be"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/LibCarpetedDoubleGeometricDistribution.sol"
+size = 21981
+blob = "d0577b25e352c52f433ebd601a412ba609d51f07"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/LibCarpetedGeometricDistribution.sol"
+size = 21361
+blob = "77dfa0748023c856172a11bbd1ed905ee278fd62"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/LibDoubleGeometricDistribution.sol"
+size = 22833
+blob = "89c884832c273ec0bf01d6990c9038b62d1a518d"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/LibGeometricDistribution.sol"
+size = 33864
+blob = "72d39d3b56e5e4d1b4210abfcd853a5ffe0cd22d"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/LibUniformDistribution.sol"
+size = 18799
+blob = "38a808031e45ce289f439e7f30913f13aa68fe89"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/ShiftMode.sol"
+size = 386
+blob = "d24c87da359313283ba7486f8a9e7b790a6ce2cb"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/ldf/UniformDistribution.sol"
+size = 5694
+blob = "3f91af8783efec079eaf340724f3330c41e5dfb5"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/AdditionalCurrencyLib.sol"
+size = 558
+blob = "98db00204e78a0df0b18d4d4cab346136ad5d0cb"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/AmAmmPayload.sol"
+size = 682
+blob = "96e9ad4aa8f16db267eb0ef638b40bb514231a94"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/BunniHookLogic.sol"
+size = 36549
+blob = "303f7e3b366a9ed606d688789b413b301513dc57"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/BunniHubLogic.sol"
+size = 32634
+blob = "4a68a61dc5433f0c107e5d42fb3cf7ecf02ca561"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/BunniSwapMath.sol"
+size = 17899
+blob = "ef9ed76a7ec6087d2ba4f8477fe8aad9792aa1b1"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/ExpMath.sol"
+size = 7886
+blob = "26f2dbfc3d8ff6bbd86c308af56450954076da6c"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/FeeMath.sol"
+size = 2150
+blob = "743d0dd2b333c7be967c00e6459e0945edfe8251"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/HookletLib.sol"
+size = 11696
+blob = "afe46847b9299f2f2a4716f6006c0259787aa232"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/LiquidityAmounts.sol"
+size = 3757
+blob = "6779671cd5654024c1e0794ed29c1f0efbe4a794"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/Math.sol"
+size = 2558
+blob = "4ef0be2887fd27883f884d92e78837a1bae034ca"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/Oracle.sol"
+size = 20444
+blob = "4dc46a96e83ee12a1dbd92131570ea29eb348991"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/OrderHashMemory.sol"
+size = 4367
+blob = "ac3842e6da6e7e94ffed825f3748088a1a00e57d"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/QueryLDF.sol"
+size = 3629
+blob = "197cc93a7ba01d3b523c6730cb276a3d6333d753"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/QueryTWAP.sol"
+size = 686
+blob = "c53690515638b05b72793f9cf0a6e8875a3f762a"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/SqrtPriceMath.sol"
+size = 11280
+blob = "44ab2a37fa4e5b4dfb107eafa585fe5e44fd054b"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/SwapMath.sol"
+size = 5640
+blob = "281ba663c0c47e68b0c6c895856f1e5c0e9e9b3f"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/lib/VaultMath.sol"
+size = 270
+blob = "e9945110aadd2f5ab7b732268fb2c28c488a5546"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/periphery/BunniQuoter.sol"
+size = 21085
+blob = "40ef3246a0dbb65e144c200ae5209a81ced3c40c"
+
+[[file]]
+report = "2025-01-bacon-labs-bunniv2"
+repo = "bunni-v2"
+path = "src/types/PoolState.sol"
+size = 7736
+blob = "624dbbb00f2323a1b4944ca2e6ed9d394009c023"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/AttestationEntrypointBase.sol"
+size = 6703
+blob = "c6bae01e266b85978427a1615ffdc267e3569a98"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/AutomataDcapAttestationFee.sol"
+size = 1250
+blob = "eeca3cebeadc223e328e9bc1de47fa58059d27f6"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/PCCSRouter.sol"
+size = 9192
+blob = "d980a478c6355cf88bf8151ad7ca4891e97d6ad9"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/bases/EnclaveIdBase.sol"
+size = 1539
+blob = "7a42c37df8547c163eb3cb9e7317181479acd0a5"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/bases/FeeManagerBase.sol"
+size = 1861
+blob = "1733b7d6f85cb9443ee9714489894f8efa31c94d"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/bases/QuoteVerifierBase.sol"
+size = 8260
+blob = "76cba7099cb148ac91404d3a4296a34f37707160"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/bases/TDXModuleBase.sol"
+size = 1544
+blob = "708cb462d6a6581bb44c5d67b3f2aae4dccc39f5"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/bases/X509ChainBase.sol"
+size = 7791
+blob = "bc3af03f2fa3ff963c93203d548ae28e71a9868a"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/bases/tcb/TCBInfoV2Base.sol"
+size = 2109
+blob = "4d141a3612f94e7fd3779123dda9da4b1c21c718"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/bases/tcb/TCBInfoV3Base.sol"
+size = 4680
+blob = "d36b622e8f9c90203d865ddf9d4682d0bfbdea5e"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/interfaces/IPCCSRouter.sol"
+size = 1932
+blob = "945c09c607026e5e6d223bfb4f324b4bfdb54924"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/interfaces/IQuoteVerifier.sol"
+size = 918
+blob = "03be5d9061489ff116a06a805115545efe29d3ed"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/types/CommonStruct.sol"
+size = 2204
+blob = "f3c789471fccf4da5be0ffd1b26dcf9038e5967a"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/types/Constants.sol"
+size = 1118
+blob = "3517a112d0c01486537465454488489ed7ee63cf"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/types/V3Structs.sol"
+size = 654
+blob = "450289886839738ace3500149b824401298ec61c"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/types/V4Structs.sol"
+size = 1977
+blob = "1fcf6fa5665744d16365dd5e74772a472c707fbe"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/utils/BELE.sol"
+size = 626
+blob = "8960c51958365c3f374e11f79ca9173fd58dd116"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/utils/BytesUtils.sol"
+size = 12055
+blob = "8d03feff88a4e0c0c9f406a2e977f6f9dd063c1e"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/utils/P256Verifier.sol"
+size = 1269
+blob = "109a3187a2e82f327343ddad4957d15b90edad0c"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/verifiers/V3QuoteVerifier.sol"
+size = 8321
+blob = "befe3419b69762a6f23896025452c4fab75cb369"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-dcap-attestation"
+path = "contracts/verifiers/V4QuoteVerifier.sol"
+size = 16127
+blob = "c3b77dfb077d6a788629ae01127496c144e39d7b"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/Common.sol"
+size = 120
+blob = "bdf812e1aaa523c47f12c4ff34aa421e9c708f0d"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/automata_pccs/AutomataEnclaveIdentityDao.sol"
+size = 736
+blob = "2150c43fd8e0667e92522e0544257b1e828d0f81"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/automata_pccs/AutomataFmspcTcbDao.sol"
+size = 2278
+blob = "9fdd666a46e0a2fccb3ac2f42f052589cabde636"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/automata_pccs/AutomataPckDao.sol"
+size = 1513
+blob = "76029c907254c71665666fc113c5a65d33ce7c2a"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/automata_pccs/AutomataPcsDao.sol"
+size = 603
+blob = "abf722500e50927238a1615771d72762de139c8e"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/automata_pccs/shared/AutomataDaoBase.sol"
+size = 1185
+blob = "5ad4c9531a27372c729372dcff08f0f7c373c394"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/automata_pccs/shared/AutomataDaoStorage.sol"
+size = 5150
+blob = "1134030ce9381f344cad69d7468f7eb2e871a464"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/automata_pccs/shared/AutomataTCBManager.sol"
+size = 445
+blob = "b811a610987e9e226984cefb07e3d19ef6c9f0a3"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/bases/DaoBase.sol"
+size = 3686
+blob = "aa377766d5d63c5c30de567988ea71cb4cf02a16"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/bases/EnclaveIdentityDao.sol"
+size = 7287
+blob = "f23358f7d07a9125bd79a4855e0a710c12aaaec7"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/bases/FmspcTcbDao.sol"
+size = 10298
+blob = "39806fccbd36c0a3f142ab5b6d8c0587877701ca"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/bases/PckDao.sol"
+size = 15280
+blob = "4c3f8d291bb00ca015abb950ef009c3c3cc0b89b"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/bases/PcsDao.sol"
+size = 10854
+blob = "03af086f98015d47a307ec6fdb24f534f4243f5c"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/bases/SigVerifyBase.sol"
+size = 1114
+blob = "26f298def230052bf93f681ef3e949486d44f476"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/helpers/EnclaveIdentityHelper.sol"
+size = 6864
+blob = "b89bdd7e885497098d4d926f11576b3f6f840cc1"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/helpers/FmspcTcbHelper.sol"
+size = 25638
+blob = "3cc55ad52d19c502c10ed55d7144cd0ec37a8539"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/helpers/PCKHelper.sol"
+size = 6110
+blob = "338d11c5563a8a0724c3c763048f80d52c0d3757"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/helpers/X509CRLHelper.sol"
+size = 8968
+blob = "53ccdea578ed134e678c668b110543bd7ef94789"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/helpers/X509Helper.sol"
+size = 9032
+blob = "51cb191156446976c83cef0cb04264d232b4c821"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/interfaces/IDaoAttestationResolver.sol"
+size = 2016
+blob = "22bc6c6f9c11d608cfd720ebbe9f0f931e49a0a1"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/utils/Asn1Decode.sol"
+size = 7846
+blob = "2f8f0e7738d69db70f078a20e9520ba2d154a7f0"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/utils/BytesUtils.sol"
+size = 12055
+blob = "8d03feff88a4e0c0c9f406a2e977f6f9dd063c1e"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/utils/DateTimeUtils.sol"
+size = 2557
+blob = "1b5417fec6c38e5ec373a1f932804c7b9be0e533"
+
+[[file]]
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+repo = "automata-on-chain-pccs"
+path = "src/utils/P256Verifier.sol"
+size = 1270
+blob = "22202a481fe3fe86f57e7390d9b535b17d92c5ea"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/adapters/ArbitrumLegacyAdapterL1toL2.sol"
+size = 2706
+blob = "c7c642cdefcd6671b303851ce5eea503176e3641"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/adapters/BaseAdapterL1toL2.sol"
+size = 2202
+blob = "4e342456b4fe8d9638a75afd81408c25e1a9e539"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/adapters/BridgeAdapter.sol"
+size = 1868
+blob = "819b8334ba2332917ce3e5afbdf81d2068af6725"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/adapters/CCIPAdapter.sol"
+size = 2322
+blob = "c1a09aad148d30c977a393a7a92c72dd4f2a4bce"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/adapters/FraxFerryAdapterL1toL2.sol"
+size = 1826
+blob = "6779c3d0a73875d5e892465ca11963c75bca3c2e"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/adapters/OptimismLegacyAdapterL1toL2.sol"
+size = 2226
+blob = "8c7cb16dcbeaab530469246b5fb82761603b71be"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/automations/SyncAutomation.sol"
+size = 10201
+blob = "597c741c6cc4ce621f06b6bf46f508628f5a6501"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/ccip/CCIPBaseUpgradeable.sol"
+size = 787
+blob = "2b0e6ddf0e7d9a843d838615113c85e6a552c9bd"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/ccip/CCIPDefensiveReceiverUpgradeable.sol"
+size = 9048
+blob = "a6e36ac51e65fea6ad757cf5730712c890507b50"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/ccip/CCIPSenderUpgradeable.sol"
+size = 3184
+blob = "84b1db5893e7a285579ca55b0f7aaea163107752"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/ccip/CCIPTrustedSenderUpgradeable.sol"
+size = 4475
+blob = "3558ca7c48af0b7467388443c4378616066b8537"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IArbitrumL1ERC20Bridgeable.sol"
+size = 3644
+blob = "f524ba01fdea180692a26c68f78cb6204055efdd"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IArbitrumL1GatewayRouter.sol"
+size = 3060
+blob = "b7f12e435a718ec3864557b90dd9e635e528f901"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IBaseL1StandardBridge.sol"
+size = 3858
+blob = "f6a8910598a8ab3e6159b11e5e7b46367d30a101"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IBridgeAdapter.sol"
+size = 515
+blob = "119626c3ff770e32787bdfcc5507d34e2f36e145"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/ICCIPBaseUpgradeable.sol"
+size = 246
+blob = "0a9d8c7af24c39390b8b93918451b74ef07d0ff1"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/ICCIPDefensiveReceiverUpgradeable.sol"
+size = 1661
+blob = "6bad66b6b528ca990d24db50db6b1eea2628235e"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/ICCIPSenderUpgradeable.sol"
+size = 346
+blob = "b0557762fc9a3edbed8488671bd02377b52f991c"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/ICCIPTrustedSenderUpgradeable.sol"
+size = 600
+blob = "043e0c2ce493f05a2d0b2c01eae05a80b443c323"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/ICustomReceiver.sol"
+size = 702
+blob = "14a94b07ffdcdb4d723d60fe2cf16f85a9a14d3c"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/ICustomSender.sol"
+size = 1660
+blob = "9858dc841c01dca30578cfe514df823a369c7986"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IEigenpieStaking.sol"
+size = 3222
+blob = "cadadcba39acf48ac193a98bb7808e6bb6eb7e57"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IFraxETHMinter.sol"
+size = 3844
+blob = "b0576319c5fc800cdab199f489a13e5efd55d7e4"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IFraxFerry.sol"
+size = 4773
+blob = "7dccebb3473564b5e9f65dc71d0fd024024ac88f"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IOptimismL1ERC20TokenBridge.sol"
+size = 3447
+blob = "e41300a64c3840286f29baa0bce78b9941f7ef39"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IOracle.sol"
+size = 144
+blob = "d6c383aa43e1e21ef672d0638bde5e0780e7db40"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IOraclePool.sol"
+size = 1458
+blob = "433d8ec12542825b2d068b0af586b6cd93f53a13"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IPriceConverterOracle.sol"
+size = 626
+blob = "3028fd8b0faf6cbad734ad8f2a8873f72ca977de"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IPriceOracle.sol"
+size = 586
+blob = "80046f2bf67b8d185a6a564d4e67fb6e4d48e995"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/interfaces/IWNative.sol"
+size = 245
+blob = "3ab83661dbb5136869ec9d91b7bde62ef5af2e0b"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/libraries/FeeCodec.sol"
+size = 7290
+blob = "2804d04cf352efed1d83edfccd81177a3312fdcb"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/libraries/TokenHelper.sol"
+size = 1834
+blob = "0b65abc1f41ad73420e3d7798201b438d9f99212"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/receivers/CustomReceiver.sol"
+size = 5893
+blob = "2b55dc2c3a11770bc9edee0633a2c48d56cafa70"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/receivers/EigenpieCustomReceiver.sol"
+size = 2153
+blob = "444cdd451f37557ee2736299faf727f60cde4fe4"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/receivers/FraxCustomReceiver.sol"
+size = 1891
+blob = "f972d617239a35c24a0ee3b109311a73ae5b4460"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/receivers/LidoCustomReceiver.sol"
+size = 1789
+blob = "511b88f91789392cf0d0097b09fbcd46743b9486"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/senders/CustomSender.sol"
+size = 10793
+blob = "71fb0053956b74dac9cac22b3c7d2380fe897f28"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/utils/OraclePool.sol"
+size = 6842
+blob = "f5803dfdcb203007090b89d2725e8f2da6b12d2e"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/utils/PriceConverterOracle.sol"
+size = 4258
+blob = "854711dec25545ec0dcf13799522edc8b033e46b"
+
+[[file]]
+report = "2025-02-chainlink-customsendersreceivers"
+repo = "chainlink-csr"
+path = "contracts/utils/PriceOracle.sol"
+size = 4721
+blob = "178d73ef80c3f247d339c73119891e342230220e"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/Folio.sol"
+size = 35407
+blob = "9e1d214ba3bf3d27b867d44827b7f399e308a7f5"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/deployer/FolioDeployer.sol"
+size = 6560
+blob = "3b058e264193d7195435ef6e14cde7838a53766d"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/deployer/GovernanceDeployer.sol"
+size = 4559
+blob = "47e300bf4f147c49057cb7e9f9c4f50449173704"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/folio/FolioDAOFeeRegistry.sol"
+size = 5036
+blob = "44c3fe3c61fba79da512bcf09e9692f75f110a90"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/folio/FolioProxy.sol"
+size = 2498
+blob = "94e113f3c3bd53abdbf89eff40c3dd908ad88738"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/folio/FolioVersionRegistry.sol"
+size = 2566
+blob = "7f15f0eb0c4269c4e4564fdb44b163e852bf8331"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/governance/FolioGovernor.sol"
+size = 4866
+blob = "34a2907ec5e4fcdfac2bc490a31ad34694828dc2"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/interfaces/IFolio.sol"
+size = 3985
+blob = "b442e29fbe3ad47977fb9cbfc9affdfaac414b98"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/interfaces/IFolioDAOFeeRegistry.sol"
+size = 921
+blob = "1941e0b22f74ca8fbce8085c81d4111e835aa8a7"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/interfaces/IFolioDeployer.sol"
+size = 526
+blob = "861f21837a231babeec50cd31d6d1310608e259a"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/interfaces/IFolioVersionRegistry.sol"
+size = 784
+blob = "6be0fc2a28e2488af03d9933c97c7253a8dbb1d7"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/interfaces/IGovernanceDeployer.sol"
+size = 865
+blob = "4202a4f5f6d714eecc30224156e5f67f868aca5f"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/interfaces/IRoleRegistry.sol"
+size = 240
+blob = "fc4cfe8ce3b5550c4523577907ce8d848efdfcfb"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/staking/StakingVault.sol"
+size = 12611
+blob = "9bfb2e1c1e615e96a0351af5f4d0d584326ef010"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/staking/UnstakingManager.sol"
+size = 2526
+blob = "3deae71885f6c9ae9e315f76452c4290b7b4d662"
+
+[[file]]
+report = "2025-04-reserve-folio-solidity"
+repo = "reserve-index-dtf"
+path = "contracts/utils/Versioned.sol"
+size = 377
+blob = "2d1379747087b4562ece8658316280b7cf3c6ffa"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/access/Access.sol"
+size = 1493
+blob = "a3c1277295a3d43f24c2025735f316406f7f0f33"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/access/AccessControl.sol"
+size = 2995
+blob = "4bc6f723e68f4d35892fe5e61c9297efc2b38956"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/delegation/Delegation.sol"
+size = 12046
+blob = "c27ebc8844e8c7664829bb4e52e797e8bc7909bb"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/delegation/providers/eigenlayer/EigenServiceManager.sol"
+size = 1450
+blob = "9e18ec6d79a4b503a0434621894c93940ff8d021"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/delegation/providers/symbiotic/Network.sol"
+size = 2395
+blob = "04b38eff4b89399c01abffc234424c2b5876e234"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/delegation/providers/symbiotic/NetworkMiddleware.sol"
+size = 14163
+blob = "8e431547b485f130e730c04c45ba8a919b09a171"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/feeAuction/FeeAuction.sol"
+size = 6661
+blob = "4c8af522e50ade7d6f3257977c0725dde57d7a8c"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IAaveDataProvider.sol"
+size = 522
+blob = "79ff89acb0a2f81dc6813ad311c4a57e3ccbfac8"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IAccess.sol"
+size = 299
+blob = "35630ca8d98a7835cab7b87b36ec61f4da340fb6"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IAccessControl.sol"
+size = 1519
+blob = "abb6b32dbe5c0e3c826481ab6d47e818bacabff8"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IAuctionCallback.sol"
+size = 268
+blob = "10de778af1a4e705dc263d7d6bee7a2c788a751c"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/ICapToken.sol"
+size = 268
+blob = "a53afc34e3e16d25dcfb66f31a6a40c2d091627e"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IChainlink.sol"
+size = 956
+blob = "a714147a36d560d8b10edecfb44847060c4080c8"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IDebtToken.sol"
+size = 422
+blob = "aba8c0a4e0508e68c1637ce86b0d05b3b9c3babb"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IDelegation.sol"
+size = 7307
+blob = "3ef28b0bb7b0370aaecdcad676f4b68a5593c110"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IFeeAuction.sol"
+size = 2345
+blob = "65c489d9f1fa10995e86c75d864f563cfe3e2159"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IFractionalReserve.sol"
+size = 2284
+blob = "4d31af66ffa00aa67ca57472546d6141fb59a775"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IInterestDebtToken.sol"
+size = 3804
+blob = "a211e22ba630a24f7c951233bb8643fe71ce6b3c"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/ILender.sol"
+size = 10739
+blob = "c1dab2cd297c90ab8e0df5bed81305834a7a1fec"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IMiddleware.sol"
+size = 656
+blob = "4dd11d64b33a7de0d222035faf8935d3808147eb"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IMinter.sol"
+size = 2402
+blob = "3f4cc78dc88235d575b0490568a0665bdc73722a"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/INetwork.sol"
+size = 698
+blob = "fa97260f7f11796937bbef9344ee224bf77fe1fa"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/INetworkMiddleware.sol"
+size = 4819
+blob = "e12d58c39175c766192bc4d20591c45b22fb67b5"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IOracle.sol"
+size = 415
+blob = "e3082af1ac91497f2fc01d77b848af5636596ba4"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IPriceOracle.sol"
+size = 2403
+blob = "522edc44924f53ba94a231b938b9717ef1095a9a"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IPrincipalDebtToken.sol"
+size = 1074
+blob = "07ad51865bd407a8392473cc07170c65a1b65dd4"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IRateOracle.sol"
+size = 3761
+blob = "9729c4a8236a2d61c23f508b12ebf7764ae00f59"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IRestakerDebtToken.sol"
+size = 2994
+blob = "2906aeae519e77a899acf91fe7ec2537d873fbd0"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IRestakerRewardReceiver.sol"
+size = 474
+blob = "8d49dda4286577309a2b97b7038808b4becc912b"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IStakedCap.sol"
+size = 1232
+blob = "5593f06a897d14f77cf3c331a4c8866cd40b602e"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IStakerRewards.sol"
+size = 1806
+blob = "cddde1c1f0d5a6aa2b76d013602f4ef10dd94b16"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IUpgradeableBeacon.sol"
+size = 152
+blob = "46e789d466936630bf29bce56995a8b72110a86e"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IVault.sol"
+size = 5818
+blob = "ff84cfafbd287d4a5d1c6e33d7e8ec8245406fb6"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IVaultAdapter.sol"
+size = 1529
+blob = "6ef064402c827a4024c421a061fed51dedde8599"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IZapOFTComposer.sol"
+size = 361
+blob = "9a309a0beafbf490e1d79256c6a6b9e7f951a1e8"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/interfaces/IZapRouter.sol"
+size = 2599
+blob = "78d4d5646db1d871607d75c1614ab1cd361826e9"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/Lender.sol"
+size = 12531
+blob = "32ae50333c9fc6a10d183594c3b9152935fcdcf1"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/BorrowLogic.sol"
+size = 9562
+blob = "5170a151a5b44955bcfa89f903bc6979656d03a9"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/LiquidationLogic.sol"
+size = 5213
+blob = "1160c71215ffa6983d41f7b55f2ad3eb140c1f70"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/ReserveLogic.sol"
+size = 2880
+blob = "8d9b89eb50aa518be6471eb730a00eee6929d080"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/ValidationLogic.sol"
+size = 5495
+blob = "7e3e41430f32c9513c909667cc9d89a9ca15b40c"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/ViewLogic.sol"
+size = 6241
+blob = "9e6be5b55d85ad5a0e007652d5f644d3e9802341"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/configuration/AgentConfiguration.sol"
+size = 1633
+blob = "26f4de22730fc703b11107f276d60ff025651b66"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/math/MathUtils.sol"
+size = 3564
+blob = "9c0f0a9f41c2f971f831361974bed9adb1a0356e"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/math/PercentageMath.sol"
+size = 2448
+blob = "d46a247e75fe6d2656c88569bc9739ab96e9a9f3"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/libraries/math/WadRayMath.sol"
+size = 4362
+blob = "fe3047e3d6dfc1f15ced662434cb2905b9ebebe3"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/tokens/InterestDebtToken.sol"
+size = 10189
+blob = "94979b119814d431e83df732650710c1681ac6cb"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/tokens/PrincipalDebtToken.sol"
+size = 3475
+blob = "6318f092b4128c0b5a08b27eb2f79dc46d21794a"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/lendingPool/tokens/RestakerDebtToken.sol"
+size = 9417
+blob = "c3f74957dfd6ced3134d040565af7799170bd6ce"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/oracle/Oracle.sol"
+size = 1239
+blob = "922aec3b3da1cf790aff4845322f5c880370c993"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/oracle/PriceOracle.sol"
+size = 5011
+blob = "5e8341e5d490d800ca672a2ac03e4167cc810245"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/oracle/RateOracle.sol"
+size = 4955
+blob = "44529c6ac0c44ba30161ff68ecf9488434ba2a6e"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/oracle/libraries/AaveAdapter.sol"
+size = 596
+blob = "2574b5a62142b877e8ce7a6d94151e4ac92ad82f"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/oracle/libraries/CapTokenAdapter.sol"
+size = 1650
+blob = "8fc80aaa8fdc6d16dfa90402c4502a6a4d7df365"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/oracle/libraries/ChainlinkAdapter.sol"
+size = 965
+blob = "853c81eb8f9b2e3fdd85b18792a2a1fd0df9ec4a"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/oracle/libraries/StakedCapAdapter.sol"
+size = 1164
+blob = "9c57a52c9c50dc716afc413c249093a4ad9730ac"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/oracle/libraries/VaultAdapter.sol"
+size = 4988
+blob = "426eda598da04a701e86a1c34ee38219580296a2"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/AccessStorageUtils.sol"
+size = 723
+blob = "1d8112bbc91fc4e6fe0ba3d0eb5730b9800bff63"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/DelegationStorageUtils.sol"
+size = 771
+blob = "b8671205819021ce8f3e0942f442cdf952cd8a9d"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/FeeAuctionStorageUtils.sol"
+size = 757
+blob = "715544f8febab6dfcadca090a876f1074f1b4c70"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/FractionalReserveStorageUtils.sol"
+size = 886
+blob = "001f2b367fbbf6355fec20779dcf4826db6c027d"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/InterestDebtTokenStorageUtils.sol"
+size = 884
+blob = "cdcdf2f35780b4c495ff657bf875001bba0264d1"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/LenderStorageUtils.sol"
+size = 717
+blob = "8c08d4b242fd32d5f13eac81e8d1ead1577d7258"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/MinterStorageUtils.sol"
+size = 717
+blob = "bef303102aa09faaaa39785dbdb3d12a7494b256"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/NetworkMiddlewareStorageUtils.sol"
+size = 886
+blob = "345a094c3c0ed1af6f500f55e2eee1edd685a2fd"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/NetworkStorageUtils.sol"
+size = 727
+blob = "aa09ec8b34927141e633f95c739dc55adf144b33"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/PriceOracleStorageUtils.sol"
+size = 778
+blob = "e5700d60fda889965930f7ea5a31b73bf53a0a2b"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/PrincipalDebtTokenStorageUtils.sol"
+size = 896
+blob = "86cd71ee36120d32c41c9054a531cee2d67daec2"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/RateOracleStorageUtils.sol"
+size = 766
+blob = "93313b7817420f6af34edf50c72f8d67a6e2d312"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/RestakerDebtTokenStorageUtils.sol"
+size = 884
+blob = "31c05df59a7fdb9588ab12e650f9e36ac6bf10a9"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/StakedCapStorageUtils.sol"
+size = 767
+blob = "fabfd912faafb6560b4d1c1e545c4c0ff80a05d4"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/VaultAdapterStorageUtils.sol"
+size = 790
+blob = "c4298bb344e3dc39171794151557c43ed5f15a17"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/storage/VaultStorageUtils.sol"
+size = 705
+blob = "b2d821dad6deb807f884bcd004b4c2d5aec0a8d4"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/testnetCampaign/OAppMessenger.sol"
+size = 3499
+blob = "8523b5ea110b9c82652f192aaeb03b5669cc6b3d"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/testnetCampaign/PreMainnetVault.sol"
+size = 4283
+blob = "5d45529636d4cb6c6fa474ce4c2a261acb5dc661"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/token/CapToken.sol"
+size = 1300
+blob = "ea61da6f3715069967a710ceb2f291e69bcf7a3e"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/token/L2Token.sol"
+size = 656
+blob = "02f64255a6d31c79074d5e8cec44bef9650dbd6d"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/token/OFTLockbox.sol"
+size = 653
+blob = "97ec7639291116a66d5746e9617761f421dcc28f"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/token/OFTPermit.sol"
+size = 3598
+blob = "f85a3139e0e912ef9e03543baf6b39f4f7694e33"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/token/StakedCap.sol"
+size = 4981
+blob = "a0bff8f3c1f09d7d08d537cb390439cddd65b731"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/vault/FractionalReserve.sol"
+size = 4928
+blob = "a47b14f22413227c73486413a5677494f68e452e"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/vault/Minter.sol"
+size = 3273
+blob = "a0355c9aba177aa2e27512defa8180aa42c51134"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/vault/Vault.sol"
+size = 9200
+blob = "d689efb439588a1b5af58f96d95db92115112c7b"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/vault/libraries/FractionalReserveLogic.sol"
+size = 4900
+blob = "7151acc271fac1960f0a6e6e4b4344d78e423428"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/vault/libraries/MinterLogic.sol"
+size = 5719
+blob = "bcb7baea46352e15e01d15859969ba3268f1553f"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/vault/libraries/VaultLogic.sol"
+size = 11385
+blob = "182dd3dd2337451040b5fec6e4c238234823a6dc"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/zap/SafeOFTLzComposer.sol"
+size = 3085
+blob = "1e8e9ea3ad35255f822accc87ce6785a0bf9c0f8"
+
+[[file]]
+report = "2025-05-caplabs-coveredagentprotocol"
+repo = "cap-contracts"
+path = "contracts/zap/ZapOFTComposer.sol"
+size = 2775
+blob = "d50ff75bb2304a30b91da42ff5012652b7d1ce3c"
+
+[[file]]
+report = "2025-10-radiustechnology-evmauth"
+repo = "evmauth-core"
+path = "src/EVMAuth.sol"
+size = 6463
+blob = "b0c45a04f06f5d7c6895fce3fdd9d13b47eb236c"
+
+[[file]]
+report = "2025-10-radiustechnology-evmauth"
+repo = "evmauth-core"
+path = "src/base/EVMAuthAccessControl.sol"
+size = 4501
+blob = "8740d4791a2812915669a098db38a7e99c65b7dc"
+
+[[file]]
+report = "2025-10-radiustechnology-evmauth"
+repo = "evmauth-core"
+path = "src/base/EVMAuthBaseERC1155.sol"
+size = 9116
+blob = "324ce54ca7b904276b4a725b2e26b0518a184828"
+
+[[file]]
+report = "2025-10-radiustechnology-evmauth"
+repo = "evmauth-core"
+path = "src/base/EVMAuthExpiringERC1155.sol"
+size = 14486
+blob = "f51eaaa1424ce196484cde4da478fe4224fe8f4f"
+
+[[file]]
+report = "2025-10-radiustechnology-evmauth"
+repo = "evmauth-core"
+path = "src/base/EVMAuthPurchasableERC1155.sol"
+size = 6377
+blob = "4e9f88616e8e29b1f4052a32ac7568440c85b0e6"

@@ -29,7 +29,9 @@ How a reply is read, in fixed rules (nothing is guessed in the model's favour or
   named file (the contract may be left out when only one contract in the file has that function);
   otherwise by its line range, with the parser, the way arm A's findings are placed. An item that
   cannot be placed counts against precision, as in `scoring.run_counts`.
-* The model's descriptions are never stored or shown: only names, lines and severity.
+* The model's descriptions are never stored in the repo or shown to a person: results files hold
+  names, lines and severity. A flag carries the sentence in `Flag.note` (cut to 400 characters) for
+  one reader only, the Trail of Bits judge (`tob_judge.py`), which fences it as untrusted text.
 """
 
 import json
@@ -80,6 +82,7 @@ PLAIN_SCHEMA: dict[str, Any] = {
 ENTRY = "plain"  # a plain finding names no checklist entry
 MAX_FINDINGS = 50
 MAX_NAME_CHARS = 120
+MAX_NOTE_CHARS = 400  # the model's sentence, kept only so the Trail of Bits judge can read it
 MAX_INPUT_TOKENS = 250_000  # estimated; one request holds the whole contract below this
 DEFAULT_MAX_TOKENS = 8192  # the same output limit as arm A's calls
 FUNCTION_LIKE = frozenset({"function", "modifier", "constructor", "receive", "fallback"})
@@ -165,6 +168,7 @@ class Item:
     start_line: int
     end_line: int
     severity: str
+    note: str = ""  # the model's sentence, cut and cleaned; untrusted, never stored in the repo
 
 
 def parse_reply(
@@ -212,6 +216,8 @@ def _item(entry: Any) -> Item | str:
         return "bad_field"
     if entry.get("severity") not in _SEVERITIES:
         return "bad_severity"
+    description = entry.get("description")
+    note = " ".join(description.split())[:MAX_NOTE_CHARS] if isinstance(description, str) else ""
     return Item(
         file=file[:MAX_NAME_CHARS],
         contract=(contract or None) and contract[:MAX_NAME_CHARS],
@@ -219,6 +225,7 @@ def _item(entry: Any) -> Item | str:
         start_line=max(1, min(start, end)),
         end_line=max(1, max(start, end)),
         severity=entry["severity"],
+        note=note,
     )
 
 
@@ -275,6 +282,7 @@ def place(item: Item, lexed: dict[str, Lexed]) -> Flag:
         file_id=path or "",
         start_line=item.start_line,
         end_line=item.end_line,
+        note=item.note,
     )
 
 

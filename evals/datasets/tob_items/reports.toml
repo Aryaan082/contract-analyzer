@@ -1,0 +1,1028 @@
+# The 33 pinned Trail of Bits PDFs and what the pre-registered rules decided for each.
+# Written by `python -m evals.source_review tob plan|fetch`. No model is involved.
+
+[[report]]
+slug = "2025-01-bacon-labs-bunniv2"
+file = "2025-01-bacon-labs-bunniv2-securityreview.pdf"
+size = 1916638
+sha256 = "2b22f62e951ed570cafa355981790d309f9c2c4e9e8604ccbd30432675bd3b99"
+blob = "97690525cf4a31ab7a0a71bc0add88df9380d252"
+status = "kept"
+reason = ""
+side = "held_out"
+tokens = 98364
+kept_findings = 8
+
+[[report.repo]]
+label = "bunni-v2"
+owner = "timeless-fi"
+name = "bunni-v2"
+printed = "7faae4718eecda1b33dc3abd894431ed2d16c929"
+commit = "7faae4718eecda1b33dc3abd894431ed2d16c929"
+tree = "7d877e9d3da34b63cb477e691a6eb8887dbe9405"
+full_name = "Bunniapp/bunni-v2"
+licence = "MIT"
+files_bytes = 560556
+
+[[report.repo]]
+label = "biddog"
+owner = "Bunniapp"
+name = "biddog"
+printed = "95f4270ad4447e96044973580afda9176730e7c8"
+commit = "95f4270ad4447e96044973580afda9176730e7c8"
+tree = "c8ba47bffaa5355788927680ac5e35855695ed42"
+full_name = "Bunniapp/biddog"
+licence = "AGPL-3.0"
+files_bytes = 42171
+
+[[report]]
+slug = "2025-01-beethovenx-sonicstaking"
+file = "2025-01-beethovenx-sonicstaking-securityreview.pdf"
+size = 728508
+sha256 = "61613a74e81bdb94b5d3bfb290b7dcdad4e2f3fce532107f9c20456daf34ade3"
+blob = "4fce999942410b650e54e654f9653fff33e6a87d"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-01-parabollabs-protocolcontractsupdates"
+file = "2025-01-parabollabs-protocolcontractsupdates-securityreview.pdf"
+size = 552218
+sha256 = "ea9d854c7d100fe510fc96a9557ff7e16a08b0e76ec00ac4db5f84c73426e3f2"
+blob = "ff2d41ff142369d3ec12a2d1d848fe2a85576560"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-01-shape-gasback"
+file = "2025-01-shape-gasback-securityreview.pdf"
+size = 607351
+sha256 = "02b6cbc53e6296df762ca45335946822c8a06abc70ccd17128bdd63e158991d4"
+blob = "b934aa88992e31794959c9349138c347ea04f8a3"
+status = "dropped"
+reason = "shape-network/gasback at 639667a is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-02-chainlink-customsendersreceivers"
+file = "2025-02-chainlink-customsendersreceivers-securityreview.pdf"
+size = 1301853
+sha256 = "7fa121a7419d6a95b30a45d0ad485e93857008be091278ca46c5aa2e3f7afe4c"
+blob = "45aa249f235215ad38159de7217a1cba3e6bde63"
+status = "kept"
+reason = ""
+side = "held_out"
+tokens = 14825
+kept_findings = 1
+
+[[report.repo]]
+label = "chainlink-csr"
+owner = "Aphyla"
+name = "chainlink-csr"
+printed = "8e08c07ec55bbe32f447b450d915f6813eac6cc7"
+commit = "8e08c07ec55bbe32f447b450d915f6813eac6cc7"
+tree = "0a4ef963eeb7a4c21ad0ead315be1209b76666e4"
+full_name = "Aphyla/chainlink-csr"
+licence = "NOASSERTION"
+files_bytes = 122946
+
+[[report]]
+slug = "2025-02-franklintempleton-benjicontracts"
+file = "2025-02-franklintempleton-benjicontracts-securityreview.pdf"
+size = 1803532
+sha256 = "0c017c2b750acb32675d3908883472944a769ac9c65fa8741cd66b63afc206c8"
+blob = "734901d8a9b0a7cc6cab02c9b2f5ec65c9c176df"
+status = "dropped"
+reason = "repository is not a public GitHub URL: n/a (source code provided in Zip file)"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-02-automata-dcap-attestation-onchain-pccs"
+file = "2025-02-automata-dcap-attestation-onchain-pccs-securityreview.pdf"
+size = 1853825
+sha256 = "62372dbab19f1daf34f3e9d5eadcfe71ea20894558cb7e11885401a2033d805f"
+blob = "811544bb502ade78e2ff4e3045ad2ddc58324ee1"
+status = "kept"
+reason = ""
+side = "held_out"
+tokens = 46829
+kept_findings = 4
+
+[[report.repo]]
+label = "automata-on-chain-pccs"
+owner = "automata-network"
+name = "automata-on-chain-pccs"
+printed = "352f4f69ae270823531a877e670ce7bffbf6a2c0"
+commit = "352f4f69ae270823531a877e670ce7bffbf6a2c0"
+tree = "1d39faa55f42aeeb1d81ae70fbf1345b9a56dbad"
+full_name = "automata-network/automata-on-chain-pccs"
+licence = "MIT"
+files_bytes = 142905
+
+[[report.repo]]
+label = "automata-dcap-attestation"
+owner = "automata-network"
+name = "automata-dcap-attestation"
+printed = "2d8b6b3dd35643081fa7fd98bbb1323a0601b2bb"
+commit = "2d8b6b3dd35643081fa7fd98bbb1323a0601b2bb"
+tree = "8403d1afab2e81d4e50c2e09f5f9195dc21d895d"
+full_name = "automata-network/automata-dcap-attestation"
+licence = "MIT"
+files_bytes = 92130
+
+[[report]]
+slug = "2025-03-offchain-custom-fee-erc20-bridge"
+file = "2025-03-offchain-custom-fee-erc20-bridge-securityreview.pdf"
+size = 913379
+sha256 = "2194fa9e4a04062123ba5b02d96fa31028656cf7681444d63c4c8efc1a7c461e"
+blob = "dce97e554b1b42e432b4cb94ea6d0e4e527ff5c8"
+status = "dropped"
+reason = "the parser cannot read it (no findings table heading found before the first finding)"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-03-offchain-custom-fee-token-exchange-rate"
+file = "2025-03-offchain-custom-fee-token-exchange-rate-securityreview.pdf"
+size = 854389
+sha256 = "ae5e2cb6b3bfb0aa24c8b88a7c4dd7454404c875b93a3899aab1fefd5c2ea267"
+blob = "35a3af36a3d3cf1f362faefe7f9ce1e1ec03485c"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-03-offchain-disablegateway-action"
+file = "2025-03-offchain-disablegateway-action-securityreview.pdf"
+size = 834320
+sha256 = "0a7772aed37f8b18c344f0098cbd12e1507306504018c799555e3e6cf9abbb3e"
+blob = "afa3f59f0cf7cbbc46d36775e4703e3ce91b1c23"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-03-offchain-security-council-rotation"
+file = "2025-03-offchain-security-council-rotation-securityreview.pdf"
+size = 920680
+sha256 = "3ef3234276540fcbd8a9278efa5e8f096794929fa5e8bb3a35f7cf2838748205"
+blob = "1048694cb7d78986a6f3488c96bcf2026cd1c2df"
+status = "dropped"
+reason = "the parser cannot read it (no findings table heading found before the first finding)"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-03-offchain-sequencer-liveness"
+file = "2025-03-offchain-sequencer-liveness-securityreview.pdf"
+size = 972979
+sha256 = "c06f77d0295a7cf9ad91350f84492f73415bc5f89a6b19218c4801fda8c82b93"
+blob = "9538226a6cf2f2996ebbd223bd0cbcd74a779c85"
+status = "dropped"
+reason = "the parser cannot read it (no findings table heading found before the first finding)"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-03-otim-smart-wallet"
+file = "2025-03-otim-smart-wallet-securityreview.pdf"
+size = 1335653
+sha256 = "1fd221abfb786feb33d7ed5a071fbad586a48b485102df3f0f9a0148eff0d912"
+blob = "097aff91cc0a34bb02ce00cdedcf03c08cf20780"
+status = "dropped"
+reason = "otimlabs/otim-protocol at a683e0fa9cd59043a2b90e0946324d2bc421ce9f is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-04-reserve-folio-solidity"
+file = "2025-04-reserve-folio-solidity-securityreview.pdf"
+size = 1291490
+sha256 = "075fd2db57041df604539efffc416582b51a37e32ba00689dae56e1f8ae97a80"
+blob = "86ff4ac3449e39bbd0db35eede95a8dba6ce8405"
+status = "kept"
+reason = ""
+side = "held_out"
+tokens = 16100
+kept_findings = 4
+
+[[report.repo]]
+label = "reserve-index-dtf"
+owner = "reserve-protocol"
+name = "reserve-index-dtf"
+printed = "c88e958bb70211bbb73c601382ef9e9b1611f00c"
+commit = "c88e958bb70211bbb73c601382ef9e9b1611f00c"
+tree = "e093b5e233b2d2c765b92222befb15581da87358"
+full_name = "reserve-protocol/reserve-index-dtf"
+licence = "MIT"
+files_bytes = 84327
+
+[[report]]
+slug = "2025-04-offchainlabs-reward-distributor-fixes"
+file = "2025-04-offchainlabs-reward-distributor-fixes-securityreview.pdf"
+size = 878687
+sha256 = "782d2791e6e2d95f44024752a87be3d0cf82d62d0bd2724475d0c2dcb198cdd0"
+blob = "2fe23cbae26861992b3d3521a2eacad0a65230c7"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-05-caplabs-coveredagentprotocol"
+file = "2025-05-caplabs-coveredagentprotocol-securityreview.pdf"
+size = 2083916
+sha256 = "f942a71b3d525e26122e39c9f616dcd08a3dc6965f0283e1ded81ab3442011db"
+blob = "a5de51e15dc1d8dd11ec58a58568998cc11bc65f"
+status = "kept"
+reason = ""
+side = "dev"
+tokens = 40804
+kept_findings = 15
+
+[[report.repo]]
+label = "cap-contracts"
+owner = "cap-labs-dev"
+name = "cap-contracts"
+printed = "56819219e935470271a03d4e3415fcbe810e6b0b"
+commit = "56819219e935470271a03d4e3415fcbe810e6b0b"
+tree = "639030a8b0833e7788ba952283a5dba159a04550"
+full_name = "cap-labs-dev/cap-contracts"
+licence = "NOASSERTION"
+files_bytes = 279596
+
+[[report]]
+slug = "2025-05-fabriclabs-zipperprotocol"
+file = "2025-05-fabriclabs-zipperprotocol-securityreview.pdf"
+size = 872749
+sha256 = "14f2758dfe512dd94aa188c29ebf56846393b032e15fa6d75b5d567f40e28766"
+blob = "e010f1258db9c4177972740249e6c3dda706f572"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-05-shapenetwork-token"
+file = "2025-05-shapenetwork-token-securityreview.pdf"
+size = 1117172
+sha256 = "c2bdefb66ba1a48e631a6d28671470cd88d94c315dc7c95f084ad23cfa22e1ea"
+blob = "2a5bf8ee813e8e34d1e1f8018c24ec556cdbe62c"
+status = "dropped"
+reason = "shape-network/shape-token at 0fb5da0c3d98fc831487a7ca20a5999f988665e0 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-09-shapenetwork-buybackcontract"
+file = "2025-09-shapenetwork-buybackcontract-securityreview.pdf"
+size = 1019571
+sha256 = "9b443dee7d4f4fa69ad12a566d7706ef80249c34623a0bd22dc8b895943ffac4"
+blob = "003292eb92a02a5d44eed99104143ca8071bdf12"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2026-03-shape-tokenlock"
+file = "2026-03-shape-tokenlock-securityreview.pdf"
+size = 882397
+sha256 = "89c7103c80b3ac351ccca7f432a02a4551943d13bccc8d4d1779d0aead55223b"
+blob = "7ab382e6433a1ff55b69a9d20dfadef939634921"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-06-reserveprotocol-solidity400"
+file = "2025-06-reserveprotocol-solidity400-securityreview.pdf"
+size = 1746583
+sha256 = "31c5a44ff309926bbee9e71c214cc9dfc341f46f15f33ac4a745913946ea2e98"
+blob = "15090362f5b98c7d9c15b333785404a14ce9d130"
+status = "dropped"
+reason = "a review of a diff or pull request; no commit printed for https://github.com/reserve-protocol/reserve-index-dtf"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-07-offchain-upgrade-executor"
+file = "2025-07-offchain-upgrade-executor-securityreview.pdf"
+size = 870889
+sha256 = "1b64e1204327a208397e59b9e83e5aa4a3fb15124d371451a62eb183ddf79d4a"
+blob = "39c1bb1eb199fbc0a5566ed808d1afd0404e1bc2"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-06-offchain-setcoregovernorquorumaction"
+file = "2025-06-offchain-setcoregovernorquorumaction-securityreview.pdf"
+size = 880222
+sha256 = "58b4defd4eb522e1feaa3f282eb0a7c698b8fb8a13b66c4b63998029eb51b3f4"
+blob = "2ad81d8a9f1747391f9268d6a4f1249f59f1dc8d"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-08-gemini-smartwallet"
+file = "2025-08-gemini-smartwallet-securityreview.pdf"
+size = 1905894
+sha256 = "a29ac7e3ab87ea11a3cb3aeb60a92e7a4c880c09c609ba2a9a20b912c3f0b69f"
+blob = "c9891c4e56d3452e88861448c9f649a78bedca58"
+status = "dropped"
+reason = "repository is not a public GitHub URL: N/A"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-10-franklintempleton-benjiswapcontract"
+file = "2025-10-franklintempleton-benjiswapcontract-securityreview.pdf"
+size = 1099375
+sha256 = "9e79d4e5062243c71795e79f22d6b2f2425ae0f85b5a70a94a0af345e4be372b"
+blob = "6b9827a5890f2a42fe9fd9a6407ba2a8953ed58c"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-10-radiustechnology-evmauth"
+file = "2025-10-radiustechnology-evmauth-securityreview.pdf"
+size = 1069856
+sha256 = "45286389320dc96bed2f9d6342ba038880fa1c31a71a2fff70714cf715b6650a"
+blob = "508f94a501828c8e87e42253087184141c1fb667"
+status = "kept"
+reason = ""
+side = "dev"
+tokens = 7001
+kept_findings = 5
+
+[[report.repo]]
+label = "evmauth-core"
+owner = "evmauth"
+name = "evmauth-core"
+printed = "63835cf772c8b95e6a1bd69cdf6f47834c356eca"
+commit = "63835cf772c8b95e6a1bd69cdf6f47834c356eca"
+tree = "0247c0a669dd1541e9da451baaff177d34c8d3e7"
+full_name = "evmauth/evmauth-core"
+licence = "MIT"
+files_bytes = 40943
+
+[[report]]
+slug = "2025-1-everstake-ethereum-staking-protocol"
+file = "2025-1-everstake-ethereum-staking-protocol-securityreview.pdf"
+size = 914512
+sha256 = "64ce4d7d807c2acf01feadf1e139e69120655fbdac9abc56432f7ea0723b6eea"
+blob = "3d05ab53eeae1cb01a8f958c9a789f080104323d"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-11-liquidium-cross-chain-lending"
+file = "2025-11-liquidium-cross-chain-lending-securityreview.pdf"
+size = 1908541
+sha256 = "7e4213c4d4f0c2806db7b8efeaf380327e03d049d9cf09d936db91459d4a9feb"
+blob = "fc4777c57e20b566c7bada6070f65db59c7926bd"
+status = "dropped"
+reason = "Liquidium-Inc/liquidium-pool at 5f8185912611629923f02c40345c8e8066c0e38c is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2026-04-gensyn-bridged-gensyn-token"
+file = "2026-04-gensyn-bridged-gensyn-token-securityreview.pdf"
+size = 772257
+sha256 = "096352d9e14cae9c5ffea7ff23a1b3853df85ae3dceb7f45d5330facd19dbc68"
+blob = "9aebc797ef7450d5d664dcfac239d44f3bbd6a20"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2026-04-gensyn-buyback-and-burn-vault"
+file = "2026-04-gensyn-buyback-and-burn-vault-securityreview.pdf"
+size = 1231024
+sha256 = "1c129fd7ea853e2c49af58d84dcab2a3c143659d7c7a31c67423cfad18b5bc4c"
+blob = "3eaa1993fdb3422912ce6dabd546669c00324085"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2026-04-gensyn-delphidynamicparamutuelmarkets"
+file = "2026-04-gensyn-delphidynamicparamutuelmarkets-securityreview.pdf"
+size = 1117862
+sha256 = "8ee4ee7a5afdd7311f48d6bd9ce4f6e77f4a6d0e774dcf2253976c57f822237c"
+blob = "d0b2ebd20821bb148e0b53078581227b920c0178"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2026-04-gensyn-erc-20-token"
+file = "2026-04-gensyn-erc-20-token-securityreview.pdf"
+size = 742698
+sha256 = "b8affdca20bd8afccb1140587dec2c5c03f95a8a901a9fd8b5d238b5de3666a7"
+blob = "6e6b285858630adadf503ee17b49c15a5eef9720"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2026-04-franklintempleton-benjiswapdifferentialreview"
+file = "2026-04-franklintempleton-benjiswapdifferentialreview-securityreview.pdf"
+size = 1145663
+sha256 = "00b4d390152963b829bfb40f1ed03a1d9333396a70bd7c0da8d8f6b3036f54f0"
+blob = "3c4adbc6d5a77070a20bec8dd6db98e99e196c67"
+status = "dropped"
+reason = "repository is not a public GitHub URL: N/A (source code provided in a zip file)"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2026-09-gensyn-delphi-lmsr-markets-automated-settlement"
+file = "2026-09-gensyn-delphi-lmsr-markets-automated-settlement-securityreview.pdf"
+size = 1175433
+sha256 = "03fcf6921a94f3235a983212485fdf24aeca27163ceb9674fb60a69cd2bfeb2a"
+blob = "fdf642e4bce0c7343b09ab92a993a347441fb377"
+status = "dropped"
+reason = "gensyn-ai/private-smart-contracts at 4e312c176cb822d78a825b753cc647ac434298a2 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2026-06-arcuslabs-rootchain"
+file = "2026-06-arcuslabs-rootchain-securityreview.pdf"
+size = 1190776
+sha256 = "27e0d10053efd9cccd535c2090cade52b97e2fa6120d36e80e129118965c14cb"
+blob = "6b1d4e7ab3b954ee6dc42563dc2df140869f556e"
+status = "dropped"
+reason = "arcus-xyz/rootchain-contracts at f7173ca64a6228073cd0e72581b301f92f613510 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-10-vechain-vechainthorhayabusaupgrade"
+file = "2025-10-vechain-vechainthorhayabusaupgrade-securityreview.pdf"
+size = 967198
+sha256 = "5506e3f474d9666db8ea215c59fe6901b2ac57bb68945a66af887ae6579df6ef"
+blob = "e001d948af72a1d41630038eeed7acae14e95d88"
+status = "dropped"
+reason = "no finding names a Solidity file of the audited code"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report.repo]]
+label = "thor"
+owner = "vechain"
+name = "thor"
+printed = "180c5ba3553f41b0b815079cd818bb9292e86767"
+commit = "180c5ba3553f41b0b815079cd818bb9292e86767"
+tree = "f5b26cd0094175f90b85d2a0ed2dcfc359f3b52d"
+full_name = "vechain/thor"
+licence = "LGPL-3.0"
+files_bytes = 37456
+
+[[report]]
+slug = "2025-04-lagrange-latoken"
+file = "2025-04-lagrange-latoken-securityreview.pdf"
+size = 752722
+sha256 = "dc97b31c7baf04e879c2d06825ee873c0df0791ee738fe26c1e2e4295c51dc42"
+blob = "dc95f08574063be6046be650eec98f09e5af5cc6"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2025-04-serai-dex-security-review"
+file = "2025-04-serai-dex-security-review.pdf"
+size = 805591
+sha256 = "d0d8d89798591d159499c01dc0a95ca96323ef583d38cdbebc9b5db720db799a"
+blob = "2e1844155c600436ceca10dbecfaed91ffd8cc96"
+status = "dropped"
+reason = "no High, Medium or Undetermined finding"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-08-elixir-technologies-ltd-elixir-protocol"
+file = "2024-08-elixir-technologies-ltd-elixir-protocol-securityreview.pdf"
+size = 1333967
+sha256 = "e6f4b3174da7a90213a27f715536ec07ca5dad5bbe881a86f39ed4ba13788dc5"
+blob = "74d7b75607d33a8dc876c9c0e385de4d474b8ba9"
+status = "dropped"
+reason = "ElixirProtocol/elixir-protocol at 99e669d6a1cd88011a395fc74cf374372f8b5c52 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-06-aladdinfx-oracle"
+file = "2024-06-aladdinfx-oracle-securityreview.pdf"
+size = 587065
+sha256 = "049ecc586fba941f71e2ea3a77a264ceb2782c18a784f86b847563dfab11618d"
+blob = "02368a357fabb9a2e3df6a4d8c8ed7c21593e63f"
+status = "dropped"
+reason = "repository is not a public GitHub URL: https://github.com/AladdinDAO/aladdin-v3-contracts/pull/198"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-05-panoptic-liquidation-engine-invariant-development"
+file = "2024-05-panoptic-liquidation-engine-invariant-development.pdf"
+size = 729954
+sha256 = "bbe832828b7033456fe640f9bcef78428bd03e0efa85cab0965ce9bf51127812"
+blob = "6c56cc131dbad0a71259bfebf786cc82d702f656"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-05-ailayerlabs-6079smartcontracts"
+file = "2024-05-ailayerlabs-6079smartcontracts-securityreview.pdf"
+size = 643613
+sha256 = "bca4ea1f1ebe25861cf1c85e86393c0d71c7f9f0261c587410f9b0aac7fd1e32"
+blob = "45cfa0ba3f452b9d85db097159aeecaa90b452dc"
+status = "dropped"
+reason = "Ai-Layer-Labs/6079-contracts at 03300ae4d56859522890028e58f6ac1785e8a029 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-05-lisksmartcontracts"
+file = "2024-05-lisksmartcontracts-securityreview.pdf"
+size = 887783
+sha256 = "81443b5ff127928f17f4ed149da33e0994a717f57970c005357c77a449cbc7fa"
+blob = "711abe38576026e8fb6b131d18848fe52858b280"
+status = "kept"
+reason = ""
+side = "held_out"
+tokens = 45945
+kept_findings = 1
+
+[[report.repo]]
+label = "lisk-contracts"
+owner = "LiskHQ"
+name = "lisk-contracts"
+printed = "7e683b37f4bcbd5157965b9d2fefc9980acf3bde"
+commit = "7e683b37f4bcbd5157965b9d2fefc9980acf3bde"
+tree = "f8f108f0c501a2b63a3208175ceba7c80a72b844"
+full_name = "LiskHQ/lisk-contracts"
+licence = "Apache-2.0"
+files_bytes = 228175
+
+[[report.repo]]
+label = "lisk-token-claim"
+owner = "LiskHQ"
+name = "lisk-token-claim"
+printed = "4ca9d9a72d5da2db66cec9e2888fd8089589c532"
+commit = "4ca9d9a72d5da2db66cec9e2888fd8089589c532"
+tree = "a97d43364f141d12bc725188c07b7cffcb334372"
+full_name = "LiskHQ/lisk-token-claim"
+licence = "Apache-2.0"
+files_bytes = 0
+
+[[report]]
+slug = "2024-05-parabollabs-protocolcontracts"
+file = "2024-05-parabollabs-protocolcontracts-securityreview.pdf"
+size = 972465
+sha256 = "698fc873c3f1394e67d1dc3edd9ef471d175e23d61a554bc1d82354dc27db460"
+blob = "3c862aefecdb078d96f28a3980a8f7b7e8ed49e1"
+status = "dropped"
+reason = "Parabol-Finance/parabol-protocol-contracts at 7537ffb07528975985a70ac53cfbc5640a53b90d is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-05-wonderland-prophet"
+file = "2024-05-wonderland-prophet-securityreview.pdf"
+size = 1082712
+sha256 = "cbcebdc3fa88f117281018ae92df4e804db71fc40dd70a7c02ad69f6b2943856"
+blob = "1a81f1ca310d3e64da507b2965b73544f74ef213"
+status = "dropped"
+reason = "defi-wonderland/prophet-core at 4d4a448 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-03-curvance-invariant-development"
+file = "2024-03-curvance-invariant-development.pdf"
+size = 1360222
+sha256 = "08a369b7551d2643bb93c227c7c7be2dbd2e92abef7281fef08fdfb2f5d31acf"
+blob = "7a3632a5d6e5a165c8fd2b1512299dea33c67c02"
+status = "dropped"
+reason = "no commit printed for https://github.com/curvance/curvance-contracts"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-03-lisksmartcontracts"
+file = "2024-03-lisksmartcontracts-securityreview.pdf"
+size = 872959
+sha256 = "62ba85874388ef2ce84594ab9d8df1142a568896d5ea76c6912c4800352838e6"
+blob = "ff37998e359b51247e996e2eded37deb399b6ff1"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-03-aladdinfxprotocol"
+file = "2024-03-aladdinfxprotocol-securityreview.pdf"
+size = 941401
+sha256 = "dc0b3a282f6eea42a223f76171dae61870fed91dcfd9f2ba627170077d3e732e"
+blob = "5b615ddaa2aa3b632688aeeff05485a5a7fbd2c9"
+status = "dropped"
+reason = "in-scope code is 270,030 tokens, over the ceiling of 200,000"
+side = ""
+tokens = 270030
+kept_findings = 3
+
+[[report.repo]]
+label = "aladdin-v3-contracts"
+owner = "AladdinDAO"
+name = "aladdin-v3-contracts"
+printed = "a2597e14fbfe6c0f2075869276aa86bf481c4dbd"
+commit = "a2597e14fbfe6c0f2075869276aa86bf481c4dbd"
+tree = "0f71db3ab24b31c86f4ededa46e2a445c2dde625"
+full_name = "AladdinDAO/aladdin-v3-contracts"
+licence = "none"
+files_bytes = 1756030
+
+[[report]]
+slug = "2024-03-intuition-smart-contracts"
+file = "2024-03-intuition-smart-contracts-securityreview.pdf"
+size = 625711
+sha256 = "5552aae822ef0a709f81f1f2e819e1ab3faf054930a454e7723124c407c4b480"
+blob = "8de38dcfb2217f032a329a52a6c7cfdddf2b5413"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-01-metalayerblast"
+file = "2024-01-metalayerblast-securityreview.pdf"
+size = 654470
+sha256 = "642ba405e928f23d239af24e00dc6755c7e237ba10484f4628e375738bd6825e"
+blob = "873192ec13ff0813cdc433414d284824123098e9"
+status = "dropped"
+reason = "blast-io/blast-audit-tob at be51873cb7740d6044fc41ce218ee4f1bd601c32 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-12-acronym-foundation"
+file = "2023-12-acronym-foundation-securityreview.pdf"
+size = 912501
+sha256 = "05f16a732d21128da3f55a92543e22cbdc8cd608447162a0ead411605f7e0bdc"
+blob = "afe9ee12f92bfa5ab7c041a72252a8f2679c3610"
+status = "dropped"
+reason = "AmperaFoundation/sol-contracts at 94d6dc5a3adfddbbd7229c8e087d381c95387dd8 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2024-01-pyth-entropy"
+file = "2024-01-pyth-entropy-securityreview.pdf"
+size = 967980
+sha256 = "87203020736d1b6009c71f11b2669b2922acd8721e997dd29a15f4bd1c11f45c"
+blob = "c3d4caf116584dd99e38f75ef1c172daf0f533e9"
+status = "dropped"
+reason = "repository is not a public GitHub URL: https://github.com/pyth-network/pyth-crosschain/tree/main/ta; repository is not a public GitHub URL: https://github.com/pyth-network/pyth-crosschain/tree/main/fo"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-11-immutable-zkevmbridgecontracts"
+file = "2023-11-immutable-zkevmbridgecontracts-securityreview.pdf"
+size = 587231
+sha256 = "f81bcaa4f1b890afbbfd228dd422cec7c0c2a9f74043a2532dd29b1b407ea2d2"
+blob = "518f930e1094b3adaa95c28e19c9632279a625f9"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-10-saltyio"
+file = "2023-10-saltyio-securityreview.pdf"
+size = 1144165
+sha256 = "2ccaca873a1aff4c1829700cf0aebcc0d737d44d4fcaf7842808218245eaf983"
+blob = "6754dea8635c11052116de61d9c4f58ebc302d62"
+status = "dropped"
+reason = "othernet-global/salty-io at 9dbd6c0c963ff5cfb177e106a5c470a39fb0bb5f is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-09-hyperlane"
+file = "2023-09-hyperlane-securityreview.pdf"
+size = 889255
+sha256 = "12d9a5a6b5c838d75a32deffc24533d9c619c12066fd74155960c36e96cce147"
+blob = "5fb5958e7d8cdc731472838fa934433514ad448f"
+status = "dropped"
+reason = "the parser cannot read it (no findings table heading found before the first finding)"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-09-elixir"
+file = "2023-09-elixir-securityreview.pdf"
+size = 602968
+sha256 = "b8509576e3815481b921a0907f281c9e611a8527424eda6486929aedc29772d4"
+blob = "49a8e61d4f8266902d4ffdc3b95e8e91bbb99ae9"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-08-immutable"
+file = "2023-08-immutable-securityreview.pdf"
+size = 701111
+sha256 = "4c70fdb84616a96d46f7b72c89068e76470c79030f54aba27ba180f5978ac3cb"
+blob = "c1abc05f086ea45327a72b930e3303e8055d685e"
+status = "dropped"
+reason = "immutable/poly-core-contracts at b5065149b7ff87d5123616d9e4df7312ef0eb316 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-07-dappos"
+file = "2023-07-dappos-securityreview.pdf"
+size = 906690
+sha256 = "c440564cbe36499d6d55675cababa67c09474b360b613d8bc169a3a512af05ee"
+blob = "040d29169f96d4dc2538598a03f2dbbf0262e642"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-07-sandclock"
+file = "2023-07-sandclock-securityreview.pdf"
+size = 718666
+sha256 = "31f7da54abec64f3492d834c2a927b29be7a6470ff24abac9d1c41c5d8bd4fa6"
+blob = "fbbf1355f653c30dd4f20132ec9b9dfee97b7737"
+status = "kept"
+reason = ""
+side = "held_out"
+tokens = 26898
+kept_findings = 1
+
+[[report.repo]]
+label = "sandclock-contracts"
+owner = "lindy-labs"
+name = "sandclock-contracts"
+printed = "a100f21a30dd332b69351d1e05d98dbc748c6ddc"
+commit = "a100f21a30dd332b69351d1e05d98dbc748c6ddc"
+tree = "af15b91c276d350801af9d481d04c54b1bbfc5b9"
+full_name = "lindy-labs/sandclock-contracts"
+licence = "AGPL-3.0"
+files_bytes = 161996
+
+[[report]]
+slug = "2023-07-arcade"
+file = "2023-07-arcade-securityreview.pdf"
+size = 1061771
+sha256 = "8283b5016a7ef84065671269b4424fbe3033e0acc825e230d9f9524e944a3646"
+blob = "afd46d4588c39890fe03431f36a12762bf58237f"
+status = "kept"
+reason = ""
+side = "dev"
+tokens = 32642
+kept_findings = 4
+
+[[report.repo]]
+label = "arcade-protocol"
+owner = "arcadexyz"
+name = "arcade-protocol"
+printed = "4f510e0e2287901abb21265f72aa4465166ab09d"
+commit = "4f510e0e2287901abb21265f72aa4465166ab09d"
+tree = "9090fc9905088adca529ec6e7101bb53c6748644"
+full_name = "arcadexyz/arcade-protocol"
+licence = "MIT"
+files_bytes = 269366
+
+[[report]]
+slug = "2023-05-fraxgov"
+file = "2023-05-fraxgov-securityreview.pdf"
+size = 695805
+sha256 = "a434c308c8ab9cea920cfa9fe8ab209c6a9d32df9f9368f3e05e139ab579d6bb"
+blob = "f8596f6236be9e4dab99feb1823621dddf6faaac"
+status = "kept"
+reason = ""
+side = "dev"
+tokens = 25755
+kept_findings = 3
+
+[[report.repo]]
+label = "frax-governance"
+owner = "FraxFinance"
+name = "frax-governance"
+printed = "4e3189bfaae1a667f8f0e993d374a04907ef7d12"
+commit = "4e3189bfaae1a667f8f0e993d374a04907ef7d12"
+tree = "231f1d70b3d925b5f5a84abb7bcee70cd52c2801"
+full_name = "FraxFinance/frax-governance"
+licence = "none"
+files_bytes = 161668
+
+[[report]]
+slug = "2023-05-franklintempleton-moneymarket"
+file = "2023-05-franklintempleton-moneymarket-securityreview.pdf"
+size = 945953
+sha256 = "f85e7d080bc30943aa079722c4d6cf94c0421237072b0cf9f86946867595a4b9"
+blob = "3f6b6963f2b85a599a329f95a936126e2bcca647"
+status = "dropped"
+reason = "no repository listed"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-04-ajnalabs"
+file = "2023-04-ajnalabs-securityreview.pdf"
+size = 1250471
+sha256 = "b351414d977c046d133b90682c309b9035a737cdb73626a310985a2b1f844445"
+blob = "c283a8c27a02d3770b1c9a65af2a8968ebb4c769"
+status = "kept"
+reason = ""
+side = "dev"
+tokens = 65589
+kept_findings = 2
+
+[[report.repo]]
+label = "contracts"
+owner = "ajna-finance"
+name = "contracts"
+printed = "ec79122645eea6468bd6040f2ad67eab00eae34e"
+commit = "ec79122645eea6468bd6040f2ad67eab00eae34e"
+tree = "136d55950ca76641422379dbaa2a288b3d06acc2"
+full_name = "ajna-finance/ajna-core"
+licence = "NOASSERTION"
+files_bytes = 424322
+
+[[report.repo]]
+label = "ecosystem-coordination"
+owner = "ajna-finance"
+name = "ecosystem-coordination"
+printed = "dcbdfead225da642db57bd8458e33197ffc384e7"
+commit = "dcbdfead225da642db57bd8458e33197ffc384e7"
+tree = "f03d7ee3cd54c856bdc896ef45a357076ae58d9d"
+full_name = "ajna-finance/ajna-grants"
+licence = "none"
+files_bytes = 85476
+
+[[report]]
+slug = "2023-04-tempus-raft"
+file = "2023-04-tempus-raft-securityreview.pdf"
+size = 651507
+sha256 = "0df19ae630ce953d44e15163633371e9a93e7c5d1fcda9885c749498a9321334"
+blob = "d9b796ed316ccc880948a1b0f3df6aeb925189ac"
+status = "kept"
+reason = ""
+side = "held_out"
+tokens = 16581
+kept_findings = 3
+
+[[report.repo]]
+label = "raft-contracts"
+owner = "tempusfinance"
+name = "raft-contracts"
+printed = "615bb30f190549bced2bcfcc60227fea9231a74e"
+commit = "615bb30f190549bced2bcfcc60227fea9231a74e"
+tree = "b94ebd7d0fe9eb9c4061e2ebdee643ea53f26e37"
+full_name = "raft-fi/contracts"
+licence = "NOASSERTION"
+files_bytes = 110187
+
+[[report]]
+slug = "2023-04-mysoloans"
+file = "2023-04-mysoloans-securityreview.pdf"
+size = 959411
+sha256 = "6e1bc5d5c47d9c3a8779dbfb86f5ef3df2ca1df86c4055cea67457bc2d3247c6"
+blob = "0fcfb72ba1a4baf405d15b99d7806e8e3619aad2"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-04-smardexamm-realestateexecutives"
+file = "2023-04-smardexamm-realestateexecutives-securityreview.pdf"
+size = 561090
+sha256 = "bba5b7a0a5faa8013335dbc4eff3a848c3a2180da6280ab9513b8bbf194d05d3"
+blob = "fbc96df0fdeffc0389ebf39f39a5ecc3521ad5e6"
+status = "dropped"
+reason = "the parser cannot read it (no detailed findings found (a summary report has only the table))"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-03-atlendis-atlendissmartcontracts"
+file = "2023-03-atlendis-atlendissmartcontracts-securityreview.pdf"
+size = 1754105
+sha256 = "49e23d6198bbd65c61b89dfc5f2e3b4cd236575deb090e96dadec8a2179403af"
+blob = "59a16b2ff11bcf62edb9b654a19c83961237707b"
+status = "dropped"
+reason = "Atlendis/priv-contracts-v2 at 19634e2ccae22e35634f336d2acd7f48d1647ea9 is not on GitHub"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-03-primitive"
+file = "2023-03-primitive-securityreview.pdf"
+size = 1321160
+sha256 = "5b38e7cc8e55698c8b2dfba7ec2e622737a20b6b71f7d76a8f22e9b86cb67200"
+blob = "6bbba79c908a36ef318fc0b9bb4a3f0c6c6dda52"
+status = "dropped"
+reason = "no commit printed for https://github.com/primitivefinance/hyper"
+side = ""
+tokens = 0
+kept_findings = 0
+
+[[report]]
+slug = "2023-02-nestedfinance-smartcontracts"
+file = "2023-02-nestedfinance-smartcontracts-securityreview.pdf"
+size = 1197143
+sha256 = "c3ce60dcc9ce017fcfd311f827c735792db2053b1d7175341c8a81b69c5bb1fa"
+blob = "a828111eda93f2591baf97f92e79c74a46122364"
+status = "dropped"
+reason = "the parser cannot read it (no findings table heading found before the first finding)"
+side = ""
+tokens = 0
+kept_findings = 0

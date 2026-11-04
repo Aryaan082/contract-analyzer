@@ -1,0 +1,614 @@
+# The findings to look for. Draft labels: made by rule from the report's Target field.
+# Source: Trail of Bits publications (CC-BY-SA-4.0). Titles and ids only, no report text.
+
+[[label]]
+id = "2025-01-bacon-labs-bunniv2:TOB-BUNNI-4"
+report = "2025-01-bacon-labs-bunniv2"
+finding_id = "TOB-BUNNI-4"
+severity = "undetermined"
+title = "Users can bid arbitrarily low rent during the bidding process"
+target = "lib/biddog/AmAMM.sol"
+files = ["biddog/src/AmAmm.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 28
+
+[[label]]
+id = "2025-01-bacon-labs-bunniv2:TOB-BUNNI-6"
+report = "2025-01-bacon-labs-bunniv2"
+finding_id = "TOB-BUNNI-6"
+severity = "high"
+title = "Rebalance mechanism access control can be bypassed"
+target = "src/BunniHook.sol, src/lib/BunniHookLogic.sol"
+files = ["bunni-v2/src/BunniHook.sol", "bunni-v2/src/lib/BunniHookLogic.sol"]
+category = "Access Controls"
+difficulty = "Low"
+page = 32
+
+[[label]]
+id = "2025-01-bacon-labs-bunniv2:TOB-BUNNI-7"
+report = "2025-01-bacon-labs-bunniv2"
+finding_id = "TOB-BUNNI-7"
+severity = "high"
+title = "Pools can be drained via the rebalance mechanism by selectively executing the rebalanceOrderPreHook and the rebalanceOrderPostHook"
+target = "src/BunniHook.sol, src/lib/BunniHookLogic.sol"
+files = ["bunni-v2/src/BunniHook.sol", "bunni-v2/src/lib/BunniHookLogic.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 36
+
+[[label]]
+id = "2025-01-bacon-labs-bunniv2:TOB-BUNNI-9"
+report = "2025-01-bacon-labs-bunniv2"
+finding_id = "TOB-BUNNI-9"
+severity = "high"
+title = "Excess liquidity can be inflated to create arbitrarily large rebalance orders"
+target = "src/lib/BunniHookLogic.sol, src/lib/BunniHubLogic.sol"
+files = ["bunni-v2/src/lib/BunniHookLogic.sol", "bunni-v2/src/lib/BunniHubLogic.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 41
+
+[[label]]
+id = "2025-01-bacon-labs-bunniv2:TOB-BUNNI-11"
+report = "2025-01-bacon-labs-bunniv2"
+finding_id = "TOB-BUNNI-11"
+severity = "medium"
+title = "AmAmm manager can manipulate TWAP prices without risk"
+target = "biddog/src/AmAmm.sol"
+files = ["biddog/src/AmAmm.sol"]
+category = "Access Controls"
+difficulty = "High"
+page = 46
+
+[[label]]
+id = "2025-01-bacon-labs-bunniv2:TOB-BUNNI-15"
+report = "2025-01-bacon-labs-bunniv2"
+finding_id = "TOB-BUNNI-15"
+severity = "high"
+title = "Users can gain free tokens through the BunniSwap swap functionality"
+target = "src/lib/BunniSwapMath.col"
+files = ["bunni-v2/src/lib/BunniSwapMath.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 56
+
+[[label]]
+id = "2025-01-bacon-labs-bunniv2:TOB-BUNNI-16"
+report = "2025-01-bacon-labs-bunniv2"
+finding_id = "TOB-BUNNI-16"
+severity = "high"
+title = "Users can gain tokens during round-trip swaps"
+target = "src/lib/BunniSwapMath.col"
+files = ["bunni-v2/src/lib/BunniSwapMath.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 58
+
+[[label]]
+id = "2025-01-bacon-labs-bunniv2:TOB-BUNNI-18"
+report = "2025-01-bacon-labs-bunniv2"
+finding_id = "TOB-BUNNI-18"
+severity = "undetermined"
+title = "BunniSwap swap functionality can cause panics during the swap"
+target = "src/lib/BunniSwapMath.col"
+files = ["bunni-v2/src/lib/BunniSwapMath.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 62
+
+[[label]]
+id = "2025-02-chainlink-customsendersreceivers:TOB-CHAINLINK-CSR-5"
+report = "2025-02-chainlink-customsendersreceivers"
+finding_id = "TOB-CHAINLINK-CSR-5"
+severity = "medium"
+title = "Price oracle fails to verify sequencer liveness"
+target = "PriceOracle.sol"
+files = ["contracts/utils/PriceOracle.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 29
+
+[[label]]
+id = "2025-02-automata-dcap-attestation-onchain-pccs:TOB-AUT-5"
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+finding_id = "TOB-AUT-5"
+severity = "high"
+title = "Certificate chain verification allows expired and irrelevant CRLs"
+target = "automata-dcap-attestation/contracts/bases/X509ChainBase.sol"
+files = ["automata-dcap-attestation/contracts/bases/X509ChainBase.sol"]
+category = "Access Controls"
+difficulty = "High"
+page = 23
+
+[[label]]
+id = "2025-02-automata-dcap-attestation-onchain-pccs:TOB-AUT-6"
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+finding_id = "TOB-AUT-6"
+severity = "high"
+title = "Root CRL checks can be bypassed"
+target = "automata-dcap-attestation/contracts/bases/X509ChainBase.sol"
+files = ["automata-dcap-attestation/contracts/bases/X509ChainBase.sol"]
+category = "Data Validation"
+difficulty = "Medium"
+page = 26
+
+[[label]]
+id = "2025-02-automata-dcap-attestation-onchain-pccs:TOB-AUT-7"
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+finding_id = "TOB-AUT-7"
+severity = "high"
+title = "Risc0- and sp1-based attestation may accept expired certificates"
+target = "contracts/verifiers/{V3QuoteVerifier.sol,V4QuoteVerifier.sol}"
+files = ["automata-dcap-attestation/contracts/verifiers/V3QuoteVerifier.sol", "automata-dcap-attestation/contracts/verifiers/V4QuoteVerifier.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 29
+
+[[label]]
+id = "2025-02-automata-dcap-attestation-onchain-pccs:TOB-AUT-13"
+report = "2025-02-automata-dcap-attestation-onchain-pccs"
+finding_id = "TOB-AUT-13"
+severity = "undetermined"
+title = "Investigate failing differential fuzz tests"
+target = "src/helpers/X509Helper.sol"
+files = ["automata-on-chain-pccs/src/helpers/X509Helper.sol"]
+category = "Undefined Behavior"
+difficulty = "Low"
+page = 40
+
+[[label]]
+id = "2025-04-reserve-folio-solidity:TOB-FOLIO-5"
+report = "2025-04-reserve-folio-solidity"
+finding_id = "TOB-FOLIO-5"
+severity = "medium"
+title = "Missing slippage protection on the Folio contract’s mint function"
+target = "contracts/Folio.sol"
+files = ["contracts/Folio.sol"]
+category = "Timing"
+difficulty = "High"
+page = 15
+
+[[label]]
+id = "2025-04-reserve-folio-solidity:TOB-FOLIO-6"
+report = "2025-04-reserve-folio-solidity"
+finding_id = "TOB-FOLIO-6"
+severity = "medium"
+title = "Denial of service vulnerability via configurable initial supply"
+target = "contracts/Folio.sol"
+files = ["contracts/Folio.sol"]
+category = "Denial of Service"
+difficulty = "High"
+page = 17
+
+[[label]]
+id = "2025-04-reserve-folio-solidity:TOB-FOLIO-7"
+report = "2025-04-reserve-folio-solidity"
+finding_id = "TOB-FOLIO-7"
+severity = "medium"
+title = "ERC-777 compatibility issue"
+target = "contracts/Folio.sol"
+files = ["contracts/Folio.sol"]
+category = "Undefined Behavior"
+difficulty = "Low"
+page = 20
+
+[[label]]
+id = "2025-04-reserve-folio-solidity:TOB-FOLIO-8"
+report = "2025-04-reserve-folio-solidity"
+finding_id = "TOB-FOLIO-8"
+severity = "medium"
+title = "Folio.bid() is vulnerable to denial of service through 1 wei donation attack"
+target = "contracts/Folio.sol"
+files = ["contracts/Folio.sol"]
+category = "Denial of Service"
+difficulty = "High"
+page = 21
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-1"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-1"
+severity = "medium"
+title = "Missing input validation in FeeAuction.buy allows payment without asset transfer"
+target = "contracts/feeAuction/FeeAuction.sol"
+files = ["contracts/feeAuction/FeeAuction.sol"]
+category = "Data Validation"
+difficulty = "Medium"
+page = 20
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-2"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-2"
+severity = "high"
+title = "Incorrect oracle staleness period leads to price feed DoS"
+target = "contracts/oracle/PriceOracle.sol"
+files = ["contracts/oracle/PriceOracle.sol"]
+category = "Configuration"
+difficulty = "Low"
+page = 22
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-3"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-3"
+severity = "medium"
+title = "Vaults can be added to the middleware multiple times, leading to double-counted delegations"
+target = "contracts/delegation/providers/symbiotic/NetworkMiddleware.sol"
+files = ["contracts/delegation/providers/symbiotic/NetworkMiddleware.sol"]
+category = "Configuration"
+difficulty = "High"
+page = 24
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-4"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-4"
+severity = "medium"
+title = "StakedCap yield distribution DoS through timer manipulation"
+target = "contracts/token/StakedCap.sol"
+files = ["contracts/token/StakedCap.sol"]
+category = "Timing"
+difficulty = "Low"
+page = 26
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-5"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-5"
+severity = "high"
+title = "Inconsistent balance tracking in vault creates DoS for asset borrowing"
+target = "contracts/vault/Vault.sol"
+files = ["contracts/vault/Vault.sol"]
+category = "Denial of Service"
+difficulty = "Low"
+page = 28
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-6"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-6"
+severity = "medium"
+title = "Unsafe asset removal without borrow validation"
+target = "contracts/vault/libraries/VaultLogic.sol"
+files = ["contracts/vault/libraries/VaultLogic.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 31
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-12"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-12"
+severity = "high"
+title = "Unvalidated _vault address in VaultAdapter allows interest rate manipulation"
+target = "contracts/oracle/libraries/VaultAdapter.sol"
+files = ["contracts/oracle/libraries/VaultAdapter.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 40
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-13"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-13"
+severity = "high"
+title = "Fee auction allows buying zero assets, leading to front-running attacks"
+target = "contracts/feeAuction/FeeAuction.sol"
+files = ["contracts/feeAuction/FeeAuction.sol"]
+category = "Data Validation"
+difficulty = "Medium"
+page = 42
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-14"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-14"
+severity = "high"
+title = "Discrepancy between health calculation and slashable collateral computation"
+target = "contracts/delegation/Delegation.sol"
+files = ["contracts/delegation/Delegation.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 44
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-15"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-15"
+severity = "high"
+title = "Reward distribution enables front-running attacks and reward siphoning"
+target = "contracts/delegation/NetworkMiddleware.sol, contracts/delegation/Delegation.sol"
+files = ["contracts/delegation/providers/symbiotic/NetworkMiddleware.sol", "contracts/delegation/Delegation.sol"]
+category = "Data Validation"
+difficulty = "Medium"
+page = 46
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-16"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-16"
+severity = "medium"
+title = "Unaccounted external vault investment losses can create withdrawal shortfalls"
+target = "contracts/vault/libraries/FractionalReserveLogic.sol, contracts/vault/FractionalReserve.sol"
+files = ["contracts/vault/libraries/FractionalReserveLogic.sol", "contracts/vault/FractionalReserve.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 48
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-17"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-17"
+severity = "high"
+title = "Wrong capTokenDecimals value used in StakedCapAdapter.price causes inaccurate prices"
+target = "contracts/oracle/libraries/StakedCapAdapter.sol"
+files = ["contracts/oracle/libraries/StakedCapAdapter.sol"]
+category = "Data Validation"
+difficulty = "Medium"
+page = 50
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-18"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-18"
+severity = "medium"
+title = "Liquidation mechanism can be permanently disabled by misconfigured grace and expiry periods"
+target = "contracts/lendingPool/Lender.sol"
+files = ["contracts/lendingPool/Lender.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 51
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-19"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-19"
+severity = "medium"
+title = "Oracle update front-running allows extraction of value from vaults"
+target = "contracts/vault/Vault.sol"
+files = ["contracts/vault/Vault.sol"]
+category = "Timing"
+difficulty = "Medium"
+page = 52
+
+[[label]]
+id = "2025-05-caplabs-coveredagentprotocol:TOB-CAP-28"
+report = "2025-05-caplabs-coveredagentprotocol"
+finding_id = "TOB-CAP-28"
+severity = "medium"
+title = "Protocol lacks bad debt management mechanisms, risking permanent insolvency"
+target = "contracts/lendingPool/Lender.sol"
+files = ["contracts/lendingPool/Lender.sol"]
+category = "Configuration"
+difficulty = "High"
+page = 65
+
+[[label]]
+id = "2025-10-radiustechnology-evmauth:TOB-RADIUS-1"
+report = "2025-10-radiustechnology-evmauth"
+finding_id = "TOB-RADIUS-1"
+severity = "high"
+title = "Incorrect account assignment in token burning logic"
+target = "src/base/EVMAuthExpiringERC1155.sol"
+files = ["src/base/EVMAuthExpiringERC1155.sol"]
+category = "Denial of Service"
+difficulty = "Low"
+page = 13
+
+[[label]]
+id = "2025-10-radiustechnology-evmauth:TOB-RADIUS-2"
+report = "2025-10-radiustechnology-evmauth"
+finding_id = "TOB-RADIUS-2"
+severity = "high"
+title = "Expired token groups not synchronized with ERC1155 balance tracking"
+target = "src/base/EVMAuthExpiringERC1155.sol"
+files = ["src/base/EVMAuthExpiringERC1155.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 15
+
+[[label]]
+id = "2025-10-radiustechnology-evmauth:TOB-RADIUS-3"
+report = "2025-10-radiustechnology-evmauth"
+finding_id = "TOB-RADIUS-3"
+severity = "high"
+title = "Missing debt validation in group transfer function"
+target = "src/base/EVMAuthExpiringERC1155.sol"
+files = ["src/base/EVMAuthExpiringERC1155.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 17
+
+[[label]]
+id = "2025-10-radiustechnology-evmauth:TOB-RADIUS-4"
+report = "2025-10-radiustechnology-evmauth"
+finding_id = "TOB-RADIUS-4"
+severity = "high"
+title = "Missing debt validation in group burn function"
+target = "src/base/EVMAuthExpiringERC1155.sol"
+files = ["src/base/EVMAuthExpiringERC1155.sol"]
+category = "Data Validation"
+difficulty = "Medium"
+page = 19
+
+[[label]]
+id = "2025-10-radiustechnology-evmauth:TOB-RADIUS-5"
+report = "2025-10-radiustechnology-evmauth"
+finding_id = "TOB-RADIUS-5"
+severity = "medium"
+title = "Unbounded group array growth causes gas limit exceeded"
+target = "src/base/EVMAuthExpiringERC1155.sol"
+files = ["src/base/EVMAuthExpiringERC1155.sol"]
+category = "Denial of Service"
+difficulty = "Medium"
+page = 21
+
+[[label]]
+id = "2024-05-lisksmartcontracts:TOB-LSK2-9"
+report = "2024-05-lisksmartcontracts"
+finding_id = "TOB-LSK2-9"
+severity = "medium"
+title = "Extending the duration of an expired position can break protocol accounting"
+target = "src/L2/L2Reward.sol"
+files = ["lisk-contracts/src/L2/L2Reward.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 36
+
+[[label]]
+id = "2023-07-sandclock:TOB-SANDCLOCK-1"
+report = "2023-07-sandclock"
+finding_id = "TOB-SANDCLOCK-1"
+severity = "high"
+title = "receiveFlashLoan does not account for fees"
+target = "src/steth/scWETHv2.sol, src/steth/scUSDCv2.sol"
+files = ["src/steth/scWETHv2.sol", "src/steth/scUSDCv2.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 19
+
+[[label]]
+id = "2023-07-arcade:TOB-ARCADE-8"
+report = "2023-07-arcade"
+finding_id = "TOB-ARCADE-8"
+severity = "medium"
+title = "Risk of lost funds due to lack of zero-address check in functions"
+target = "contracts/vault/VaultFactory.sol, contracts/RepaymentController.sol, contracts/LoanCore.sol"
+files = ["contracts/vault/VaultFactory.sol", "contracts/RepaymentController.sol", "contracts/LoanCore.sol"]
+category = "Data Validation"
+difficulty = "High"
+page = 38
+
+[[label]]
+id = "2023-07-arcade:TOB-ARCADE-12"
+report = "2023-07-arcade"
+finding_id = "TOB-ARCADE-12"
+severity = "medium"
+title = "Risk of locked assets due to use of _mint instead of _safeMint"
+target = "contracts/vault/VaultFactory.sol, contracts/PromissoryNote.sol"
+files = ["contracts/vault/VaultFactory.sol", "contracts/PromissoryNote.sol"]
+category = "Undefined Behavior"
+difficulty = "Low"
+page = 47
+
+[[label]]
+id = "2023-07-arcade:TOB-ARCADE-13"
+report = "2023-07-arcade"
+finding_id = "TOB-ARCADE-13"
+severity = "medium"
+title = "Borrowers cannot realize full loan value without risking default"
+target = "contracts/LoanCore.sol"
+files = ["contracts/LoanCore.sol"]
+category = "Timing"
+difficulty = "Low"
+page = 50
+
+[[label]]
+id = "2023-07-arcade:TOB-ARCADE-16"
+report = "2023-07-arcade"
+finding_id = "TOB-ARCADE-16"
+severity = "medium"
+title = "Malicious borrowers can use forceRepay to grief lenders"
+target = "contracts/RepaymentController.sol"
+files = ["contracts/RepaymentController.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 55
+
+[[label]]
+id = "2023-05-fraxgov:TOB-FRAXGOV-1"
+report = "2023-05-fraxgov"
+finding_id = "TOB-FRAXGOV-1"
+severity = "high"
+title = "Race condition in FraxGovernorOmega target validation"
+target = "src/FraxGovernorOmega.sol"
+files = ["src/FraxGovernorOmega.sol"]
+category = "Timing"
+difficulty = "High"
+page = 17
+
+[[label]]
+id = "2023-05-fraxgov:TOB-FRAXGOV-3"
+report = "2023-05-fraxgov"
+finding_id = "TOB-FRAXGOV-3"
+severity = "medium"
+title = "Replay protection missing in castVoteWithReasonAndParamsBySig"
+target = "Governor.sol"
+files = ["src/Governor.sol"]
+category = "Data Validation"
+difficulty = "Medium"
+page = 20
+
+[[label]]
+id = "2023-05-fraxgov:TOB-FRAXGOV-5"
+report = "2023-05-fraxgov"
+finding_id = "TOB-FRAXGOV-5"
+severity = "high"
+title = "The relay function can be used to call critical safe functions"
+target = "src/Governor.sol"
+files = ["src/Governor.sol"]
+category = "Access Controls"
+difficulty = "Medium"
+page = 23
+
+[[label]]
+id = "2023-04-ajnalabs:TOB-AJNA-4"
+report = "2023-04-ajnalabs"
+finding_id = "TOB-AJNA-4"
+severity = "medium"
+title = "Interest rates can become extreme, allowing denial-of-service attacks"
+target = "contracts/src/libraries/external/PoolCommons.sol"
+files = ["contracts/src/libraries/external/PoolCommons.sol"]
+category = "Denial of Service"
+difficulty = "Medium"
+page = 25
+
+[[label]]
+id = "2023-04-ajnalabs:TOB-AJNA-6"
+report = "2023-04-ajnalabs"
+finding_id = "TOB-AJNA-6"
+severity = "high"
+title = "Extraordinary proposal can be used to steal extraordinary amounts of AJNA"
+target = "ecosystem-coordination/src/grants/base/ExtraordinaryFunding.sol"
+files = ["ecosystem-coordination/src/grants/base/ExtraordinaryFunding.sol"]
+category = "Access Controls"
+difficulty = "Low"
+page = 28
+
+[[label]]
+id = "2023-04-tempus-raft:TOB-RAFT-4"
+report = "2023-04-tempus-raft"
+finding_id = "TOB-RAFT-4"
+severity = "medium"
+title = "Inconsistent use of safeTransfer for collateralToken"
+target = "PositionManager.sol, PositionManagerStETH.sol"
+files = ["contracts/PositionManager.sol", "contracts/PositionManagerStETH.sol"]
+category = "Data Validation"
+difficulty = "Medium"
+page = 18
+
+[[label]]
+id = "2023-04-tempus-raft:TOB-RAFT-7"
+report = "2023-04-tempus-raft"
+finding_id = "TOB-RAFT-7"
+severity = "medium"
+title = "Incorrect constant value for MAX_REDEMPTION_SPREAD"
+target = "PositionManager.sol"
+files = ["contracts/PositionManager.sol"]
+category = "Configuration"
+difficulty = "Low"
+page = 23
+
+[[label]]
+id = "2023-04-tempus-raft:TOB-RAFT-8"
+report = "2023-04-tempus-raft"
+finding_id = "TOB-RAFT-8"
+severity = "medium"
+title = "Liquidation rewards are calculated incorrectly"
+target = "SplitLiquidationCollateral.sol"
+files = ["contracts/SplitLiquidationCollateral.sol"]
+category = "Data Validation"
+difficulty = "Low"
+page = 25
