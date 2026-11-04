@@ -134,7 +134,7 @@ pair is listed for Aryaan. Primary = strict (disputed counts as not found). A le
 **Verdict per finding and run.** *found*: at least one flag is `same`. *mislabelled*: not found, and at
 least one flag is `place-match`. *missed*: neither.
 
-**Rubric approval.** The rubric text is in `tob_rubric.toml`; its hash is recorded. **Before any judged
+**Rubric approval.** The rubric text is in `rubric.toml`; the hash Aryaan approved is recorded in `rubric.approved`. **Before any judged
 number is used, Aryaan hand-checks at least 20 judged pairs** (drawn from dev, arm hidden, at least five
 of each verdict that exists, written to the cache with the report text for him to read); agreement with
 his labels is reported next to the result. A change to the rubric gives a new hash and restarts the
@@ -198,3 +198,9 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   1 has none in Solidity.
 - The first draft of "in scope" excluded every folder called `lib`, which removed Bunni's own
   `src/lib/`; dependency folders now count only at the top of the repository.
+
+## Changes after the first commit (no model had read anything)
+
+- The rubric file is `rubric.toml` (the first text said `tob_rubric.toml`), and its approved hash goes
+  in `rubric.approved`; the judge, run and report code were added (`tob_judge.py`, `tob_run.py`,
+  `tob_report.py`, `tob_eval_cli.py`). None of these touches a rule above.

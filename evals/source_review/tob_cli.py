@@ -10,6 +10,7 @@ fetch      REFUSES without --confirm-download. Downloads the in-scope source of 
 estimate   the cost of the stages on the real prompts of both arms and the real bundle sizes. FREE:
            arithmetic only, no model. Reads the cached source (run `fetch` first).
 show       what the rules decided, report by report, and the findings that would be looked for.
+screen, judge, score, handcheck, report, rubric: the eval itself, see tob_eval_cli.py.
 """
 
 import argparse
@@ -18,7 +19,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from evals.source_review import compare as cmp
-from evals.source_review import costs
+from evals.source_review import costs, tob_eval_cli
 from evals.source_review import tob_items as ti
 from evals.source_review.cards import REPO_ROOT
 
@@ -38,6 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
     est.add_argument("--cache", type=Path, required=True, help="the cache `fetch` filled")
     est.add_argument("--side", choices=(*ti.SIDES, "both"), default="both")
     sub.add_parser("show")
+    tob_eval_cli.add_parsers(sub)
     return parser
 
 
@@ -223,13 +225,14 @@ def cmd_show(args: argparse.Namespace, out: Callable[[str], None]) -> int:
 
 def main(argv: Sequence[str] | None = None, out: Callable[[str], None] = print) -> int:
     args = build_parser().parse_args(argv)
-    return {
-        "pdfs": cmd_pdfs,
-        "plan": cmd_plan,
-        "fetch": cmd_fetch,
-        "estimate": cmd_estimate,
-        "show": cmd_show,
-    }[args.command](args, out)
+    commands = {
+        "pdfs": cmd_pdfs, "plan": cmd_plan, "fetch": cmd_fetch, "estimate": cmd_estimate,
+        "show": cmd_show, **tob_eval_cli.COMMANDS,
+    }  # fmt: skip
+    cache = getattr(args, "cache", None)
+    if args.command in tob_eval_cli.COMMANDS and cache and not check_cache(cache, out):
+        return 2
+    return commands[args.command](args, out)
 
 
 if __name__ == "__main__":
