@@ -355,6 +355,7 @@ class ArmRecord:
     status: str = ""  # arm A's coverage status; arm P's is "read"
     failures: list[str] = field(default_factory=list)  # reply-format failures, fixed words
     dropped: dict[str, int] = field(default_factory=dict)  # reply items thrown away, by reason
+    retries: int = 0  # arm A: requests sent again because the first reply was unreadable
 
     def flag_list(self) -> tuple[Flag, ...]:
         return tuple(Flag(**d) for d in self.flags)
@@ -401,6 +402,7 @@ def record_of_review(result: ReviewResult, seconds: float) -> ArmRecord:
         result.summary.status,
         [c.unreadable for c in calls if c.unreadable and c.unreadable != UNAVAILABLE],
         dict(result.dropped),
+        sum(c.retries for c in calls),
     )
 
 

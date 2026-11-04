@@ -230,3 +230,24 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   unanswered: two glm pairs (one dev, Cap-6; one held-out, Bunni-15). In both the verdict kind of the
   finding is `unjudged` unless another pair settles it; for Bunni-15 the other two judges said
   `same_place`, so a `same` from glm could not have made it found by a majority.
+- **Pipeline reply reader: one fence allowed, one retry (Aryaan, 2026-11-04; POST-HOC, after both
+  sides were run and reported).** In the pre-registered runs 5 of the 11 scored pipeline reports
+  lost a chunk because the reviewer's reply was not read as JSON (dev: Arcade 1 request of 3, Ajna 1
+  of 7; held-out: Bunni 1 of 10, Automata 1 of 5, Reserve 1 of 2, which flagged nothing at all). The
+  plain arm's reader already accepted one Markdown fence round the JSON, so the two arms were read
+  by different rules. The raw replies were not kept, so whether they were fenced or had words round
+  the JSON is not known. Changes, in `review/spans.py` and `review/client.py`: (1) the pipeline
+  reader accepts exactly one code fence round an otherwise exact JSON object, the plain arm's rule;
+  JSON is never searched for in prose. (2) A reply that is empty, not JSON or without an item list
+  is requested once more: the same request with one fixed sentence at the end of the user message
+  ("Reply with the JSON object only: ..."); the second answer replaces the first; a reply cut off
+  at the output limit, or a model that cannot answer, is not asked again; both requests are paid
+  for and counted. The system prompt (and its hash), the checklist, the chunking and the item checks
+  are unchanged. The harness gained `--runs NAME` (a second folder in the cache, so the
+  pre-registered records are not touched), `score --stages`, `report --note`, a log of raw replies
+  that are not bare JSON (outside the repo) and a count of retried requests in each record.
+  The pre-registered results (commit `b33e224`) stay the official ones. The pipeline is run again
+  on all 11 scored reports, not only the five that failed; the plain stages are not run again and
+  keep their records; the same three judges with the same rubric judge the new flags. Every result
+  from this re-run is labelled "after the reply-reading fix, post-hoc". The held-out re-run is not a
+  second blind test: the code was changed after its results were seen.

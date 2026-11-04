@@ -1,4 +1,5 @@
-"""The reviewer's model client: one request, one reply, no tools (R3).
+"""The reviewer's model client: one request, one reply, no tools (R3). A reply that is not the JSON
+asked for gets one more request (`call_once`).
 
 `ReviewerClient` is the interface the review loop uses, so the tests use `ScriptedReviewer`, which
 needs no model and no network. `OpenRouterReviewer` is the real one. It reuses the agent's
@@ -15,17 +16,18 @@ JSON instead; the reply is checked strictly either way (`review.spans.check_repl
 """
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Protocol
 
 from agent.config import ModelSpec
 from agent.llm import ModelUnavailable, OpenRouterModel, _safe
 from review.pack import Checklist, Prompt
-from review.spans import CallContext, Checked, check_reply
+from review.spans import CUT_OFF, RETRYABLE, CallContext, Checked, check_reply
 from review.types import REVIEWER_SCHEMA
 
 __all__ = [
     "COMPANY_GROUPS",
+    "RETRY_REMINDER",
     "UNAVAILABLE",
     "CallRecord",
     "ModelUnavailable",
@@ -35,6 +37,7 @@ __all__ = [
     "ScriptedReviewer",
     "call_once",
     "company_of",
+    "retry_prompt",
 ]
 
 # Which model slugs are one company. The same groups as evals/judge/policy.toml, kept here so the
@@ -55,6 +58,9 @@ COMPANY_GROUPS: tuple[tuple[str, ...], ...] = (
 
 
 UNAVAILABLE = "the reviewer model was unavailable"
+# The one sentence added to a request that is asked again after an unreadable reply. Fixed text of
+# ours: nothing the model wrote is put into the second request.
+RETRY_REMINDER = "Reply with the JSON object only: no text before or after it and no code fence."
 
 
 def company_of(slug: str) -> str:
@@ -95,6 +101,9 @@ class CallRecord:
     dropped: dict[str, int] = field(default_factory=dict)
     adjusted: dict[str, int] = field(default_factory=dict)
     unreadable: str | None = None  # why the reply could not be used, in fixed words
+    # 1 when the first reply was unreadable and the request was sent once more. Tokens and cost
+    # then add up both requests; the rest of the record is the last request's.
+    retries: int = 0
 
 
 class ReviewerClient(Protocol):
@@ -186,6 +195,29 @@ class ScriptedReviewer:
         return reply
 
 
+def retry_prompt(prompt: Prompt) -> Prompt:
+    """The same request with `RETRY_REMINDER` after it. The instructions (and their hash) are the
+    same; only the end of the user message differs."""
+    return replace(prompt, user=f"{prompt.user}\n\n{RETRY_REMINDER}")
+
+
+def _ask(
+    client: ReviewerClient,
+    prompt: Prompt,
+    ctx: CallContext,
+    checklist: Checklist,
+    max_tokens: int,
+) -> tuple[Checked, ReviewerCall | None]:
+    """One request and the check of its reply; the reply is None when the model was unavailable."""
+    try:
+        reply = client.review(prompt, REVIEWER_SCHEMA, max_tokens=max_tokens)
+    except ModelUnavailable:
+        return Checked(unreadable=UNAVAILABLE), None
+    if reply.finish_reason == "length":
+        return Checked(unreadable=CUT_OFF), reply
+    return check_reply(reply.text, ctx, checklist), reply
+
+
 def call_once(
     client: ReviewerClient,
     prompt: Prompt,
@@ -195,32 +227,33 @@ def call_once(
     purpose: str,
     max_tokens: int,
 ) -> tuple[Checked, CallRecord]:
-    """One request and the check of its reply. A model that cannot answer is not an error here: the
-    record says so and the caller counts the call as not done."""
-    try:
-        reply = client.review(prompt, REVIEWER_SCHEMA, max_tokens=max_tokens)
-    except ModelUnavailable:
-        checked = Checked(unreadable=UNAVAILABLE)
-        return checked, CallRecord(
-            purpose=purpose,
-            index=ctx.call_index,
-            model=client.name,
-            unreadable=checked.unreadable,
-        )
-    if reply.finish_reason == "length":
-        checked = Checked(unreadable="the reviewer's reply was cut off")
-    else:
-        checked = check_reply(reply.text, ctx, checklist)
+    """One request and the check of its reply, and ONE more request if the model answered but not
+    in the shape asked for (no text, not JSON, no list of items; `RETRYABLE`). The second request
+    is the first plus `RETRY_REMINDER`; its answer replaces the first, so a reply that is still
+    unreadable is final. A reply that was cut off, or a model that cannot answer, is not asked
+    again. A model that cannot answer is not an error here: the record says so and the caller counts
+    the call as not done. The record adds up the tokens and cost of both requests."""
+    checked, reply = _ask(client, prompt, ctx, checklist, max_tokens)
+    replies = [reply] if reply is not None else []
+    retries = 0
+    if reply is not None and checked.unreadable in RETRYABLE:
+        retries = 1
+        again, second = _ask(client, retry_prompt(prompt), ctx, checklist, max_tokens)
+        if second is not None:  # if the second request got no answer, the first one's reason stands
+            checked = again
+            replies.append(second)
+    last = replies[-1] if replies else None
     return checked, CallRecord(
         purpose=purpose,
         index=ctx.call_index,
         model=client.name,
-        prompt_tokens=reply.prompt_tokens,
-        completion_tokens=reply.completion_tokens,
-        cost_usd=reply.cost_usd,
-        finish_reason=reply.finish_reason,
+        prompt_tokens=sum(r.prompt_tokens for r in replies),
+        completion_tokens=sum(r.completion_tokens for r in replies),
+        cost_usd=sum(r.cost_usd for r in replies),
+        finish_reason=last.finish_reason if last else None,
         accepted=len(checked.accepted),
         dropped=dict(checked.dropped),
         adjusted=dict(checked.adjusted),
         unreadable=checked.unreadable,
+        retries=retries,
     )

@@ -17,7 +17,8 @@ from evals.source_review import tob_report as tp
 from evals.source_review import tob_run as tr
 from evals.source_review.compare import Source
 from evals.source_review.hostile import make_bundle
-from review.client import ScriptedReviewer
+from review.client import ScriptedReviewer, retry_prompt
+from review.pack import Prompt
 
 CODE = """// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
@@ -322,6 +323,209 @@ def test_a_stage_stops_after_three_silent_reports(tmp_path):
     )  # fmt: skip
     assert [bool(r.get("complete")) for r in recs] == [False] * 4
     assert recs[3]["skipped"] == "model not answering"
+
+
+# ---- the pipeline's reply reader in a stage, a re-run folder, the raw-reply log ---------------
+
+
+PIPELINE_ITEM = {
+    "file_id": "F1", "start_line": 7, "end_line": 7, "quote": "msg.sender.call{value: amount}",
+    "function": "withdraw", "entry": "taxonomy:reentrancy", "clause": None,
+    "severity": "medium", "confidence": "medium", "note": "state is updated after the call",
+}  # fmt: skip
+PIPELINE_REPLY = json.dumps({"items": [PIPELINE_ITEM]})
+
+
+def pipeline_stage(tmp_path, replies, **kw):
+    client = ScriptedReviewer(replies, name=cmp.OPUS.name, cost_usd=0.01)
+    recs = tr.run_stage(
+        reports("a"), {"a": source()}, "pipeline", client, spent=lambda: 0.0, max_spend=100.0,
+        done={}, checkpoint=tmp_path / "c.jsonl", out=lambda _: None, **kw,
+    )  # fmt: skip
+    return recs[0], client
+
+
+def test_a_fenced_pipeline_reply_is_read_and_a_reply_with_words_is_asked_for_again(tmp_path):
+    fenced, client = pipeline_stage(tmp_path, ["```json\n" + PIPELINE_REPLY + "\n```"])
+    assert len(client.prompts) == 1 and len(fenced["flags"]) == 1
+    assert fenced["failures"] == [] and fenced["retries"] == 0 and fenced["status"] == "ran"
+    again, client = pipeline_stage(
+        tmp_path, ["Here is my review: " + PIPELINE_REPLY, PIPELINE_REPLY]
+    )
+    assert len(client.prompts) == 2 and len(again["flags"]) == 1
+    assert again["failures"] == [] and again["retries"] == 1 and again["calls"] == 1
+    assert again["cost_usd"] == pytest.approx(0.02)  # both requests are paid for and counted
+
+
+def test_a_pipeline_reply_that_stays_unreadable_is_a_failure_after_one_retry(tmp_path):
+    rec, client = pipeline_stage(tmp_path, ["no JSON here", "none here either"])
+    assert len(client.prompts) == 2 and rec["flags"] == [] and rec["retries"] == 1
+    assert rec["failures"] == ["the reviewer's reply was not JSON"] and rec["status"] == "failed"
+    assert rec["cost_usd"] == pytest.approx(0.02)
+
+
+def test_the_plain_arm_never_has_retries_in_its_record(tmp_path):
+    client = ScriptedReviewer([PLAIN_REPLY], name=cmp.OPUS.name)
+    recs = tr.run_stage(
+        reports("a"), {"a": source()}, "screen", client, spent=lambda: 0.0, max_spend=100.0,
+        done={}, checkpoint=tmp_path / "c.jsonl", out=lambda _: None,
+    )  # fmt: skip
+    assert recs[0]["retries"] == 0 and len(client.prompts) == 1
+
+
+def test_a_runs_folder_keeps_a_re_run_apart_from_the_pre_registered_records(tmp_path):
+    first = tr.checkpoint_path(tmp_path, "dev", "pipeline")
+    other = tr.checkpoint_path(tmp_path, "dev", "pipeline", "fixed")
+    assert first == tmp_path / "runs" / "dev-pipeline.jsonl"
+    assert other == tmp_path / "fixed" / "dev-pipeline.jsonl" != first
+    rec, _ = pipeline_stage(tmp_path, [PIPELINE_REPLY])
+    other.parent.mkdir()
+    other.write_text(json.dumps(rec) + "\n")
+    assert tr.read_stage(tmp_path, "dev", "pipeline") == {}  # the default folder is untouched
+    assert list(tr.read_stage(tmp_path, "dev", "pipeline", "fixed")) == ["a"]
+    assert tr.replaced_usd(tmp_path, "dev", "pipeline", "fixed") == 0.0
+
+
+@pytest.mark.parametrize("name", ["fixed", "runs-fix", "rerun_2"])
+def test_a_runs_name_is_a_plain_folder_name(name):
+    assert cli.runs_name(name) == name
+
+
+@pytest.mark.parametrize("name", ["", "../x", "a/b", "Fixed", ".hidden", "-x", "a b", "x" * 40])
+def test_a_runs_name_that_could_leave_the_cache_is_refused(name):
+    import argparse
+
+    with pytest.raises(argparse.ArgumentTypeError):
+        cli.runs_name(name)
+
+
+def test_reply_shapes():
+    body = json.dumps({"findings": []})
+    assert tr.reply_shape(body) == tr.reply_shape("  " + body + "\n") == "json"
+    assert tr.reply_shape("```json\n" + body + "\n```") == "fenced"
+    assert tr.reply_shape("```\n" + body + "\n```") == "fenced"
+    assert tr.reply_shape("Sure! " + body) == "prose"
+    assert tr.reply_shape("```json\n" + body + "\n```\nDone.") == "prose"
+    assert tr.reply_shape("[1, 2]") == tr.reply_shape("not json") == "prose"
+    assert tr.reply_shape("") == tr.reply_shape("  \n") == tr.reply_shape(None) == "empty"
+
+
+def test_the_recording_client_keeps_only_replies_that_are_not_bare_json(tmp_path):
+    path = tmp_path / "runs" / "dev-raw-replies.jsonl"
+    inner = ScriptedReviewer(
+        [PIPELINE_REPLY, "```json\n" + PIPELINE_REPLY + "\n```", "words only", PIPELINE_REPLY],
+        name=cmp.OPUS.name,
+    )
+    raw = tr.Recording(inner, path, stage="pipeline")
+    assert raw.name == cmp.OPUS.name
+    prompt = Prompt(system="s", user="u")
+    raw.begin("a")
+    assert raw.review(prompt, {}, max_tokens=1).text == PIPELINE_REPLY  # passed on unchanged
+    assert not path.exists()  # a bare JSON reply is not kept
+    raw.review(prompt, {}, max_tokens=1)
+    raw.begin("b")
+    raw.review(retry_prompt(prompt), {}, max_tokens=1)
+    rows = [json.loads(x) for x in path.read_text().splitlines()]
+    assert [(r["item"], r["shape"], r["retry"]) for r in rows] == [
+        ("a", "fenced", False),
+        ("b", "prose", True),
+    ]
+    assert rows[1]["text"] == "words only" and rows[0]["stage"] == "pipeline"
+
+
+def test_run_stages_writes_records_and_raw_replies_into_the_runs_folder(monkeypatch, tmp_path):
+    import argparse
+
+    ctx = fake_context(tmp_path)
+    ctx.runs = "fixed"
+    inner = ScriptedReviewer(
+        ["Here you go: " + PIPELINE_REPLY, PIPELINE_REPLY], name=cmp.OPUS.name, cost_usd=0.01
+    )
+    monkeypatch.setattr(cmp, "real_budget", lambda max_usd: cmp.Budget(inner, max_usd))
+    monkeypatch.setattr(cmp, "have_key", lambda: True)
+    monkeypatch.setattr(cmp, "credits_remaining", lambda: None)
+    args = argparse.Namespace(side="dev", confirm_spend=True, max_spend=50.0, declare=None,
+                              plain_max_tokens=32768, runs="fixed")  # fmt: skip
+    lines: list[str] = []
+    assert cli.run_stages(args, ctx, ["pipeline"], ctx.reports, lines.append) == 0
+    rec = tr.read_stage(tmp_path, "dev", "pipeline", "fixed")["r"]
+    assert rec["retries"] == 1 and rec["failures"] == [] and len(rec["flags"]) == 1
+    assert not (tmp_path / "runs").exists()  # the pre-registered folder is not touched
+    raw = tmp_path / "fixed" / "dev-raw-replies.jsonl"
+    rows = [json.loads(x) for x in raw.read_text().splitlines()]
+    assert [(r["item"], r["stage"], r["shape"], r["retry"]) for r in rows] == [
+        ("r", "pipeline", "prose", False)
+    ]
+    assert "spent $0.020 of $50.00" in "\n".join(lines)
+
+
+def test_begin_is_called_with_each_report_that_is_run_and_not_with_finished_ones(tmp_path):
+    seen: list[str] = []
+    rs = reports("a", "b")
+    client = ScriptedReviewer([PLAIN_REPLY], name=cmp.OPUS.name)
+    done = {"a": {"item": "a", "stage": "screen", "complete": True, "flags": [], "failures": []}}
+    tr.run_stage(
+        rs, {"a": source(), "b": source()}, "screen", client, spent=lambda: 0.0, max_spend=100.0,
+        done=done, checkpoint=tmp_path / "c.jsonl", out=lambda _: None, begin=seen.append,
+    )  # fmt: skip
+    assert seen == ["b"]
+
+
+def test_score_can_run_the_pipeline_alone_in_a_runs_folder(monkeypatch, tmp_path):
+    ctx = fake_context(tmp_path)
+    ran: list = []
+
+    def fake_run(args, context, stages, reports_, out):
+        ran.append((stages, context.runs, args.side))
+        return 0
+
+    monkeypatch.setattr(cli, "load_context", lambda cache, side, gh=None: ctx)
+    monkeypatch.setattr(cli, "hard_reports", lambda *a: ctx.reports)
+    monkeypatch.setattr(cli, "run_stages", fake_run)
+    from evals.source_review import tob_cli
+
+    base = ["score", "--cache", str(tmp_path), "--side", "dev"]
+    assert tob_cli.main(base, lambda _: None) == 0
+    assert tob_cli.main([*base, "--stages", "pipeline", "--runs", "fixed"], lambda _: None) == 0
+    assert tob_cli.main([*base, "--stages", "pipeline", "fresh"], lambda _: None) == 0
+    assert ran == [
+        (["fresh", "pipeline"], "runs", "dev"),
+        (["pipeline"], "fixed", "dev"),
+        (["fresh", "pipeline"], "runs", "dev"),  # always in the same order
+    ]
+
+
+def test_a_report_from_another_runs_folder_needs_a_note(monkeypatch, tmp_path):
+    code, text = run_cli(
+        monkeypatch, tmp_path,
+        ["report", "--cache", str(tmp_path), "--side", "dev", "--runs", "fixed"],
+    )  # fmt: skip
+    assert code == 2 and "--note" in text and "not the pre-registered run" in text
+
+
+def test_a_re_run_report_says_so_on_top_and_never_overwrites_the_original(rubric, tmp_path):
+    assert tp.runs_suffix("runs") == tp.runs_suffix(None) == ""
+    assert tp.runs_suffix("fixed") == "-fixed"
+    original = build(rubric)
+    js0, md0 = tp.write_report(original, "dev", tmp_path)
+    assert js0.name == "tob-dev-2026-11-04.json" and "POST-HOC" not in md0.read_text()
+    assert "post-hoc" not in tp.results_row(original)
+    rerun = {**original, "meta": {**original["meta"], "runs": "fixed", "note": "reader fixed"}}
+    js1, md1 = tp.write_report(rerun, "dev", tmp_path)
+    assert js1.name == "tob-dev-2026-11-04-fixed.json" and md1.name.endswith("-fixed.md")
+    assert js0.exists() and "POST-HOC: reader fixed" in md1.read_text()
+    assert md1.read_text().index("POST-HOC") < md1.read_text().index("## Headline")
+    assert "(after the reply-reading fix, post-hoc)" in tp.results_row(rerun)
+
+
+def test_the_report_counts_requests_sent_again(rubric, tmp_path):
+    report = build(rubric)
+    for s in tr.STAGES:
+        assert report["failures"][s]["requests_sent_again"] == 0
+    assert "second time" not in "\n".join(tp.render(report))
+    stage_records = {s: {"r": {"item": "r", "complete": True, "failures": [], "retries": 2}}
+                     for s in ("pipeline",)}  # fmt: skip
+    assert tp._failures(stage_records)["pipeline"]["requests_sent_again"] == 2
 
 
 # ---- verdicts and the hard set -----------------------------------------------------------------

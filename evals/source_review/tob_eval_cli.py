@@ -37,6 +37,7 @@ from evals.source_review.cards import REPO_ROOT
 from evals.source_review.compare import Source
 
 CREDIT_MARGIN = 0.05
+SCORE_STAGES = ["fresh", "pipeline"]  # what `score` runs, in this order, unless --stages says less
 
 
 def git(*args: str) -> str:
@@ -55,6 +56,14 @@ class Context:
     labels_of: dict[str, list[ti.Label]]
     sources: dict[str, Source]
     refs: dict[str, tj.Reference]
+    runs: str = tr.RUNS  # which folder of the cache holds the stage records (`--runs`)
+
+
+def context_for(args: argparse.Namespace) -> Context:
+    """The context of the command's side, reading and writing the records of `--runs`."""
+    ctx = load_context(args.cache, args.side)
+    ctx.runs = getattr(args, "runs", tr.RUNS)
+    return ctx
 
 
 def load_context(cache: Path, side: str, gh: ti.GitHub | None = None) -> Context:
@@ -139,16 +148,20 @@ def run_stages(
         return 2
     if args.max_spend < central:
         out(f"NOTE: the cap ${args.max_spend:.2f} is below the estimate; the run will stop early.")
-    done = {s: tr.read_stage(ctx.cache, args.side, s) for s in stages}
+    done = {s: tr.read_stage(ctx.cache, args.side, s, ctx.runs) for s in stages}
     budget = cmp.real_budget(args.max_spend)  # --max-spend caps what THIS command spends
     with_credit_limit(budget, out)
+    # replies that are not bare JSON are kept, raw, outside the repo (see tr.Recording)
+    raw = tr.Recording(budget, ctx.cache / ctx.runs / f"{args.side}-raw-replies.jsonl")
     for stage in stages:
         out(f"stage {stage}:")
+        raw.stage = stage
         tr.run_stage(
-            reports, ctx.sources, stage, budget, spent=lambda: budget.spent,
+            reports, ctx.sources, stage, raw, spent=lambda: budget.spent,
             max_spend=budget.max_usd, done=done[stage],
-            checkpoint=tr.checkpoint_path(ctx.cache, args.side, stage),
+            checkpoint=tr.checkpoint_path(ctx.cache, args.side, stage, ctx.runs),
             max_tokens=args.plain_max_tokens if tr.ARM_OF[stage] == "P" else None, out=out,
+            begin=raw.begin,
         )  # fmt: skip
     for message in sorted(set(budget.errors)):
         out(f"request failed: {message}")
@@ -157,7 +170,7 @@ def run_stages(
 
 
 def cmd_screen(args: argparse.Namespace, out: Callable[[str], None]) -> int:
-    ctx = load_context(args.cache, args.side)
+    ctx = context_for(args)
     return run_stages(args, ctx, ["screen"], ctx.reports, out)
 
 
@@ -168,7 +181,7 @@ def hard_reports(
     if problems or rubric is None:
         out("\n".join(problems))
         return None
-    records = tr.read_stage(ctx.cache, args.side, "screen")
+    records = tr.read_stage(ctx.cache, args.side, "screen", ctx.runs)
     cache = JudgeCache(ctx.cache / "judge")
     v = tr.verdicts(rubric, judges, ctx.refs, ctx.labels_of, records, ctx.sources, cache)
     hard, unjudged = tr.hard_labels(v)
@@ -184,11 +197,12 @@ def hard_reports(
 
 
 def cmd_score(args: argparse.Namespace, out: Callable[[str], None]) -> int:
-    ctx = load_context(args.cache, args.side)
+    ctx = context_for(args)
     reports = hard_reports(ctx, args, out)
     if reports is None:
         return 2
-    return run_stages(args, ctx, ["fresh", "pipeline"], reports, out)
+    wanted = getattr(args, "stages", None) or SCORE_STAGES
+    return run_stages(args, ctx, [s for s in SCORE_STAGES if s in wanted], reports, out)
 
 
 # ---- judge -------------------------------------------------------------------------------------
@@ -197,7 +211,7 @@ def cmd_score(args: argparse.Namespace, out: Callable[[str], None]) -> int:
 def stage_jobs(
     ctx: Context, args: argparse.Namespace, stage: str, judges, rubric
 ) -> list[tj.PairJob]:
-    records = tr.read_stage(ctx.cache, args.side, stage)
+    records = tr.read_stage(ctx.cache, args.side, stage, ctx.runs)
     return [
         job
         for judge in judges
@@ -212,7 +226,7 @@ def cmd_judge(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     if rubric is None or not judges:
         out("\n".join(problems))
         return 2
-    ctx = load_context(args.cache, args.side)
+    ctx = context_for(args)
     cache = JudgeCache(ctx.cache / "judge")
     stages = list(tr.STAGES) if args.stage == "all" else [args.stage]
     jobs = [j for s in stages for j in stage_jobs(ctx, args, s, judges, rubric)]
@@ -278,9 +292,9 @@ def cmd_agreement(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     if rubric is None or not judges:
         out("\n".join(problems))
         return 2
-    ctx = load_context(args.cache, args.side)
+    ctx = context_for(args)
     cache = JudgeCache(ctx.cache / "judge")
-    records = {s: tr.read_stage(ctx.cache, args.side, s) for s in tr.STAGES}
+    records = {s: tr.read_stage(ctx.cache, args.side, s, ctx.runs) for s in tr.STAGES}
     pairs = all_pairs(ctx, rubric, judges, cache, records)
     ja = tp.judge_agreement(pairs, judges)
     if not ja.get("pairs"):
@@ -295,9 +309,9 @@ def cmd_handcheck(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     if rubric is None or not judges:
         out("\n".join(problems))
         return 2
-    ctx = load_context(args.cache, args.side)
+    ctx = context_for(args)
     cache = JudgeCache(ctx.cache / "judge")
-    records = tr.read_stage(ctx.cache, args.side, args.stage)
+    records = tr.read_stage(ctx.cache, args.side, args.stage, ctx.runs)
     pairs = tp.collect_pairs(rubric, judges, ctx.refs, ctx.labels_of, records, ctx.sources, cache)
     if not pairs:
         out("no judged pairs yet: run the stage and `judge` first")
@@ -327,10 +341,15 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     if rubric is None or not judges:
         out("\n".join(problems))
         return 2
-    ctx = load_context(args.cache, args.side)
+    note = (getattr(args, "note", None) or "").strip()
+    runs = getattr(args, "runs", tr.RUNS)
+    if runs != tr.RUNS and not note:
+        out(f"--runs {runs} is not the pre-registered run: say why with --note (printed on top)")
+        return 2
+    ctx = context_for(args)
     cache = JudgeCache(ctx.cache / "judge")
-    records = {s: tr.read_stage(ctx.cache, args.side, s) for s in tr.STAGES}
-    replaced = {s: tr.replaced_usd(ctx.cache, args.side, s) for s in tr.STAGES}
+    records = {s: tr.read_stage(ctx.cache, args.side, s, ctx.runs) for s in tr.STAGES}
+    replaced = {s: tr.replaced_usd(ctx.cache, args.side, s, ctx.runs) for s in tr.STAGES}
     verd = {
         s: tr.verdicts(rubric, judges, ctx.refs, ctx.labels_of, records[s], ctx.sources, cache)
         for s in tr.STAGES
@@ -354,7 +373,7 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         "rubric": rubric.sha256, "rubric_approved": tj.is_approved(rubric),
         "code_commit": git("rev-parse", "--short", "HEAD"),
         "dirty": bool(git("status", "--porcelain", "--untracked-files=no")),
-        "judge_usd": round(judge_usd, 4),
+        "judge_usd": round(judge_usd, 4), "runs": runs, "note": note,
     }  # fmt: skip
     report = tp.build_report(
         tp.Inputs(
@@ -369,10 +388,13 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         )
     )
     js, md = tp.write_report(report, args.side)
+    suffix = tp.runs_suffix(runs)
     for stage in tr.STAGES:
+        if runs != tr.RUNS and records[stage] == tr.read_stage(ctx.cache, args.side, stage):
+            continue  # an unchanged copy of the pre-registered records: they are already filed
         rows = [tr.strip_notes(r) for r in records[stage].values() if "flags" in r]
         if rows:
-            path = cmp.RESULTS_DIR / f"tob-{args.side}-{stage}-{meta['date']}.jsonl"
+            path = cmp.RESULTS_DIR / f"tob-{args.side}-{stage}-{meta['date']}{suffix}.jsonl"
             path.write_text("".join(json.dumps(r) + "\n" for r in rows))
     out("\n".join(tp.render(report)))
     out(f"\nwrote {js} and {md}")
@@ -393,12 +415,24 @@ def cmd_rubric(args: argparse.Namespace, out: Callable[[str], None]) -> int:
 # ---- the parser --------------------------------------------------------------------------------
 
 
+def runs_name(text: str) -> str:
+    """A folder name inside the cache: lower-case letters, digits, - and _ (no path)."""
+    if not tr.RUNS_NAME.match(text):
+        raise argparse.ArgumentTypeError(f"{text!r} is not a plain folder name")
+    return text
+
+
 def add_parsers(sub: argparse._SubParsersAction) -> None:
     def common(p: argparse.ArgumentParser, *, side_both: bool = False) -> None:
         p.add_argument("--cache", type=Path, required=True)
         p.add_argument(
             "--side", choices=(*ti.SIDES, "both") if side_both else ti.SIDES, required=True
         )
+        p.add_argument(
+            "--runs", type=runs_name, default=tr.RUNS,
+            help="the folder of the cache that holds the stage records; a re-run that must not "
+            "touch the pre-registered records goes to its own (copy screen and fresh into it)",
+        )  # fmt: skip
 
     def judges(p: argparse.ArgumentParser) -> None:
         p.add_argument(
@@ -423,6 +457,10 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
         )  # fmt: skip
         if name == "score":
             judges(p)
+            p.add_argument(
+                "--stages", nargs="+", choices=SCORE_STAGES, default=SCORE_STAGES,
+                help="which stages to run (default both)",
+            )  # fmt: skip
     p = sub.add_parser("judge")
     common(p)
     judges(p)
@@ -439,6 +477,7 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser("report")
     common(p)
     judges(p)
+    p.add_argument("--note", help="needed with --runs: why this is not the pre-registered run")
     p = sub.add_parser("agreement")
     common(p)
     judges(p)

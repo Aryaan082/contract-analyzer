@@ -15,6 +15,7 @@ missed for each (run, finding).
 """
 
 import json
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -25,36 +26,40 @@ from evals.source_review import tob_items as ti
 from evals.source_review import tob_judge as tj
 from evals.source_review.compare import Source
 from evals.source_review.scoring import Flag
-from review.client import ReviewerClient
+from review.client import RETRY_REMINDER, ReviewerCall, ReviewerClient
+from review.pack import Prompt
+from review.spans import strip_fence
 
 STAGES = ("screen", "fresh", "pipeline")
 ARM_OF = {"screen": "P", "fresh": "P", "pipeline": "A"}
 MAX_SILENT = cmp.MAX_SILENT
 OUTPUT_LIMIT = {"P": 8192, "A": 8192}  # output tokens a request may write, per arm
+RUNS = "runs"  # the folder of the pre-registered runs; another name keeps a re-run apart from them
+RUNS_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,30}$")
 
 
 # ---- checkpoints --------------------------------------------------------------------------------
 
 
-def checkpoint_path(cache: Path, side: str, stage: str) -> Path:
-    return cache / "runs" / f"{side}-{stage}.jsonl"
+def checkpoint_path(cache: Path, side: str, stage: str, runs: str = RUNS) -> Path:
+    return cache / runs / f"{side}-{stage}.jsonl"
 
 
-def read_stage_rows(cache: Path, side: str, stage: str) -> list[dict]:
-    path = checkpoint_path(cache, side, stage)
+def read_stage_rows(cache: Path, side: str, stage: str, runs: str = RUNS) -> list[dict]:
+    path = checkpoint_path(cache, side, stage, runs)
     if not path.exists():
         return []
     return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
 
 
-def read_stage(cache: Path, side: str, stage: str) -> dict[str, dict]:
+def read_stage(cache: Path, side: str, stage: str, runs: str = RUNS) -> dict[str, dict]:
     """The latest record of each report (a report run again replaces its earlier line)."""
-    return {r["item"]: r for r in read_stage_rows(cache, side, stage)}
+    return {r["item"]: r for r in read_stage_rows(cache, side, stage, runs)}
 
 
-def replaced_usd(cache: Path, side: str, stage: str) -> float:
+def replaced_usd(cache: Path, side: str, stage: str, runs: str = RUNS) -> float:
     """Money paid for records that a later run replaced (replies cut off and run again)."""
-    rows = read_stage_rows(cache, side, stage)
+    rows = read_stage_rows(cache, side, stage, runs)
     last = {r["item"]: i for i, r in enumerate(rows)}
     return round(sum(r.get("cost_usd", 0.0) for i, r in enumerate(rows) if last[r["item"]] != i), 4)
 
@@ -78,6 +83,51 @@ def strip_notes(record: dict) -> dict:
     """The record as it may be committed: flags without the reviewers' sentences."""
     flags = [{k: v for k, v in f.items() if k != "note"} for f in record["flags"]]
     return {**record, "flags": flags}
+
+
+# ---- what the model sent instead of the JSON ----------------------------------------------------
+
+
+def reply_shape(text: str | None) -> str:
+    """How a reply relates to the JSON object that was asked for: `json` (bare), `fenced` (one
+    Markdown fence round it, which the pipeline now reads), `empty`, or `prose` (anything else)."""
+    if text is None or not text.strip():
+        return "empty"
+    for body, shape in ((text.strip(), "json"), (strip_fence(text), "fenced")):
+        try:
+            if isinstance(json.loads(body), dict):
+                return shape
+        except (ValueError, RecursionError):
+            pass
+    return "prose"
+
+
+class Recording:
+    """A client that passes every request on and writes the raw text of each reply that is not a
+    bare JSON object to a file OUTSIDE the repo (never committed): what the model sends instead of
+    what was asked for. `begin` says which report the next requests belong to. A request is a
+    `retry` when it carries the fixed reminder that `review.client` adds the second time."""
+
+    def __init__(self, inner: ReviewerClient, path: Path, stage: str = "") -> None:
+        self.inner, self.path, self.stage, self.item = inner, path, stage, ""
+        self.name = inner.name
+
+    def begin(self, item: str) -> None:
+        self.item = item
+
+    def review(self, prompt: Prompt, schema: dict, *, max_tokens: int) -> ReviewerCall:
+        reply = self.inner.review(prompt, schema, max_tokens=max_tokens)
+        shape = reply_shape(reply.text)
+        if shape != "json":
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            row = {
+                "item": self.item, "stage": self.stage, "shape": shape,
+                "retry": RETRY_REMINDER in prompt.user, "finish_reason": reply.finish_reason,
+                "completion_tokens": reply.completion_tokens, "text": reply.text,
+            }  # fmt: skip
+            with self.path.open("a") as f:
+                f.write(json.dumps(row) + "\n")
+        return reply
 
 
 # ---- running a stage ---------------------------------------------------------------------------
@@ -106,11 +156,13 @@ def run_stage(
     checkpoint: Path,
     max_tokens: int | None = None,
     out: Callable[[str], None] = print,
+    begin: Callable[[str], None] | None = None,
 ) -> list[dict]:
     """One arm over the reports, in order. Stops when the next report's central estimate would pass
     `max_spend`, or after MAX_SILENT reports in a row where no request was answered. Every request
     is also guarded by the `Budget` that `client` is. `max_tokens` is the output limit of a request
-    (default `OUTPUT_LIMIT` of the arm); a record cut off at a lower limit is run again."""
+    (default `OUTPUT_LIMIT` of the arm); a record cut off at a lower limit is run again. `begin`
+    is called with the report's slug just before its first request."""
     limit = max_tokens or OUTPUT_LIMIT[ARM_OF[stage]]
     records: list[dict] = []
     stopped = ""
@@ -131,6 +183,8 @@ def run_stage(
             out(f"  {r.slug}: NOT RUN ({stopped})")
             continue
         run = cmp.run_arm_p if ARM_OF[stage] == "P" else cmp.run_arm_a
+        if begin is not None:
+            begin(r.slug)
         rec = run(source, client, limit)
         record = {"item": r.slug, "stage": stage, "max_tokens": limit, **asdict(rec)}
         records.append(record)

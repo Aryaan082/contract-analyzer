@@ -63,6 +63,18 @@ SELF_CAP: Severity = "medium"
 _FUNCTION_LIKE = frozenset({"function", "modifier", "constructor", "receive", "fallback"})
 _IDENTIFIER = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]{0,39}$")
 _SPACE = re.compile(r"\s+")
+# The whole reply is ONE Markdown code fence (```json or ```) around the JSON: the one wrapper a
+# chat model puts round JSON it was asked for. The same rule as the plain arm's reader.
+_FENCE = re.compile(r"^\s*```(?:json)?\s*\n(.*?)\n\s*```\s*$", re.S)
+
+# Why a whole reply could not be used, in fixed words.
+NO_TEXT = "the reviewer returned no text"
+NOT_JSON = "the reviewer's reply was not JSON"
+NO_ITEMS = "the reviewer's reply had no list of items"
+CUT_OFF = "the reviewer's reply was cut off"
+# Replies that may be asked for once more (`review.client.call_once`): the model answered, but not
+# in the shape asked for. A cut-off reply is not one of them: asking again would be cut off again.
+RETRYABLE = frozenset({NO_TEXT, NOT_JSON, NO_ITEMS})
 
 
 class Accepted(BaseModel, frozen=True):
@@ -161,21 +173,32 @@ def containing_function(members: Sequence[Member], start: int, end: int) -> str 
 # ---- one reply ----------------------------------------------------------------------------------
 
 
+def strip_fence(text: str) -> str:
+    """The reply with surrounding whitespace removed and, if the whole reply is one Markdown code
+    fence, the fence taken off. Anything else (words round the fence, two fences) is left as it is
+    and will not parse."""
+    body = text.strip()
+    fenced = _FENCE.match(body)
+    return fenced.group(1) if fenced else body
+
+
 def check_reply(text: str | None, ctx: CallContext, checklist: Checklist) -> Checked:
     """Parse the reply and check its items one by one. A reply that is not the expected JSON gives
-    no items and says so; it never raises."""
+    no items and says so; it never raises. The reply must be the JSON object and nothing else,
+    except that one Markdown code fence around it is taken off. JSON is never searched for in
+    prose: text before or after it makes the reply unreadable."""
     out = Checked()
     if text is None or not text.strip():
-        out.unreadable = "the reviewer returned no text"
+        out.unreadable = NO_TEXT
         return out
     try:
-        data = json.loads(text)
+        data = json.loads(strip_fence(text))
     except (ValueError, RecursionError):
-        out.unreadable = "the reviewer's reply was not JSON"
+        out.unreadable = NOT_JSON
         return out
     raw_items = data.get("items") if isinstance(data, dict) else None
     if not isinstance(raw_items, list):
-        out.unreadable = "the reviewer's reply had no list of items"
+        out.unreadable = NO_ITEMS
         return out
     seen: set[tuple[str, int, int, str]] = set()
     for raw in raw_items:

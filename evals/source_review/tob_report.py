@@ -265,6 +265,7 @@ def _failures(records: dict[str, dict[str, dict]]) -> dict:
             "reports_with_unreadable_reply": sum(bool(r["failures"]) for r in rows),
             "unreadable_replies": reasons,
             "reports_incomplete": sum(not r["complete"] for r in rows),
+            "requests_sent_again": sum(r.get("retries", 0) for r in rows),
         }
     return out
 
@@ -300,6 +301,7 @@ def render(report: dict) -> list[str]:
         "",
         f"**{report['banner']}**",
         "",
+        *([f"**POST-HOC: {m['note']}**", ""] if m.get("note") else []),
         f"{report['labels']} labelled findings; plain's screening run found "
         f"{report['screening_recall']['found']} and left {report['hard_findings']} hard (missed or "
         f"mislabelled) in {report['hard_reports']} reports. "
@@ -392,6 +394,13 @@ def render(report: dict) -> list[str]:
         + "; ".join(f"{s} {f[s]['unreadable_replies'] or 'none'}" for s in tr.STAGES)
         + f". Pairs the judge could not answer in screening: {report['unjudged_in_screening']}."
     )
+    again = {s: f[s].get("requests_sent_again", 0) for s in tr.STAGES}
+    if any(again.values()):
+        out.append(
+            "- Requests sent a second time because the first reply was not the JSON asked for: "
+            + "; ".join(f"{s} {n}" for s, n in again.items() if n)
+            + " (their cost is in the totals above)."
+        )
     ja = report.get("judge_agreement") or {}
     if ja.get("pairs"):
         out += ["", "## Do the judges differ?", ""] + render_agreement(ja)
@@ -424,9 +433,16 @@ def render(report: dict) -> list[str]:
     return out
 
 
+def runs_suffix(runs: str | None) -> str:
+    """The file-name ending of a report made from a re-run folder; none for the pre-registered
+    runs, so a re-run never overwrites the original report."""
+    return f"-{runs}" if runs and runs != tr.RUNS else ""
+
+
 def write_report(report: dict, side: str, directory: Path = RESULTS_DIR) -> tuple[Path, Path]:
     directory.mkdir(parents=True, exist_ok=True)
-    stem = f"tob-{side}-{report['meta'].get('date', today())}"
+    meta = report["meta"]
+    stem = f"tob-{side}-{meta.get('date', today())}{runs_suffix(meta.get('runs'))}"
     js, md = directory / f"{stem}.json", directory / f"{stem}.md"
     js.write_text(json.dumps(report, indent=1, sort_keys=True) + "\n")
     md.write_text("\n".join(render(report)) + "\n")
@@ -440,8 +456,10 @@ def results_row(report: dict) -> str:
         return f"| {m.get('date')} | ToB hard findings, {m.get('side')} | no hard finding scored |"
     rel = fmt(h["relative"]) if h.get("relative") else "undefined"
     verdict = "improvement shown" if h["improvement_shown"] else "no improvement shown"
+    after = " (after the reply-reading fix, post-hoc)" if m.get("note") else ""
     return (
-        f"| {m.get('date')} | plain Opus 5.5 vs our source review on ToB findings plain missed | "
+        f"| {m.get('date')} | plain Opus 5.5 vs our source review on ToB findings plain missed"
+        f"{after} | "
         f"{m.get('side')} | {h['findings']} hard findings in {h['reports']} reports | "
         f"{h['plain_found']}/{h['findings']} (fresh plain) | "
         f"{h['pipeline_found']}/{h['findings']} | "
