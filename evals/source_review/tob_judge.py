@@ -13,7 +13,8 @@ reply
 schema, and a judged number may be quoted only if the hash equals the one Aryaan approved
 (`rubric.approved`).
 
-Verdicts of several judges are combined by `combine`: the rule is fixed in the README.
+Verdicts of several judges are combined by `combine` (a majority; the README logs the change from
+"all must agree", made before any held-out run).
 """
 
 import hashlib
@@ -184,27 +185,36 @@ def pair_key(ref: Reference, claim: Claim, model: str, rubric: Rubric, repeat: i
 # ---- combining judges --------------------------------------------------------------------------
 
 
+RANK = {"unrelated": 0, "same_place": 1, "same": 2}  # how generous a verdict is
+PANEL = ("z-ai/glm-5.3-flash", "qwen/qwen3.7-flash", "deepseek/deepseek-v4.1-flash-1017")
+
+
 def combine(verdicts: Sequence[str]) -> str:
-    """One pair, several judges. `same` if all say `same`; `same_place` if all say `same` or
-    `same_place` and at least one says `same_place`; `unrelated` if all say it; otherwise
-    `disputed`. With one judge, that judge's verdict."""
-    if not verdicts:
+    """One pair, several judges, by majority (more than half): `same` if most say `same`;
+    otherwise `same_place` if most say `same` or `same_place`; otherwise `unrelated` if most say it;
+    else `disputed`. With one judge, that judge's verdict. With two judges both must agree (a tie is
+    `disputed`); with three there is always a majority, so nothing is disputed."""
+    n = len(verdicts)
+    if not n:
         return "unjudged"
-    kinds = set(verdicts)
-    if kinds == {"same"}:
+    same, place, other = (verdicts.count(v) for v in ("same", "same_place", "unrelated"))
+    if 2 * same > n:
         return "same"
-    if kinds <= {"same", "same_place"}:
+    if 2 * (same + place) > n:
         return "same_place"
-    if kinds == {"unrelated"}:
+    if 2 * other > n:
         return "unrelated"
     return "disputed"
 
 
 def lenient(verdicts: Sequence[str]) -> str:
-    """The sensitivity reading: `same` if any judge says so."""
-    if "same" in verdicts:
-        return "same"
-    return combine(verdicts)
+    """Sensitivity reading: `same` if any judge says so."""
+    return "same" if "same" in verdicts else combine(verdicts)
+
+
+def unanimous(verdicts: Sequence[str]) -> bool:
+    """Sensitivity reading: every judge says `same`."""
+    return bool(verdicts) and all(v == "same" for v in verdicts)
 
 
 # ---- running the judge ---------------------------------------------------------------------------

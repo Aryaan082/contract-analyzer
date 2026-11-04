@@ -204,3 +204,23 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
 - The rubric file is `rubric.toml` (the first text said `tob_rubric.toml`), and its approved hash goes
   in `rubric.approved`; the judge, run and report code were added (`tob_judge.py`, `tob_run.py`,
   `tob_report.py`, `tob_eval_cli.py`). None of these touches a rule above.
+- **Plain output limit (Aryaan, 2026-11-04).** The dev screening run (8,192 output tokens a request, as
+  the arms section says) had two plain replies cut off at the limit (Cap and Ajna, the two largest
+  bundles), which by the fixed reading rule counts as no findings and would have made 17 of the 29 dev
+  findings "missed" by truncation. Both were run again with a limit of **32,768** and finished at 7,828
+  and 6,267 tokens, so the first cut-offs were borderline. From then on every plain request has a
+  32,768-token limit (`--plain-max-tokens`); the three dev replies that finished at 8,192 are kept.
+  The pipeline keeps 8,192 a call (its calls are chunk-sized) and a cut-off there is still counted as
+  no findings and reported. The $1.84 paid for the two cut-off replies stays in the cost totals. This
+  changes no rule above for the findings, the judge or the headline.
+- **Three judges, a majority (Aryaan, 2026-11-04; before any held-out run and before DeepSeek had
+  judged anything).** The judges are `z-ai/glm-5.3-flash`, `qwen/qwen3.7-flash` and
+  `deepseek/deepseek-v4.1-flash-1017` (three companies; DeepSeek is allowed by `policy.toml` because
+  the model judged is Anthropic's). A pair is `same` if more than half the judges say `same`, otherwise
+  `same_place` if more than half say `same` or `same_place`, otherwise `unrelated` if more than half
+  say it; with three judges there is always a majority, so no pair is disputed. This replaces "both
+  judges must agree" in the section on combining judges; the unanimous reading (every judge says
+  `same`) and the lenient reading (any judge says `same`) are reported as sensitivity checks. The
+  report also shows how often each judge is the minority of a 2 to 1 split and whether it was the more
+  generous or the stricter one, so a judge that differs from the others shows. The first 249 dev
+  screening pairs were judged by glm and qwen before this change; DeepSeek judges the same pairs.

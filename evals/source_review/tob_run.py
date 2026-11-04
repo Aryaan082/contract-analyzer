@@ -30,6 +30,7 @@ from review.client import ReviewerClient
 STAGES = ("screen", "fresh", "pipeline")
 ARM_OF = {"screen": "P", "fresh": "P", "pipeline": "A"}
 MAX_SILENT = cmp.MAX_SILENT
+OUTPUT_LIMIT = {"P": 8192, "A": 8192}  # output tokens a request may write, per arm
 
 
 # ---- checkpoints --------------------------------------------------------------------------------
@@ -39,16 +40,38 @@ def checkpoint_path(cache: Path, side: str, stage: str) -> Path:
     return cache / "runs" / f"{side}-{stage}.jsonl"
 
 
-def read_stage(cache: Path, side: str, stage: str) -> dict[str, dict]:
+def read_stage_rows(cache: Path, side: str, stage: str) -> list[dict]:
     path = checkpoint_path(cache, side, stage)
     if not path.exists():
-        return {}
-    rows = (json.loads(x) for x in path.read_text().splitlines() if x.strip())
-    return {r["item"]: r for r in rows}
+        return []
+    return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
+
+
+def read_stage(cache: Path, side: str, stage: str) -> dict[str, dict]:
+    """The latest record of each report (a report run again replaces its earlier line)."""
+    return {r["item"]: r for r in read_stage_rows(cache, side, stage)}
+
+
+def replaced_usd(cache: Path, side: str, stage: str) -> float:
+    """Money paid for records that a later run replaced (replies cut off and run again)."""
+    rows = read_stage_rows(cache, side, stage)
+    last = {r["item"]: i for i, r in enumerate(rows)}
+    return round(sum(r.get("cost_usd", 0.0) for i, r in enumerate(rows) if last[r["item"]] != i), 4)
 
 
 def finished(record: dict) -> bool:
     return bool(record.get("complete"))
+
+
+def cut_off(record: dict) -> bool:
+    """The reply hit the output limit, so by the fixed rule the report has no findings from it."""
+    return any("cut off" in f for f in record.get("failures", []))
+
+
+def superseded(record: dict, max_tokens: int) -> bool:
+    """A record that was cut off at a lower output limit than the one now asked for: it is run
+    again (the old line stays in the file; the later one wins when the file is read)."""
+    return cut_off(record) and record.get("max_tokens", OUTPUT_LIMIT["P"]) < max_tokens
 
 
 def strip_notes(record: dict) -> dict:
@@ -81,18 +104,20 @@ def run_stage(
     max_spend: float,
     done: dict[str, dict],
     checkpoint: Path,
-    max_tokens: int = 8192,
+    max_tokens: int | None = None,
     out: Callable[[str], None] = print,
 ) -> list[dict]:
     """One arm over the reports, in order. Stops when the next report's central estimate would pass
     `max_spend`, or after MAX_SILENT reports in a row where no request was answered. Every request
-    is also guarded by the `Budget` that `client` is."""
+    is also guarded by the `Budget` that `client` is. `max_tokens` is the output limit of a request
+    (default `OUTPUT_LIMIT` of the arm); a record cut off at a lower limit is run again."""
+    limit = max_tokens or OUTPUT_LIMIT[ARM_OF[stage]]
     records: list[dict] = []
     stopped = ""
     silent = 0
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     for r in reports:
-        if r.slug in done and finished(done[r.slug]):
+        if r.slug in done and finished(done[r.slug]) and not superseded(done[r.slug], limit):
             records.append(done[r.slug])
             continue
         source = sources[r.slug]
@@ -106,8 +131,8 @@ def run_stage(
             out(f"  {r.slug}: NOT RUN ({stopped})")
             continue
         run = cmp.run_arm_p if ARM_OF[stage] == "P" else cmp.run_arm_a
-        rec = run(source, client, max_tokens)
-        record = {"item": r.slug, "stage": stage, **asdict(rec)}
+        rec = run(source, client, limit)
+        record = {"item": r.slug, "stage": stage, "max_tokens": limit, **asdict(rec)}
         records.append(record)
         with checkpoint.open("a") as f:
             f.write(json.dumps(record) + "\n")
@@ -191,7 +216,8 @@ def judge_jobs(
 class LabelVerdict:
     """What one run made of one labelled finding, from the judge's pair verdicts."""
 
-    found: bool = False  # strict: some flag is `same` (all judges)
+    found: bool = False  # some flag is `same` by a majority of the judges
+    found_unanimous: bool = False  # some flag is `same` for every judge
     found_lenient: bool = False  # some flag is `same` for at least one judge
     mislabelled: bool = False  # not found, and some flag is `same_place`
     unjudged: int = 0  # pairs with no usable verdict from every judge
@@ -234,6 +260,8 @@ def verdicts(
                     v.unjudged += 1
                     continue
                 strict, loose = tj.combine(got), tj.lenient(got)
+                if tj.unanimous(got):
+                    v.found_unanimous = True
                 v.disputed += strict == "disputed"
                 if strict == "same":
                     v.found = True

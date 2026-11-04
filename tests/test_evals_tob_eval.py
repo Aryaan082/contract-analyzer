@@ -606,3 +606,163 @@ def test_nothing_in_the_commands_can_reach_the_model_without_the_budget():
 
 def test_the_run_dir_is_a_path(tmp_path):
     assert isinstance(tr.checkpoint_path(tmp_path, "dev", "screen"), Path)
+
+
+# ---- a reply cut off at the output limit -------------------------------------------------------
+
+
+def cut_record(max_tokens=8192):
+    return {"item": "a", "stage": "screen", "complete": True, "flags": [], "max_tokens": max_tokens,
+            "failures": ["reply cut off at the output limit"]}  # fmt: skip
+
+
+def test_a_cut_off_record_is_superseded_only_by_a_higher_limit():
+    assert tr.cut_off(cut_record()) and not tr.cut_off({"failures": []})
+    assert tr.superseded(cut_record(8192), 32768)
+    assert not tr.superseded(cut_record(8192), 8192)
+    assert not tr.superseded({"failures": [], "max_tokens": 8192}, 32768)
+    assert tr.superseded(
+        {"failures": ["reply cut off at the output limit"]}, 32768
+    )  # no limit kept
+
+
+def test_a_higher_output_limit_runs_a_cut_off_report_again_and_only_that_one(tmp_path):
+    rs = reports("a", "b")
+    srcs = {"a": source(), "b": source()}
+    path = tmp_path / "runs" / "dev-screen.jsonl"
+    done = {
+        "a": cut_record(),
+        "b": {**cut_record(), "item": "b", "failures": [], "flags": [flag()]},
+    }
+    client = ScriptedReviewer([PLAIN_REPLY], name=cmp.OPUS.name, cost_usd=0.01)
+    recs = tr.run_stage(
+        rs, srcs, "screen", client, spent=lambda: 0.0, max_spend=100.0, done=done,
+        checkpoint=path, max_tokens=32768, out=lambda _: None,
+    )  # fmt: skip
+    assert len(client.prompts) == 1  # only report a
+    assert recs[0]["max_tokens"] == 32768 and recs[0]["flags"] and recs[1] is done["b"]
+    again = tr.run_stage(
+        rs, srcs, "screen", client, spent=lambda: 0.0, max_spend=100.0,
+        done={**done, **tr.read_stage(tmp_path, "dev", "screen")}, checkpoint=path,
+        max_tokens=32768,
+        out=lambda _: None,
+    )  # fmt: skip
+    assert len(client.prompts) == 1 and again[0]["max_tokens"] == 32768
+
+
+def test_every_stage_record_keeps_the_limit_it_ran_with(tmp_path):
+    client = ScriptedReviewer([PLAIN_REPLY], name=cmp.OPUS.name)
+    recs = tr.run_stage(
+        reports("a"), {"a": source()}, "screen", client, spent=lambda: 0.0, max_spend=100.0,
+        done={}, checkpoint=tmp_path / "c.jsonl", out=lambda _: None,
+    )  # fmt: skip
+    assert recs[0]["max_tokens"] == tr.OUTPUT_LIMIT["P"]
+
+
+def test_money_for_replaced_lines_is_counted_in_the_report_total(tmp_path):
+    path = tr.checkpoint_path(tmp_path, "dev", "screen")
+    path.parent.mkdir(parents=True)
+    old = {**cut_record(), "cost_usd": 0.7}
+    new = {"item": "a", "stage": "screen", "complete": True, "flags": [], "failures": [],
+           "max_tokens": 32768, "cost_usd": 0.9, "seconds": 1.0, "calls": 1}  # fmt: skip
+    other = {**new, "item": "b", "cost_usd": 0.1}
+    path.write_text("".join(json.dumps(r) + "\n" for r in (old, other, new)))
+    assert tr.replaced_usd(tmp_path, "dev", "screen") == pytest.approx(0.7)
+    assert tr.replaced_usd(tmp_path, "dev", "fresh") == 0.0
+    assert tr.read_stage(tmp_path, "dev", "screen")["a"]["cost_usd"] == 0.9
+    c = tp._cost({"screen": tr.read_stage(tmp_path, "dev", "screen")}, {"screen": 0.7})
+    assert c["screen"]["total_usd"] == pytest.approx(1.0) and c["screen"]["replaced_usd"] == 0.7
+    assert c["agents_total_usd"] == pytest.approx(1.7)
+
+
+# ---- three judges, a majority, and who is in the minority --------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("verdicts", "majority", "unanimous", "any_same"),
+    [
+        (["same", "same", "unrelated"], "same", False, True),
+        (["same", "same", "same"], "same", True, True),
+        (["same", "unrelated", "unrelated"], "unrelated", False, True),
+        (["same", "same_place", "unrelated"], "same_place", False, True),
+        (["same", "same_place", "same_place"], "same_place", False, True),
+        (["same_place", "same_place", "unrelated"], "same_place", False, False),
+        (["same_place", "unrelated", "unrelated"], "unrelated", False, False),
+        (["unrelated", "unrelated", "unrelated"], "unrelated", False, False),
+    ],
+)
+def test_three_judges_are_decided_by_a_majority_and_never_dispute(
+    verdicts, majority, unanimous, any_same
+):
+    assert tj.combine(verdicts) == majority != "disputed"
+    assert tj.unanimous(verdicts) is unanimous
+    assert (tj.lenient(verdicts) == "same") is any_same
+
+
+def test_the_default_judges_are_the_three_company_panel():
+    import argparse
+
+    args = argparse.Namespace(mode=None, judge=None)
+    judges, specs, rubric, problems = cli.judge_setup(args, lambda _: None)
+    assert judges == tj.PANEL and not problems and rubric is not None
+    assert len({j.split("/")[0] for j in judges}) == 3
+    assert all(j in specs for j in judges)
+
+
+def test_a_judge_from_the_models_own_company_is_still_refused_in_the_panel():
+    import argparse
+
+    args = argparse.Namespace(mode=None, judge=["anthropic/claude-haiku-5.5"])
+    _, _, _, problems = cli.judge_setup(args, lambda _: None)
+    assert problems
+
+
+def pair(a, b, c, i=0):
+    ref = tj.Reference(f"r:{i}", "t", ("a.sol",), "d")
+    claim = tj.Claim("a.sol", "", "f", 1, 2, f"s{i}")
+    judged = dict(zip(tj.PANEL, (a, b, c), strict=True))
+    return tp.PairView(ref, claim, judged, tj.combine([a, b, c]))
+
+
+def test_the_agreement_report_says_who_is_the_odd_one_out_and_which_way_it_leans():
+    g, q, d = tj.PANEL
+    pairs = [
+        pair("same", "same", "same", 0),
+        pair("unrelated", "unrelated", "unrelated", 1),
+        pair("same", "unrelated", "unrelated", 2),  # glm is more generous than the others
+        pair("same", "unrelated", "unrelated", 3),  # again
+        pair("unrelated", "same_place", "unrelated", 4),  # qwen more generous
+        pair("same", "same", "unrelated", 5),  # deepseek stricter
+        pair("same", "same_place", "unrelated", 6),  # a three-way split
+    ]
+    ja = tp.judge_agreement(pairs, tj.PANEL)
+    assert (ja["unanimous"], ja["one_judge_in_the_minority"], ja["other_splits"]) == (2, 4, 1)
+    assert ja["minority"][g]["count"] == 2 and ja["minority"][g]["more_generous"] == 2
+    assert ja["minority"][q]["count"] == 1 and ja["minority"][q]["more_generous"] == 1
+    assert ja["minority"][d]["count"] == 1 and ja["minority"][d]["stricter"] == 1
+    assert ja["minority"][g]["share_of_minority_cases"] == 0.5
+    assert ja["pairwise_exact_agreement"][f"{g} | {q}"] == pytest.approx(3 / 7, abs=1e-4)
+    assert ja["said"][g] == {"same": 5, "same_place": 0, "unrelated": 2}
+    text = "\n".join(tp.render_agreement(ja))
+    assert "minority" in text and g in text
+
+
+def test_two_judges_have_no_minority_only_disagreements():
+    a, b = tj.PANEL[:2]
+    pairs = [tp.PairView(REF, CLAIM, {a: "same", b: "unrelated"}, "disputed")]
+    ja = tp.judge_agreement(pairs, [a, b])
+    assert ja["one_judge_in_the_minority"] == 0 and ja["other_splits"] == 1
+    assert tp.judge_agreement([], [a, b]) == {"judges": [a, b], "pairs": 0}
+
+
+def test_found_by_majority_but_not_unanimously_is_flagged_in_the_verdict(rubric):
+    three = list(tj.PANEL)
+    answers = {
+        ("T-1", 0): dict(zip(three, ("same", "same", "unrelated"), strict=True)),
+        ("T-1", 1): dict(zip(three, ("unrelated",) * 3, strict=True)),
+        ("T-2", 0): dict(zip(three, ("unrelated",) * 3, strict=True)),
+        ("T-2", 1): dict(zip(three, ("unrelated",) * 3, strict=True)),
+    }
+    _, refs, labels_of, records, srcs, cache = setup_run(rubric, answers)
+    v = tr.verdicts(rubric, three, refs, labels_of, records, srcs, cache)[("r", "r:T-1")]
+    assert v.found and v.found_lenient and not v.found_unanimous and v.kind == "found"

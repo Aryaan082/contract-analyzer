@@ -13,7 +13,7 @@ import json
 import random
 import statistics
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -121,6 +121,8 @@ class Inputs:
     records: dict[str, dict[str, dict]]  # stage -> report -> checkpoint record
     flags: dict[str, dict[str, tuple[int, int]]]  # stage -> report -> (flags, unmatched)
     meta: dict[str, Any]
+    replaced: dict[str, float] = field(default_factory=dict)  # stage -> dollars of replaced lines
+    agreement: dict[str, Any] = field(default_factory=dict)  # judge_agreement(...)
 
 
 def build_report(inp: Inputs) -> dict:
@@ -144,6 +146,8 @@ def build_report(inp: Inputs) -> dict:
                 "A": bool(a and a.found),
                 "F_loose": bool(f and f.found_lenient),
                 "A_loose": bool(a and a.found_lenient),
+                "F_all": bool(f and f.found_unanimous),
+                "A_all": bool(a and a.found_unanimous),
                 "F_kind": f.kind if f else "not run",
                 "A_kind": a.kind if a else "not run",
                 "scored": f is not None and a is not None,
@@ -163,6 +167,10 @@ def build_report(inp: Inputs) -> dict:
         "headline_lenient": headline(
             [{**r, "F": r["F_loose"], "A": r["A_loose"]} for r in scored_hard]
         ),
+        "headline_unanimous": headline(
+            [{**r, "F": r["F_all"], "A": r["A_all"]} for r in scored_hard]
+        ),
+        "judge_agreement": inp.agreement,
         "screening_recall": _recall(rows, "S_found"),
         "all_findings_in_scored_reports": {
             "screen": _recall(scored_all, "S_found"),
@@ -190,7 +198,7 @@ def build_report(inp: Inputs) -> dict:
             }
             for stage in tr.STAGES
         },
-        "cost": _cost(inp.records),
+        "cost": _cost(inp.records, inp.replaced),
         "failures": _failures(inp.records),
         "per_finding": rows,
         "not_scored": [
@@ -225,15 +233,16 @@ def _why_not(slug: str, inp: Inputs) -> str:
     return rec.get("skipped") or "a screening request was refused or failed"
 
 
-def _cost(records: dict[str, dict[str, dict]]) -> dict:
+def _cost(records: dict[str, dict[str, dict]], replaced: dict[str, float]) -> dict:
     out: dict[str, Any] = {}
     total = 0.0
     for stage in tr.STAGES:
         rows = [r for r in records.get(stage, {}).values() if "cost_usd" in r]
         usd = [r["cost_usd"] for r in rows]
         sec = [r["seconds"] for r in rows]
-        total += sum(usd)
+        total += sum(usd) + replaced.get(stage, 0.0)
         out[stage] = {
+            "replaced_usd": replaced.get(stage, 0.0),
             "reports": len(rows),
             "total_usd": round(sum(usd), 4),
             "mean_usd": _num(statistics.fmean(usd)) if usd else None,
@@ -261,6 +270,26 @@ def _failures(records: dict[str, dict[str, dict]]) -> dict:
 
 
 # ---- the written report ------------------------------------------------------------------------
+
+
+def render_agreement(ja: dict) -> list[str]:
+    out = [
+        f"{ja['pairs']} judged pairs: all judges agree on {ja['unanimous']}; exactly one judge is "
+        f"in the minority on {ja['one_judge_in_the_minority']}; other splits {ja['other_splits']}.",
+        "",
+        "| judge | minority | share of pairs | share of minority cases | more generous | stricter"
+        " | said same / same_place / unrelated |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for j, v in ja["minority"].items():
+        said = ja["said"][j]
+        out.append(
+            f"| {j} | {v['count']} | {v['share_of_all_pairs']} | {v['share_of_minority_cases']} | "
+            f"{v['more_generous']} | {v['stricter']} | {said['same']} / {said['same_place']} / "
+            f"{said['unrelated']} |"
+        )
+    pairs = "; ".join(f"{k}: {v}" for k, v in ja["pairwise_exact_agreement"].items())
+    return out + ["", f"Exact agreement between each two judges: {pairs}."]
 
 
 def render(report: dict) -> list[str]:
@@ -305,13 +334,16 @@ def render(report: dict) -> list[str]:
         ]
         if h.get("note"):
             out.append(f"Note: {h['note']}.")
-        hl = report["headline_lenient"]
-        if hl.get("findings"):
-            out.append(
-                f"Lenient reading (a pair counts if either judge says `same`): plain "
-                f"{hl['plain_found']}, pipeline {hl['pipeline_found']} of {hl['findings']}; "
-                f"difference {fmt(hl['difference'])}."
-            )
+        for key, name in (
+            ("headline_unanimous", "Unanimous reading (every judge says `same`)"),
+            ("headline_lenient", "Lenient reading (any judge says `same`)"),
+        ):
+            hv = report[key]
+            if hv.get("findings"):
+                out.append(
+                    f"{name}: plain {hv['plain_found']}, pipeline {hv['pipeline_found']} of "
+                    f"{hv['findings']}; difference {fmt(hv['difference'])}."
+                )
     a = report["all_findings_in_scored_reports"]
     n = report["repeat_noise"]
     out += [
@@ -350,7 +382,9 @@ def render(report: dict) -> list[str]:
             f"{c[s]['calls']} calls)"
             for s in tr.STAGES
         )
-        + f"; agents ${c['agents_total_usd']:.2f}; judges ${m.get('judge_usd', 0.0):.2f}."
+        + f"; agents ${c['agents_total_usd']:.2f} (of which "
+        f"${sum(c[s]['replaced_usd'] for s in tr.STAGES):.2f} for replies cut off at the output "
+        f"limit and run again); judges ${m.get('judge_usd', 0.0):.2f}."
     )
     f = report["failures"]
     out.append(
@@ -358,6 +392,9 @@ def render(report: dict) -> list[str]:
         + "; ".join(f"{s} {f[s]['unreadable_replies'] or 'none'}" for s in tr.STAGES)
         + f". Pairs the judge could not answer in screening: {report['unjudged_in_screening']}."
     )
+    ja = report.get("judge_agreement") or {}
+    if ja.get("pairs"):
+        out += ["", "## Do the judges differ?", ""] + render_agreement(ja)
     if report["not_scored"]:
         out += ["", "## Not scored", ""]
         out += [f"- {n['report']}: {n['why']}" for n in report["not_scored"]]
@@ -412,6 +449,52 @@ def results_row(report: dict) -> str:
         f"{h['both']}, pipeline only {h['pipeline_only']}, plain only {h['plain_only']}, neither "
         f"{h['neither']}; agents ${report['cost']['agents_total_usd']:.2f} |"
     )
+
+
+def judge_agreement(pairs: Sequence["PairView"], judges: Sequence[str]) -> dict:
+    """Do the judges differ, and is one of them the odd one out? Over the judged pairs: how often
+    all agree; with three or more judges, how often exactly one judge disagrees with the rest (it is
+    the minority) and whether it was the more generous or the stricter; each pair of judges' exact
+    agreement; and what each judge said overall."""
+    n = len(judges)
+    out: dict[str, Any] = {"judges": list(judges), "pairs": len(pairs)}
+    if not pairs:
+        return out
+    odd = {j: {"count": 0, "more_generous": 0, "stricter": 0} for j in judges}
+    unanimous = one_odd = other = 0
+    for p in pairs:
+        said = [p.judged[j] for j in judges]
+        counts = {v: said.count(v) for v in set(said)}
+        top = max(counts, key=lambda v: counts[v])
+        if len(counts) == 1:
+            unanimous += 1
+        elif n >= 3 and counts[top] == n - 1:
+            one_odd += 1
+            who = judges[next(i for i, v in enumerate(said) if v != top)]
+            odd[who]["count"] += 1
+            odd[who]["more_generous" if tj.RANK[p.judged[who]] > tj.RANK[top] else "stricter"] += 1
+        else:
+            other += 1
+    out.update(
+        unanimous=unanimous,
+        one_judge_in_the_minority=one_odd,
+        other_splits=other,
+        minority={
+            j: {
+                **v,
+                "share_of_all_pairs": _num(v["count"] / len(pairs)),
+                "share_of_minority_cases": _num(v["count"] / one_odd) if one_odd else None,
+            }
+            for j, v in odd.items()
+        },
+        pairwise_exact_agreement={
+            f"{a} | {b}": _num(sum(p.judged[a] == p.judged[b] for p in pairs) / len(pairs))
+            for i, a in enumerate(judges)
+            for b in judges[i + 1 :]
+        },
+        said={j: {k: sum(p.judged[j] == k for p in pairs) for k in tj.VERDICTS} for j in judges},
+    )
+    return out
 
 
 # ---- pairs for a person to read ----------------------------------------------------------------

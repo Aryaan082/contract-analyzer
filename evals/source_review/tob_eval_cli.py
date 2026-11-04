@@ -7,6 +7,7 @@ judge       the pairwise judge over the flags of a stage. Without --confirm-spen
             --draft (a draft result says so and is not for quoting).
 score       the fresh plain run and the pipeline run on the reports that have a hard finding, as
             judged in screening (stage 2). Same refusals as `screen`.
+agreement   free: do the judges differ; which one is the odd one out, and which way it leans.
 handcheck   free: writes a sample of judged pairs for a person to label, judges and arm hidden.
 report      free: the results file, the run records without any reviewer text, a results row.
 rubric      the rubric's hash and whether it is the one Aryaan approved.
@@ -69,15 +70,18 @@ def load_context(cache: Path, side: str, gh: ti.GitHub | None = None) -> Context
 
 
 def judge_setup(args: argparse.Namespace, out: Callable[[str], None]):
-    """(judges, specs, rubric, problems) for the judge options on the command line."""
+    """(judges, specs, rubric, problems) for the judge options on the command line. With neither
+    --mode nor --judge the judges are the three of `tj.PANEL` (Aryaan, 2026-11-04): a majority of
+    them decides a pair."""
     policy = load_policy()
+    named = list(args.judge or []) if (args.mode or args.judge) else list(tj.PANEL)
     try:
-        judges, _ = resolve_judges(args.mode, args.judge or [], policy)
+        judges, _ = resolve_judges(args.mode, named, policy)
     except ValueError as err:
         return (), {}, None, [str(err)]
     problems = []
     if not judges:
-        problems.append("no judge was named: add --mode quick|milestone or --judge SLUG")
+        problems.append("no judge was named")
     problems += self_grading(judges, cmp.OPUS.name, policy)
     specs = load_judges()
     problems += [
@@ -136,17 +140,15 @@ def run_stages(
     if args.max_spend < central:
         out(f"NOTE: the cap ${args.max_spend:.2f} is below the estimate; the run will stop early.")
     done = {s: tr.read_stage(ctx.cache, args.side, s) for s in stages}
-    budget = cmp.real_budget(args.max_spend)
-    budget.spent = sum(
-        r.get("cost_usd", 0.0) for s in stages for r in done[s].values() if tr.finished(r)
-    )
+    budget = cmp.real_budget(args.max_spend)  # --max-spend caps what THIS command spends
     with_credit_limit(budget, out)
     for stage in stages:
         out(f"stage {stage}:")
         tr.run_stage(
             reports, ctx.sources, stage, budget, spent=lambda: budget.spent,
             max_spend=budget.max_usd, done=done[stage],
-            checkpoint=tr.checkpoint_path(ctx.cache, args.side, stage), out=out,
+            checkpoint=tr.checkpoint_path(ctx.cache, args.side, stage),
+            max_tokens=args.plain_max_tokens if tr.ARM_OF[stage] == "P" else None, out=out,
         )  # fmt: skip
     for message in sorted(set(budget.errors)):
         out(f"request failed: {message}")
@@ -254,6 +256,34 @@ def cmd_judge(args: argparse.Namespace, out: Callable[[str], None]) -> int:
 # ---- hand-check --------------------------------------------------------------------------------
 
 
+def all_pairs(ctx: Context, rubric, judges, cache, records) -> list[tp.PairView]:
+    """Every pair that every judge has answered, over the records of all stages."""
+    out: list[tp.PairView] = []
+    for stage in tr.STAGES:
+        out += tp.collect_pairs(
+            rubric, judges, ctx.refs, ctx.labels_of, records.get(stage, {}), ctx.sources, cache
+        )
+    return out
+
+
+def cmd_agreement(args: argparse.Namespace, out: Callable[[str], None]) -> int:
+    """Free: do the judges differ, and is one the odd one out? Reads the cached judgements."""
+    judges, _, rubric, problems = judge_setup(args, out)
+    if rubric is None or not judges:
+        out("\n".join(problems))
+        return 2
+    ctx = load_context(args.cache, args.side)
+    cache = JudgeCache(ctx.cache / "judge")
+    records = {s: tr.read_stage(ctx.cache, args.side, s) for s in tr.STAGES}
+    pairs = all_pairs(ctx, rubric, judges, cache, records)
+    ja = tp.judge_agreement(pairs, judges)
+    if not ja.get("pairs"):
+        out("no pair has been answered by every judge yet")
+        return 2
+    out("\n".join(tp.render_agreement(ja)))
+    return 0
+
+
 def cmd_handcheck(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     judges, _, rubric, problems = judge_setup(args, out)
     if rubric is None or not judges:
@@ -294,6 +324,7 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     ctx = load_context(args.cache, args.side)
     cache = JudgeCache(ctx.cache / "judge")
     records = {s: tr.read_stage(ctx.cache, args.side, s) for s in tr.STAGES}
+    replaced = {s: tr.replaced_usd(ctx.cache, args.side, s) for s in tr.STAGES}
     verd = {
         s: tr.verdicts(rubric, judges, ctx.refs, ctx.labels_of, records[s], ctx.sources, cache)
         for s in tr.STAGES
@@ -310,6 +341,7 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     }
     label, quotable = policy_label(judges, load_policy())
     judge_usd = sum(r.get("cost_usd", 0.0) for r in cache.rows())
+    agreement = tp.judge_agreement(all_pairs(ctx, rubric, judges, cache, records), judges)
     meta = {
         "model": cmp.OPUS.name, "date": tp.today(), "side": args.side, "judges": list(judges),
         "judge_label": label, "quotable": quotable and tj.is_approved(rubric),
@@ -326,6 +358,8 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
             records,
             flags,
             meta,
+            replaced,
+            agreement,
         )
     )
     js, md = tp.write_report(report, args.side)
@@ -361,7 +395,9 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
         )
 
     def judges(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--mode", choices=("quick", "milestone"))
+        p.add_argument(
+            "--mode", choices=("quick", "milestone"), help="default: the three-judge panel"
+        )
         p.add_argument("--judge", action="append", help="an extra judge the policy lists")
 
     def spend(p: argparse.ArgumentParser) -> None:
@@ -375,6 +411,10 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
         p.add_argument(
             "--declare", help="held-out only: why the code is frozen and this run is final"
         )
+        p.add_argument(
+            "--plain-max-tokens", type=int, default=tr.OUTPUT_LIMIT["P"],
+            help="output limit of a plain request; a record cut off at a lower limit is run again",
+        )  # fmt: skip
         if name == "score":
             judges(p)
     p = sub.add_parser("judge")
@@ -393,10 +433,13 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser("report")
     common(p)
     judges(p)
+    p = sub.add_parser("agreement")
+    common(p)
+    judges(p)
     sub.add_parser("rubric")
 
 
 COMMANDS = {
     "screen": cmd_screen, "score": cmd_score, "judge": cmd_judge, "handcheck": cmd_handcheck,
-    "report": cmd_report, "rubric": cmd_rubric,
+    "report": cmd_report, "rubric": cmd_rubric, "agreement": cmd_agreement,
 }  # fmt: skip
