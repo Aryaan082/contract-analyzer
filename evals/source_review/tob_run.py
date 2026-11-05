@@ -283,6 +283,8 @@ def judge_jobs(
             continue
         for claim in claims_of(record, sources[slug]):
             for lab in labels_of.get(slug, []):
+                if lab.file_scoped and claim.file not in lab.files:
+                    continue  # the wide key's extra findings: only flags in their own files
                 meta = {"report": slug, "label": lab.id, "stage": stage}
                 jobs.append(tj.make_job(rubric, refs[lab.id], claim, model, meta))
     return jobs
@@ -327,6 +329,8 @@ def verdicts(
         for lab in labels_of.get(slug, []):
             v = LabelVerdict()
             for i, claim in enumerate(claims):
+                if lab.file_scoped and claim.file not in lab.files:
+                    continue  # never judged, and not a gap: such a pair is out of scope
                 got = []
                 for judge in judges:
                     row = cache.get(tj.pair_key(refs[lab.id], claim, judge, rubric))
@@ -379,6 +383,8 @@ def unmatched_flags(
     for claim in claims:
         clear = True
         for lab in labs:
+            if lab.file_scoped and claim.file not in lab.files:
+                continue  # out of scope for this finding: counts as unrelated
             got = []
             for judge in judges:
                 row = cache.get(tj.pair_key(refs[lab.id], claim, judge, rubric))

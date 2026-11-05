@@ -193,6 +193,13 @@ class Label:
     difficulty: str
     page: int
 
+    @property
+    def file_scoped(self) -> bool:
+        """True for the extra Low and Informational findings of the wide key (`tob_wide`): they are
+        judged only against flags in their own files, to keep the extra judging small. The labels of
+        the pre-registered key (High, Medium, Undetermined) are always judged against every flag."""
+        return self.severity.lower() in ("low", "informational")
+
 
 @dataclass(frozen=True)
 class Report:

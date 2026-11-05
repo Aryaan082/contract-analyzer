@@ -312,6 +312,17 @@ def render(report: dict) -> list[str]:
             if m.get("partial_judging")
             else []
         ),
+        *(
+            [
+                "**WIDE KEY (post-hoc, dev only, not the headline): the Low and Informational "
+                "findings that name a file of the code are added, each judged only against the "
+                "flags in its own files, so found counts are lower bounds. Skipped for lack of a "
+                f"file: {', '.join(m.get('wide_skipped') or []) or 'none'}.**",
+                "",
+            ]
+            if m.get("key") == "wide"
+            else []
+        ),
         *([f"**POST-HOC: {m['note']}**", ""] if m.get("note") else []),
         *(
             [f"**JUDGE WAIVER (dev only, not quotable): {m['judge_waiver']}**", ""]
@@ -477,7 +488,8 @@ def stage_models(records: dict[str, dict[str, dict]]) -> dict[str, str]:
 def write_report(report: dict, side: str, directory: Path = RESULTS_DIR) -> tuple[Path, Path]:
     directory.mkdir(parents=True, exist_ok=True)
     meta = report["meta"]
-    stem = f"tob-{side}-{meta.get('date', today())}{runs_suffix(meta.get('runs'))}"
+    wide = "-wide" if meta.get("key") == "wide" else ""
+    stem = f"tob-{side}-{meta.get('date', today())}{runs_suffix(meta.get('runs'))}{wide}"
     js, md = directory / f"{stem}.json", directory / f"{stem}.md"
     js.write_text(json.dumps(report, indent=1, sort_keys=True) + "\n")
     md.write_text("\n".join(render(report)) + "\n")
@@ -500,6 +512,7 @@ def results_row(report: dict) -> str:
     verdict = "improvement shown" if h["improvement_shown"] else "no improvement shown"
     after = f" (post-hoc: {m['note']})" if m.get("note") else ""
     partial = " (**PARTIAL JUDGING, counts too low**)" if m.get("partial_judging") else ""
+    partial += " (WIDE KEY, post-hoc)" if m.get("key") == "wide" else ""
     return (
         f"| {m.get('date')} | plain {model_label(m.get('model'))} vs our source review on ToB "
         f"findings plain missed{after}{partial} | "

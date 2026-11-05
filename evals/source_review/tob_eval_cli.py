@@ -37,6 +37,7 @@ from evals.source_review import tob_items as ti
 from evals.source_review import tob_judge as tj
 from evals.source_review import tob_report as tp
 from evals.source_review import tob_run as tr
+from evals.source_review import tob_wide as tw
 from evals.source_review.cards import REPO_ROOT
 from evals.source_review.compare import Source
 
@@ -63,6 +64,8 @@ class Context:
     sources: dict[str, Source]
     refs: dict[str, tj.Reference]
     runs: str = tr.RUNS  # which folder of the cache holds the stage records (`--runs`)
+    key: str = "orig"  # "wide" adds the Low and Informational findings (`tob_wide`, dev only)
+    wide_skipped: tuple[str, ...] = ()  # extra findings with no file in the code
 
 
 def model_of(args: argparse.Namespace) -> ModelSpec:
@@ -85,11 +88,24 @@ def waiver_of(args: argparse.Namespace) -> str:
     return (getattr(args, "allow_same_company", None) or "").strip()
 
 
+def key_of(args: argparse.Namespace) -> str:
+    """Which key a command uses: `wide` (post-hoc secondary view) or `orig` (pre-registered)."""
+    return getattr(args, "key", "orig")
+
+
+def wide_problem(args: argparse.Namespace) -> str:
+    """Why `--key wide` cannot be used here, or ''."""
+    if key_of(args) == tw.KEY_NAME and args.side != "dev":
+        return "the wide key is for the dev side only: the held-out rules are frozen"
+    return ""
+
+
 def context_for(args: argparse.Namespace) -> Context:
-    """The context of the command's side, reading and writing the records of `--runs`."""
+    """The context of the command's side, reading and writing the records of `--runs`. With
+    `--key wide` (dev only) the Low and Informational findings are added to the labels."""
     ctx = load_context(args.cache, args.side)
     ctx.runs = getattr(args, "runs", tr.RUNS)
-    return ctx
+    return tw.widen(ctx) if key_of(args) == tw.KEY_NAME else ctx
 
 
 def load_context(cache: Path, side: str, gh: ti.GitHub | None = None) -> Context:
@@ -280,6 +296,9 @@ def stage_jobs(
 
 
 def cmd_judge(args: argparse.Namespace, out: Callable[[str], None]) -> int:
+    if problem := wide_problem(args):
+        out(problem)
+        return 2
     judges, specs, rubric, problems = judge_setup(args, out)
     if rubric is None or not judges:
         out("\n".join(problems))
@@ -404,6 +423,9 @@ def cmd_handcheck(args: argparse.Namespace, out: Callable[[str], None]) -> int:
 
 
 def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
+    if problem := wide_problem(args):
+        out(problem)
+        return 2
     judges, specs, rubric, problems = judge_setup(args, out)
     if rubric is None or not judges:
         out("\n".join(problems))
@@ -458,6 +480,7 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         "dirty": bool(git("status", "--porcelain", "--untracked-files=no")),
         "judge_usd": round(judge_usd, 4), "runs": runs, "note": note,
         "partial_judging": partial,
+        "key": key_of(args), "wide_skipped": list(ctx.wide_skipped),
     }  # fmt: skip
     report = tp.build_report(
         tp.Inputs(
@@ -474,6 +497,8 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     js, md = tp.write_report(report, args.side)
     suffix = tp.runs_suffix(runs)
     for stage in tr.STAGES:
+        if key_of(args) == tw.KEY_NAME:
+            break  # the same run records as the report of the pre-registered key: already filed
         if runs != tr.RUNS and records[stage] == tr.read_stage(ctx.cache, args.side, stage):
             continue  # an unchanged copy of the pre-registered records: they are already filed
         rows = [tr.strip_notes(r) for r in records[stage].values() if "flags" in r]
@@ -537,6 +562,13 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
             "so and is not quotable",
         )  # fmt: skip
 
+    def key(p: argparse.ArgumentParser) -> None:
+        p.add_argument(
+            "--key", choices=("orig", tw.KEY_NAME), default="orig",
+            help="wide: dev only, adds the Low and Informational findings, each judged against "
+            "the flags in its own files; a post-hoc secondary view, never the headline",
+        )  # fmt: skip
+
     def spend(p: argparse.ArgumentParser) -> None:
         p.add_argument("--confirm-spend", action="store_true")
         p.add_argument("--max-spend", type=float)
@@ -569,6 +601,7 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     p.add_argument("--stage", choices=(*tr.STAGES, "all"), default="all")
     p.add_argument("--draft", action="store_true", help="allow a rubric Aryaan has not approved")
     p.add_argument("--workers", type=int, default=4)
+    key(p)
     p = sub.add_parser("handcheck")
     common(p)
     judges(p)
@@ -579,6 +612,7 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     common(p)
     judges(p)
     p.add_argument("--note", help="needed with --runs: why this is not the pre-registered run")
+    key(p)
     p.add_argument(
         "--allow-partial", action="store_true",
         help="write the report although some pairs have no verdict from every judge "

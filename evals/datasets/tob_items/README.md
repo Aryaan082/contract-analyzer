@@ -309,3 +309,15 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   (was 0, with 98 leads decided `not_applicable`), so Fraxgov's empty result is the second pass
   finding nothing, not lost leads. One run each is not enough to say the extra Ajna flags are the
   rule's doing, and none of the flags was judged.
+- **A wide key as a post-hoc secondary view, dev only (2026-11-05, Aryaan: severity is subjective,
+  and the flags of both arms also hit the Low and Informational findings).** `--key wide` on `judge`
+  and `report` adds the Low and Informational findings of the five dev reports that name a Solidity
+  file of the code (33 of 36; the other three are about tests, documentation or library versions) to
+  the labels, each judged only against the flags in its own files (`Label.file_scoped`), which keeps
+  8% of the pairs and drops about 14% of the `same` verdicts, so wide counts are lower bounds. The
+  report file gets `-wide` in its name, a WIDE KEY banner and a marked results row, and it files no
+  run records. The pre-registered key, its hard set and every number reported so far are unchanged;
+  held-out refuses the option. First look (DeepSeek, 62 findings, 46 hard): fresh plain 1, single
+  pass 3, two-pass 5 and 8 (earlier prompt, outline rule); the report's own rule still says no
+  improvement shown for the best of them (+0.15 [-0.06, 0.27], sign test p 0.04, three comparisons
+  and a key chosen after seeing results).
