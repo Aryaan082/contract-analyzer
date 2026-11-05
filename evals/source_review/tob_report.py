@@ -302,6 +302,16 @@ def render(report: dict) -> list[str]:
         f"**{report['banner']}**",
         "",
         *([f"**POST-HOC: {m['note']}**", ""] if m.get("note") else []),
+        *(
+            [f"**JUDGE WAIVER (dev only, not quotable): {m['judge_waiver']}**", ""]
+            if m.get("judge_waiver")
+            else []
+        ),
+        *(
+            ["Models by stage: " + "; ".join(f"{s} {n}" for s, n in m["stage_models"].items()), ""]
+            if m.get("stage_models")
+            else []
+        ),
         f"{report['labels']} labelled findings; plain's screening run found "
         f"{report['screening_recall']['found']} and left {report['hard_findings']} hard (missed or "
         f"mislabelled) in {report['hard_reports']} reports. "
@@ -437,6 +447,19 @@ def runs_suffix(runs: str | None) -> str:
     """The file-name ending of a report made from a re-run folder; none for the pre-registered
     runs, so a re-run never overwrites the original report."""
     return f"-{runs}" if runs and runs != tr.RUNS else ""
+
+
+def stage_models(records: dict[str, dict[str, dict]]) -> dict[str, str]:
+    """The model behind each stage's records, from the records themselves; records made before the
+    model was kept were all Opus 5.5."""
+    out = {}
+    for stage in tr.STAGES:
+        names = {
+            r.get("model", "anthropic/claude-opus-5.5") for r in records.get(stage, {}).values()
+        }
+        if names:
+            out[stage] = ", ".join(sorted(names))
+    return out
 
 
 def write_report(report: dict, side: str, directory: Path = RESULTS_DIR) -> tuple[Path, Path]:

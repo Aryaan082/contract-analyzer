@@ -23,6 +23,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from agent.config import ModelSpec
 from evals.judge.cache import JudgeCache
 from evals.judge.client import OpenRouterJudge, load_judges
 from evals.judge.policy import label as policy_label
@@ -59,6 +60,16 @@ class Context:
     runs: str = tr.RUNS  # which folder of the cache holds the stage records (`--runs`)
 
 
+def model_of(args: argparse.Namespace) -> ModelSpec:
+    """The model under test: `--model` (opus unless said otherwise)."""
+    return cmp.MODELS[getattr(args, "model", "opus")]
+
+
+def waiver_of(args: argparse.Namespace) -> str:
+    """Why a judge from the model's own company is allowed (`--allow-same-company`), or ''."""
+    return (getattr(args, "allow_same_company", None) or "").strip()
+
+
 def context_for(args: argparse.Namespace) -> Context:
     """The context of the command's side, reading and writing the records of `--runs`."""
     ctx = load_context(args.cache, args.side)
@@ -91,7 +102,11 @@ def judge_setup(args: argparse.Namespace, out: Callable[[str], None]):
     problems = []
     if not judges:
         problems.append("no judge was named")
-    problems += self_grading(judges, cmp.OPUS.name, policy)
+    refusals = self_grading(judges, model_of(args).name, policy)
+    if refusals and waiver_of(args):
+        out(f"WAIVED (dev only, the result is not quotable): {waiver_of(args)}")
+        refusals = []
+    problems += refusals
     specs = load_judges()
     problems += [
         f"judge {j} has no entry in evals/judge/judges.toml" for j in judges if j not in specs
@@ -125,8 +140,10 @@ def with_credit_limit(budget: cmp.Budget, out: Callable[[str], None]) -> None:
 # ---- screen and score --------------------------------------------------------------------------
 
 
-def estimate_stage(ctx: Context, stage: str, reports: list[ti.Report]) -> float:
-    return sum(tr.stage_estimate_usd(ctx.sources[r.slug], stage, r.slug) for r in reports)
+def estimate_stage(
+    ctx: Context, stage: str, reports: list[ti.Report], spec: ModelSpec = cmp.OPUS
+) -> float:
+    return sum(tr.stage_estimate_usd(ctx.sources[r.slug], stage, r.slug, spec) for r in reports)
 
 
 def run_stages(
@@ -136,9 +153,10 @@ def run_stages(
     reports: list[ti.Report],
     out: Callable[[str], None],
 ) -> int:
-    central = sum(estimate_stage(ctx, s, reports) for s in stages)
+    spec = model_of(args)
+    central = sum(estimate_stage(ctx, s, reports, spec) for s in stages)
     out(
-        f"{args.side}: {len(reports)} reports, stages {', '.join(stages)}, "
+        f"{args.side}: {len(reports)} reports, stages {', '.join(stages)}, model {spec.name}, "
         f"central estimate ${central:.2f}"
     )
     problems = money_problems(args, args.side)
@@ -149,7 +167,7 @@ def run_stages(
     if args.max_spend < central:
         out(f"NOTE: the cap ${args.max_spend:.2f} is below the estimate; the run will stop early.")
     done = {s: tr.read_stage(ctx.cache, args.side, s, ctx.runs) for s in stages}
-    budget = cmp.real_budget(args.max_spend)  # --max-spend caps what THIS command spends
+    budget = cmp.real_budget(args.max_spend, spec)  # --max-spend caps what THIS command spends
     with_credit_limit(budget, out)
     # replies that are not bare JSON are kept, raw, outside the repo (see tr.Recording)
     raw = tr.Recording(budget, ctx.cache / ctx.runs / f"{args.side}-raw-replies.jsonl")
@@ -161,7 +179,7 @@ def run_stages(
             max_spend=budget.max_usd, done=done[stage],
             checkpoint=tr.checkpoint_path(ctx.cache, args.side, stage, ctx.runs),
             max_tokens=args.plain_max_tokens if tr.ARM_OF[stage] == "P" else None, out=out,
-            begin=raw.begin,
+            begin=raw.begin, spec=spec,
         )  # fmt: skip
     for message in sorted(set(budget.errors)):
         out(f"request failed: {message}")
@@ -365,10 +383,16 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         for s in tr.STAGES
     }
     label, quotable = policy_label(judges, load_policy())
+    waived = [j for j in judges if self_grading([j], model_of(args).name, load_policy())]
+    waiver = waiver_of(args) if waived else ""
+    if waiver:
+        label, quotable = f"{label}; {', '.join(waived)} is the model's own company", False
     judge_usd = judge_cost(cache.rows(), {r.slug for r in ctx.reports})
     agreement = tp.judge_agreement(all_pairs(ctx, rubric, judges, cache, records), judges)
     meta = {
-        "model": cmp.OPUS.name, "date": tp.today(), "side": args.side, "judges": list(judges),
+        "model": model_of(args).name, "date": tp.today(), "side": args.side,
+        "judges": list(judges), "judge_waiver": waiver,
+        "stage_models": tp.stage_models(records),
         "judge_label": label, "quotable": quotable and tj.is_approved(rubric),
         "rubric": rubric.sha256, "rubric_approved": tj.is_approved(rubric),
         "code_commit": git("rev-parse", "--short", "HEAD"),
@@ -429,6 +453,10 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
             "--side", choices=(*ti.SIDES, "both") if side_both else ti.SIDES, required=True
         )
         p.add_argument(
+            "--model", choices=sorted(cmp.MODELS), default="opus",
+            help="the model under test (both arms); opus is what the pre-registered runs used",
+        )  # fmt: skip
+        p.add_argument(
             "--runs", type=runs_name, default=tr.RUNS,
             help="the folder of the cache that holds the stage records; a re-run that must not "
             "touch the pre-registered records goes to its own (copy screen and fresh into it)",
@@ -439,6 +467,11 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
             "--mode", choices=("quick", "milestone"), help="default: the three-judge panel"
         )
         p.add_argument("--judge", action="append", help="an extra judge the policy lists")
+        p.add_argument(
+            "--allow-same-company", metavar="WHY",
+            help="development only: allow a judge from the model's own company; the result says "
+            "so and is not quotable",
+        )  # fmt: skip
 
     def spend(p: argparse.ArgumentParser) -> None:
         p.add_argument("--confirm-spend", action="store_true")

@@ -441,7 +441,9 @@ def test_run_stages_writes_records_and_raw_replies_into_the_runs_folder(monkeypa
     inner = ScriptedReviewer(
         ["Here you go: " + PIPELINE_REPLY, PIPELINE_REPLY], name=cmp.OPUS.name, cost_usd=0.01
     )
-    monkeypatch.setattr(cmp, "real_budget", lambda max_usd: cmp.Budget(inner, max_usd))
+    monkeypatch.setattr(
+        cmp, "real_budget", lambda max_usd, spec=cmp.OPUS: cmp.Budget(inner, max_usd, spec)
+    )
     monkeypatch.setattr(cmp, "have_key", lambda: True)
     monkeypatch.setattr(cmp, "credits_remaining", lambda: None)
     args = argparse.Namespace(side="dev", confirm_spend=True, max_spend=50.0, declare=None,
@@ -457,6 +459,93 @@ def test_run_stages_writes_records_and_raw_replies_into_the_runs_folder(monkeypa
         ("r", "pipeline", "prose", False)
     ]
     assert "spent $0.020 of $50.00" in "\n".join(lines)
+
+
+def test_the_model_is_a_setting_and_every_record_says_which_one_made_it(monkeypatch, tmp_path):
+    import argparse
+
+    asked: list = []
+    inner = ScriptedReviewer([PIPELINE_REPLY], name=cmp.DEEPSEEK.name, cost_usd=0.001)
+
+    def fake_budget(max_usd, spec=cmp.OPUS):
+        asked.append(spec)
+        return cmp.Budget(inner, max_usd, spec)
+
+    monkeypatch.setattr(cmp, "real_budget", fake_budget)
+    monkeypatch.setattr(cmp, "have_key", lambda: True)
+    monkeypatch.setattr(cmp, "credits_remaining", lambda: None)
+    ctx = fake_context(tmp_path)
+    ctx.runs = "cheap"
+    lines: list[str] = []
+    args = argparse.Namespace(side="dev", confirm_spend=True, max_spend=5.0, declare=None,
+                              plain_max_tokens=32768, runs="cheap", model="deepseek")  # fmt: skip
+    assert cli.run_stages(args, ctx, ["pipeline"], ctx.reports, lines.append) == 0
+    assert asked == [cmp.DEEPSEEK] and f"model {cmp.DEEPSEEK.name}" in "\n".join(lines)
+    assert tr.read_stage(tmp_path, "dev", "pipeline", "cheap")["r"]["model"] == cmp.DEEPSEEK.name
+    # the same report costs less on the cheap model, by the price list
+    src = source()
+    assert (
+        tr.stage_estimate_usd(src, "pipeline", "r", cmp.DEEPSEEK)
+        < tr.stage_estimate_usd(src, "pipeline", "r", cmp.OPUS) / 10
+    )
+
+
+def test_the_model_option_takes_only_known_models():
+    from evals.source_review import tob_cli
+
+    parser = tob_cli.build_parser()
+    base = ["score", "--cache", "/x", "--side", "dev"]
+    assert parser.parse_args([*base, "--model", "deepseek"]).model == "deepseek"
+    assert parser.parse_args(base).model == "opus"
+    assert (
+        parser.parse_args(["estimate", "--cache", "/x", "--model", "deepseek"]).model == "deepseek"
+    )
+    with pytest.raises(SystemExit):
+        parser.parse_args([*base, "--model", "sonnet"])
+
+
+def judge_args(model, waiver=None):
+    import argparse
+
+    return argparse.Namespace(mode=None, judge=None, model=model, allow_same_company=waiver)
+
+
+def test_a_judge_from_the_models_own_company_is_refused_unless_waived_aloud():
+    lines: list[str] = []
+    *_, problems = cli.judge_setup(judge_args("deepseek"), lines.append)
+    assert any("same company" in p and "deepseek" in p for p in problems)
+    *_, waived = cli.judge_setup(
+        judge_args("deepseek", "dev run, DeepSeek judges DeepSeek"), lines.append
+    )
+    assert waived == [] and any(x.startswith("WAIVED") for x in lines)
+    lines.clear()
+    *_, opus = cli.judge_setup(
+        judge_args("opus", "not needed"), lines.append
+    )  # no same-company judge
+    assert opus == [] and not lines  # the waiver is not mentioned when it is not used
+
+
+def test_a_waived_report_says_so_and_names_the_model_of_each_stage(rubric, tmp_path):
+    report = build(rubric)
+    models = {"screen": "a/opus", "fresh": "b/deep", "pipeline": "b/deep"}
+    report["meta"] = {
+        **report["meta"], "judge_waiver": "dev only", "quotable": False, "stage_models": models,
+    }  # fmt: skip
+    text = "\n".join(tp.render(report))
+    assert "JUDGE WAIVER (dev only, not quotable): dev only" in text
+    assert "Models by stage: screen a/opus; fresh b/deep; pipeline b/deep" in text
+    plain = "\n".join(tp.render(build(rubric)))
+    assert "WAIVER" not in plain and "Models by stage" not in plain
+
+
+def test_old_records_without_a_model_were_made_by_opus():
+    old = {"a": {"item": "a"}}
+    new = {"a": {"item": "a", "model": cmp.DEEPSEEK.name}}
+    assert tp.stage_models({"screen": old, "pipeline": new}) == {
+        "screen": cmp.OPUS.name,
+        "pipeline": cmp.DEEPSEEK.name,
+    }
+    assert tp.stage_models({}) == {}
 
 
 def test_begin_is_called_with_each_report_that_is_run_and_not_with_finished_ones(tmp_path):

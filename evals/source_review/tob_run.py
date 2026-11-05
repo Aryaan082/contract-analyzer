@@ -20,6 +20,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from agent.config import ModelSpec
 from evals.judge.cache import JudgeCache
 from evals.source_review import compare as cmp
 from evals.source_review import tob_items as ti
@@ -133,15 +134,17 @@ class Recording:
 # ---- running a stage ---------------------------------------------------------------------------
 
 
-def stage_estimate_usd(source: Source, stage: str, slug: str = "x") -> float:
+def stage_estimate_usd(
+    source: Source, stage: str, slug: str = "x", spec: ModelSpec = cmp.OPUS
+) -> float:
     """The central cost of one report in one stage, from the real prompts (no model)."""
     item = type("Item", (), {"id": slug, "group": "tob"})()
     est = cmp.estimate_item(item, source)  # type: ignore[arg-type]
     if est is None:
         return 0.0
     if ARM_OF[stage] == "P":
-        return cmp.call_usd(est.p_tokens, est.p_calls * cmp.OUT_CENTRAL)
-    return cmp.call_usd(est.a_tokens, est.a_calls * cmp.OUT_CENTRAL)
+        return cmp.call_usd(est.p_tokens, est.p_calls * cmp.OUT_CENTRAL, spec)
+    return cmp.call_usd(est.a_tokens, est.a_calls * cmp.OUT_CENTRAL, spec)
 
 
 def run_stage(
@@ -157,6 +160,7 @@ def run_stage(
     max_tokens: int | None = None,
     out: Callable[[str], None] = print,
     begin: Callable[[str], None] | None = None,
+    spec: ModelSpec = cmp.OPUS,
 ) -> list[dict]:
     """One arm over the reports, in order. Stops when the next report's central estimate would pass
     `max_spend`, or after MAX_SILENT reports in a row where no request was answered. Every request
@@ -177,7 +181,7 @@ def run_stage(
             records.append({"item": r.slug, "stage": stage, "complete": False, "skipped": stopped})
             out(f"  {r.slug}: NOT RUN ({stopped})")
             continue
-        if spent() + stage_estimate_usd(source, stage, r.slug) > max_spend:
+        if spent() + stage_estimate_usd(source, stage, r.slug, spec) > max_spend:
             stopped = "spend cap"
             records.append({"item": r.slug, "stage": stage, "complete": False, "skipped": stopped})
             out(f"  {r.slug}: NOT RUN ({stopped})")
@@ -186,7 +190,10 @@ def run_stage(
         if begin is not None:
             begin(r.slug)
         rec = run(source, client, limit)
-        record = {"item": r.slug, "stage": stage, "max_tokens": limit, **asdict(rec)}
+        record = {
+            "item": r.slug, "stage": stage, "max_tokens": limit, "model": client.name,
+            **asdict(rec),
+        }  # fmt: skip
         records.append(record)
         with checkpoint.open("a") as f:
             f.write(json.dumps(record) + "\n")

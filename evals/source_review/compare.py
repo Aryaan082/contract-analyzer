@@ -61,6 +61,14 @@ from review.reviewer import ReviewResult, run_review
 from review.types import REVIEWER_SCHEMA, SEVERITY_RANK, Bundle
 
 OPUS = ModelSpec(name="anthropic/claude-opus-5.5", input_per_mtok=4.0, output_per_mtok=20.0)
+# The cheap model for development runs (Aryaan, 2026-11-04). Prices as OpenRouter listed this slug
+# on 2026-11-04 (agent/models.toml still has the 2026-10-26 figures, half of these); only the
+# estimate and the spend guard use them, the cap counts the cost OpenRouter reports. 1,048,576
+# tokens of context, so the 200,000-token bundle ceiling fits.
+DEEPSEEK = ModelSpec(
+    name="deepseek/deepseek-v4.1-flash-1017", input_per_mtok=0.30, output_per_mtok=1.20
+)
+MODELS = {"opus": OPUS, "deepseek": DEEPSEEK}  # the `--model` choices of the ToB commands
 RESULTS_DIR = REPO_ROOT / "evals" / "source_review" / "results"
 FIXTURE_PATH = "contracts/Contract.sol"  # one neutral name for every fixture, so a file name
 # never says `vulnerable` to the model that reads paths (arm P)
@@ -248,14 +256,14 @@ def credits_remaining(opener: Callable = urllib.request.urlopen) -> float | None
         return None
 
 
-def real_budget(max_usd: float) -> Budget:
+def real_budget(max_usd: float, spec: ModelSpec = OPUS) -> Budget:
     """The only way the paid run reaches the model: the real client behind the cap. Measured
     2026-10-29: OpenRouter has no endpoint for anthropic/claude-opus-5.5 that accepts
     `response_format` (a 404 for json_schema and for json_object), so both arms ask for JSON in
     the prompt (`structured="none"`) with the schema written into the system message; each arm
     checks the reply strictly all the same."""
-    client = OpenRouterReviewer(OPUS, structured="none", retries=RETRIES)
-    return Budget(client, max_usd, schema_in_prompt=True)
+    client = OpenRouterReviewer(spec, structured="none", retries=RETRIES)
+    return Budget(client, max_usd, spec, schema_in_prompt=True)
 
 
 # ---- the estimate --------------------------------------------------------------------------------

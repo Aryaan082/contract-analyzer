@@ -256,3 +256,15 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   neither shows an improvement. Only held-out needed the retry, twice in about 30 requests, and the
   two failed replies were a paragraph before a fenced block and an invalid JSON object, which a
   fence rule alone would not have read. Reports are `*-2026-11-04-fixed.*` next to the originals.
+- **A model setting and a dev-only judge waiver (Aryaan, 2026-11-04; harness only, no
+  pre-registered result is touched).** `--model opus|deepseek` picks the model under test for both
+  arms (default `opus`, what every pre-registered run used); each stage record now names the model
+  that made it, and a report prints the model of each stage. DeepSeek flash
+  (`deepseek/deepseek-v4.1-flash-1017`, 1,048,576 tokens of context, JSON schema supported) is for
+  development runs: about 13 times cheaper per input token than Opus. Because DeepSeek is also one
+  of the three judges, the policy rule "a judge never grades its own company" refuses a DeepSeek
+  run until `--allow-same-company WHY` is given; the report then carries a banner, says which judge
+  it is, and is marked not quotable. The rule is unchanged for every other use. The hard set is
+  still the findings Opus-plain missed in screening; a DeepSeek run compares DeepSeek-pipeline with
+  DeepSeek-plain on it, and any run on a new directory or prompt is exploratory (these findings
+  are no longer unseen) until it is confirmed on reports nobody has looked at.

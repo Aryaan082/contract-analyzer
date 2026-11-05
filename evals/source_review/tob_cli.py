@@ -38,6 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     est = sub.add_parser("estimate")
     est.add_argument("--cache", type=Path, required=True, help="the cache `fetch` filled")
     est.add_argument("--side", choices=(*ti.SIDES, "both"), default="both")
+    est.add_argument("--model", choices=sorted(cmp.MODELS), default="opus")
     sub.add_parser("show")
     tob_eval_cli.add_parsers(sub)
     return parser
@@ -152,7 +153,11 @@ def cmd_estimate(args: argparse.Namespace, out: Callable[[str], None]) -> int:
     sources = ti.load_sources(reports, ti.load_files(), ti.GitHub(args.cache))
     labels = ti.load_labels()
     out("Cost estimate (arithmetic on the real prompts; NO MODEL HAS BEEN CALLED)")
-    out(f"model {cmp.OPUS.name}: $4/Mtok in, $20/Mtok out; tokens = characters / 3.5")
+    spec = cmp.MODELS[args.model]
+    out(
+        f"model {spec.name}: ${spec.input_per_mtok}/Mtok in, ${spec.output_per_mtok}/Mtok out; "
+        "tokens = characters / 3.5"
+    )
     out(f"{'report':<52}{'side':<9}{'files':>6}{'strip tok':>10}{'P $':>8}{'A $':>8}{'labels':>7}")
     totals = {"P": 0.0, "A": 0.0, "P_lean": 0.0, "A_lean": 0.0}
     by_side: dict[str, dict[str, float]] = {}
@@ -162,18 +167,20 @@ def cmd_estimate(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         item = type("Item", (), {"id": r.slug, "group": f"tob_{r.side}"})()
         est = cmp.estimate_item(item, sources[r.slug])  # type: ignore[arg-type]
         assert est is not None
-        p = cmp.call_usd(est.p_tokens, est.p_calls * cmp.OUT_CENTRAL)
-        a = cmp.call_usd(est.a_tokens, est.a_calls * cmp.OUT_CENTRAL)
+        p = cmp.call_usd(est.p_tokens, est.p_calls * cmp.OUT_CENTRAL, spec)
+        a = cmp.call_usd(est.a_tokens, est.a_calls * cmp.OUT_CENTRAL, spec)
         lean = cmp.OUT_LEAN
         totals["P"] += p
         totals["A"] += a
-        totals["P_lean"] += cmp.call_usd(est.p_tokens, est.p_calls * lean)
-        totals["A_lean"] += cmp.call_usd(est.a_tokens, est.a_calls * lean)
+        totals["P_lean"] += cmp.call_usd(est.p_tokens, est.p_calls * lean, spec)
+        totals["A_lean"] += cmp.call_usd(est.a_tokens, est.a_calls * lean, spec)
         n_labels = sum(lab.report == r.slug for lab in labels)
         pairs += n_labels * FLAGS_PER_RUN
         ceiling += 2 * cmp.call_usd(
-            est.p_tokens * 3.5 / cmp.PESSIMISTIC_CHARS_PER_TOKEN, est.p_calls * 8192
-        ) + cmp.call_usd(est.a_tokens * 3.5 / cmp.PESSIMISTIC_CHARS_PER_TOKEN, est.a_calls * 8192)
+            est.p_tokens * 3.5 / cmp.PESSIMISTIC_CHARS_PER_TOKEN, est.p_calls * 8192, spec
+        ) + cmp.call_usd(
+            est.a_tokens * 3.5 / cmp.PESSIMISTIC_CHARS_PER_TOKEN, est.a_calls * 8192, spec
+        )
         side = by_side.setdefault(r.side, {"P": 0.0, "A": 0.0, "pairs": 0.0, "reports": 0.0})
         side["P"] += p
         side["A"] += a
