@@ -296,3 +296,10 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   pair lacks a verdict unless `--allow-partial`, which puts PARTIAL JUDGING on top of the file and in
   the results row. The results row also named "plain Opus 5.5" whatever the model; it now names the
   model under test.
+- **Two-pass first pass is told the outline is context (2026-11-05, prompt text changed, not yet
+  re-measured).** In the DeepSeek dev run leads named files or functions that this call did not
+  show (Ajna 73, Fraxgov 21, Cap 18, Arcade 5, Radius 0); the bundle outline lists every file of
+  the bundle, which fits Radius (one call, so nothing is outside it) having none. Those drops now count as `other_part` when the
+  code exists in a part another call reads, and as `unknown_file` or `unknown_function` only when it
+  does not exist, and the first-pass rule says a function that is only in the outline is not to be
+  named. Whether this changes the flags is open until it is run again.

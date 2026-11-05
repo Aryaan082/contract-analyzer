@@ -58,7 +58,8 @@ DropReason = Literal[
     "unknown_entry",
     "duplicate",
     "too_many",
-    "unknown_function",  # a lead that names a function the parser does not find in the code shown
+    "unknown_function",  # a lead that names a function the parser does not find in its file
+    "other_part",  # a lead for real code that another call reads (the outline lists it all)
     "not_applicable",  # second pass: the lead was checked and does not apply (a decision)
     "unsure",  # second pass: the code shown cannot settle it (a decision; not flagged)
 ]
@@ -129,6 +130,7 @@ class CallContext:
         str, Sequence[str]
     ]  # file id -> the file's stripped lines, as the lexer made them
     members: Mapping[str, Sequence[Member]]  # file id -> every function-like member
+    bundle_files: frozenset[str] = frozenset()  # every file id of the bundle, shown or not
 
     @classmethod
     def for_chunk(
@@ -149,7 +151,13 @@ class CallContext:
             members[file_id] = [
                 m for d in result.definitions for m in d.members if m.kind in _FUNCTION_LIKE
             ]
-        return cls(call_index=chunk.index, shown=seen, stripped=stripped, members=members)
+        return cls(
+            call_index=chunk.index,
+            shown=seen,
+            stripped=stripped,
+            members=members,
+            bundle_files=frozenset(lexed),
+        )
 
 
 # ---- the text fields ----------------------------------------------------------------------------
@@ -275,13 +283,13 @@ def check_leads(text: str | None, ctx: CallContext, checklist: Checklist) -> Che
             out.dropped["bad_item"] += 1
             continue
         shown = ctx.shown.get(lead.file_id)
+        members = ctx.members.get(lead.file_id, ())
         if shown is None:
-            out.dropped["unknown_file"] += 1
-        elif not any(
-            m.name == lead.function and m.start_line in shown
-            for m in ctx.members.get(lead.file_id, ())
-        ):
-            out.dropped["unknown_function"] += 1
+            # real code of the bundle that another call reads, or an id that does not exist
+            out.dropped["other_part" if lead.file_id in ctx.bundle_files else "unknown_file"] += 1
+        elif not any(m.name == lead.function and m.start_line in shown for m in members):
+            elsewhere = any(m.name == lead.function for m in members)
+            out.dropped["other_part" if elsewhere else "unknown_function"] += 1
         elif checklist.entry(lead.entry) is None:
             out.dropped["unknown_entry"] += 1
         elif (key := (lead.file_id, lead.function, lead.entry)) in seen:

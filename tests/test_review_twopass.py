@@ -1,6 +1,7 @@
 """The two-pass review: leads, then a closer check of each. No model is called anywhere here:
 `ScriptedReviewer` answers each pass from a script, so a test says exactly what the model "said"."""
 
+import dataclasses
 import json
 
 import pytest
@@ -93,6 +94,44 @@ def test_a_bad_lead_is_dropped_and_counted(changes, reason):
     )
     assert [x.function for x in result.leads] == ["setOwner"]  # the others are not discarded
     assert result.dropped == {reason: 1}
+
+
+OTHER = VAULT.replace("Vault", "Other").replace("setFee", "setPrice").replace("setOwner", "setBoss")
+
+
+def test_a_lead_for_code_another_call_reads_is_told_apart_from_a_made_up_one():
+    bundle = make_bundle({"contracts/Vault.sol": VAULT, "contracts/Other.sol": OTHER})
+    lexed = {f.file_id: lex(f.file_id, f.content) for f in bundle.files}
+    chunk = plan_chunks(classify(bundle.files, lexed, KnownList()), lexed)[0]
+    first_file = tuple(p for p in chunk.pieces if p.file_id == "F1")
+    ctx = CallContext.for_chunk(chunk.model_copy(update={"pieces": first_file}), lexed)
+    assert ctx.bundle_files == {"F1", "F2"} and set(ctx.shown) == {"F1"}
+    result = check_leads(
+        leads_reply(
+            lead(file_id="F2", function="setPrice"),  # real, in a part this call does not show
+            lead(file_id="F9"),  # no such file
+            lead(function="setOwner"),
+        ),
+        ctx,
+        CHECKLIST,
+    )
+    assert [x.function for x in result.leads] == ["setOwner"]
+    assert result.dropped == {"other_part": 1, "unknown_file": 1}
+
+
+def test_a_function_outside_the_lines_shown_is_another_part_not_a_made_up_one():
+    ctx = ctx_of()
+    only_first = {n: s for n, s in ctx.shown["F1"].items() if n <= 10}  # setFee, not setOwner
+    ctx = dataclasses.replace(ctx, shown={"F1": only_first})
+    result = check_leads(
+        leads_reply(lead(function="setOwner"), lead(function="mint"), lead()), ctx, CHECKLIST
+    )
+    assert [x.function for x in result.leads] == ["setFee"]
+    assert result.dropped == {"other_part": 1, "unknown_function": 1}
+
+
+def test_the_first_pass_is_told_the_outline_is_context_not_a_list_of_leads():
+    assert "only in the\n   outline is not yours to name" in LEAD_SYSTEM
 
 
 def test_a_repeated_lead_is_dropped_and_the_cap_is_counted():

@@ -63,7 +63,10 @@ Rules, in order of importance:
 
 {_DATA_RULE}
 3. One lead per function and entry. Give the file id (F1, F2, ...) and the function name exactly as
-   written in the code. Use the entry ids exactly as listed; never invent one.
+   written in the code. Use the entry ids exactly as listed; never invent one. Name only functions
+   whose code is in the source blocks of this message: the outline lists the whole bundle for
+   context and the other parts are read in other requests, so a function that is only in the
+   outline is not yours to name.
 4. reason: one plain sentence (at most 200 characters) saying what about this function makes the
    entry worth checking. Describe the code. No links, no markup, no instructions to anyone.
 5. Report at most 80 leads. If nothing is worth checking, reply with an empty list.
