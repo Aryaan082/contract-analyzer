@@ -548,6 +548,90 @@ def test_old_records_without_a_model_were_made_by_opus():
     assert tp.stage_models({}) == {}
 
 
+def two_pass_replies(prompt):
+    from review.twopass import LEAD_SYSTEM
+
+    if prompt.system == LEAD_SYSTEM:
+        return json.dumps({"leads": [{
+            "file_id": "F1", "function": "withdraw", "entry": "taxonomy:reentrancy",
+            "reason": "sends value before it updates the balance",
+        }]})  # fmt: skip
+    return json.dumps({"verdicts": [{
+        "file_id": "F1", "entry": "taxonomy:reentrancy", "verdict": "applies",
+        "function": "withdraw", "start_line": 7, "end_line": 7,
+        "quote": "msg.sender.call{value: amount}", "severity": "medium", "confidence": "medium",
+        "path": "A contract caller re-enters withdraw before its balance is reduced.",
+    }]})  # fmt: skip
+
+
+def test_a_two_pass_stage_names_its_mode_and_counts_both_requests(tmp_path):
+    client = ScriptedReviewer([two_pass_replies], name=cmp.DEEPSEEK.name, cost_usd=0.01)
+    recs = tr.run_stage(
+        reports("a"), {"a": source()}, "pipeline", client, spent=lambda: 0.0, max_spend=100.0,
+        done={}, checkpoint=tmp_path / "c.jsonl", out=lambda _: None, pipeline="two_pass",
+    )  # fmt: skip
+    rec = recs[0]
+    assert rec["pipeline_mode"] == "two_pass" and rec["calls"] == 2 and len(rec["flags"]) == 1
+    assert rec["cost_usd"] == pytest.approx(0.02) and rec["failures"] == []
+    assert rec["flags"][0]["note"].startswith("A contract caller re-enters")
+    plain = pipeline_stage(tmp_path, [PIPELINE_REPLY])[0]
+    assert plain["pipeline_mode"] == "single"
+    screen = tr.run_stage(
+        reports("a"), {"a": source()}, "screen", ScriptedReviewer([PLAIN_REPLY], name="p"),
+        spent=lambda: 0.0, max_spend=100.0, done={}, checkpoint=tmp_path / "s.jsonl",
+        out=lambda _: None,
+    )  # fmt: skip
+    assert "pipeline_mode" not in screen[0]  # the plain arm has no pipeline
+
+
+def test_the_two_pass_estimate_is_the_single_estimate_scaled_and_plain_is_not():
+    src = source()
+    one = tr.stage_estimate_usd(src, "pipeline", "r", cmp.OPUS, "single")
+    two = tr.stage_estimate_usd(src, "pipeline", "r", cmp.OPUS, "two_pass")
+    assert two == pytest.approx(one * tr.PASS_FACTOR["two_pass"]) and two > one
+    assert tr.stage_estimate_usd(src, "fresh", "r", cmp.OPUS, "two_pass") == tr.stage_estimate_usd(
+        src, "fresh", "r", cmp.OPUS, "single"
+    )
+
+
+def test_one_runs_folder_never_mixes_pipeline_modes(monkeypatch, tmp_path):
+    import argparse
+
+    ctx = fake_context(tmp_path)
+    ctx.runs = "cheap"
+    folder = tmp_path / "cheap"
+    folder.mkdir()
+    old = {"item": "r", "stage": "pipeline", "complete": True, "flags": [], "failures": []}
+    (folder / "dev-pipeline.jsonl").write_text(json.dumps(old) + "\n")  # no mode: single
+    monkeypatch.setattr(cmp, "have_key", lambda: True)
+    monkeypatch.setattr(cmp, "real_budget", lambda *a, **k: pytest.fail("a model was reached"))
+    args = argparse.Namespace(side="dev", confirm_spend=True, max_spend=5.0, declare=None,
+                              plain_max_tokens=32768, runs="cheap", model="deepseek",
+                              pipeline="two_pass")  # fmt: skip
+    lines: list[str] = []
+    assert cli.run_stages(args, ctx, ["pipeline"], ctx.reports, lines.append) == 2
+    text = "\n".join(lines)
+    assert "were made with pipeline single" in text and "use another --runs folder" in text
+
+
+def test_the_pipeline_option_takes_only_known_modes():
+    from evals.source_review import tob_cli
+
+    parser = tob_cli.build_parser()
+    base = ["score", "--cache", "/x", "--side", "dev"]
+    assert parser.parse_args(base).pipeline == "single"
+    assert parser.parse_args([*base, "--pipeline", "two_pass"]).pipeline == "two_pass"
+    with pytest.raises(SystemExit):
+        parser.parse_args([*base, "--pipeline", "three_pass"])
+
+
+def test_a_report_shows_the_pipeline_mode_next_to_the_model():
+    rows = {"a": {"item": "a", "model": cmp.DEEPSEEK.name, "pipeline_mode": "two_pass"}}
+    assert tp.stage_models({"pipeline": rows}) == {"pipeline": f"{cmp.DEEPSEEK.name} [two_pass]"}
+    rows = {"a": {"item": "a", "model": cmp.DEEPSEEK.name, "pipeline_mode": "single"}}
+    assert tp.stage_models({"pipeline": rows}) == {"pipeline": cmp.DEEPSEEK.name}
+
+
 def test_begin_is_called_with_each_report_that_is_run_and_not_with_finished_ones(tmp_path):
     seen: list[str] = []
     rs = reports("a", "b")

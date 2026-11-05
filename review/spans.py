@@ -29,12 +29,15 @@ from review.lexer import Lexed, Member
 from review.pack import Checklist
 from review.scan import aimed_at_reader, split_words
 from review.types import (
+    MAX_LEADS,
     MAX_NOTE_CHARS,
+    MAX_PATH_NOTE_CHARS,
     MAX_REVIEWER_ITEMS,
     SEVERITY_RANK,
     Bundle,
     Explanation,
     FileRef,
+    LeadItem,
     LineRange,
     Match,
     PrecedentRef,
@@ -43,6 +46,7 @@ from review.types import (
     Severity,
     SourceSpan,
     Subject,
+    VerdictItem,
     span_sha256,
 )
 
@@ -54,6 +58,9 @@ DropReason = Literal[
     "unknown_entry",
     "duplicate",
     "too_many",
+    "unknown_function",  # a lead that names a function the parser does not find in the code shown
+    "not_applicable",  # second pass: the lead was checked and does not apply (a decision)
+    "unsure",  # second pass: the code shown cannot settle it (a decision; not flagged)
 ]
 Adjustment = Literal["clause_out_of_range", "function_replaced", "function_not_shown"]
 
@@ -93,9 +100,20 @@ class Accepted(BaseModel, frozen=True):
     call_index: int
 
 
+class Lead(BaseModel, frozen=True):
+    """A checked lead of the two-pass review: this function may be affected by this checklist
+    entry. `reason` is the model's own words, cleaned; it is shown to the second pass as data."""
+
+    file_id: str
+    function: str
+    entry: str
+    reason: str
+
+
 @dataclass
 class Checked:
     accepted: list[Accepted] = field(default_factory=list)
+    leads: list[Lead] = field(default_factory=list)  # first pass of the two-pass review only
     dropped: Counter = field(default_factory=Counter)
     adjusted: Counter = field(default_factory=Counter)
     unreadable: str | None = None  # why the whole reply could not be used, in fixed words
@@ -137,14 +155,19 @@ class CallContext:
 # ---- the text fields ----------------------------------------------------------------------------
 
 
-def clean_note(text: str) -> str:
-    """The note with control, invisible and line-separating characters turned into spaces,
-    whitespace collapsed and the length cut. It stays untrusted text: shown, never obeyed."""
+def clean_note_to(text: str, limit: int) -> str:
+    """Text with control, invisible and line-separating characters turned into spaces, whitespace
+    collapsed and the length cut to `limit`. It stays untrusted text: shown, never obeyed."""
     spaced = "".join(
         " " if unicodedata.category(c) in ("Cc", "Cf", "Zl", "Zp") else c for c in text
     )
     flat = _SPACE.sub(" ", spaced).strip()
-    return flat if len(flat) <= MAX_NOTE_CHARS else flat[: MAX_NOTE_CHARS - 1].rstrip() + "…"
+    return flat if len(flat) <= limit else flat[: limit - 1].rstrip() + "…"
+
+
+def clean_note(text: str) -> str:
+    """The reviewer's one-line note, cleaned and cut to `MAX_NOTE_CHARS`."""
+    return clean_note_to(text, MAX_NOTE_CHARS)
 
 
 def squash(text: str) -> str:
@@ -188,17 +211,8 @@ def check_reply(text: str | None, ctx: CallContext, checklist: Checklist) -> Che
     except that one Markdown code fence around it is taken off. JSON is never searched for in
     prose: text before or after it makes the reply unreadable."""
     out = Checked()
-    if text is None or not text.strip():
-        out.unreadable = NO_TEXT
-        return out
-    try:
-        data = json.loads(strip_fence(text))
-    except (ValueError, RecursionError):
-        out.unreadable = NOT_JSON
-        return out
-    raw_items = data.get("items") if isinstance(data, dict) else None
-    if not isinstance(raw_items, list):
-        out.unreadable = NO_ITEMS
+    raw_items = _list_of(text, "items", out)
+    if raw_items is None:
         return out
     seen: set[tuple[str, int, int, str]] = set()
     for raw in raw_items:
@@ -209,6 +223,114 @@ def check_reply(text: str | None, ctx: CallContext, checklist: Checklist) -> Che
         if item is None:
             out.dropped["bad_item"] += 1
             continue
+        accepted = _check_item(item, ctx, checklist, out)
+        if accepted is None:
+            continue
+        key = (accepted.file_id, accepted.start_line, accepted.end_line, accepted.entry)
+        if key in seen:
+            out.dropped["duplicate"] += 1
+            continue
+        seen.add(key)
+        out.accepted.append(accepted)
+    return out
+
+
+def _list_of(text: str | None, key: str, out: Checked) -> list | None:
+    """The list under `key` of the reply's JSON object, or None with `out.unreadable` set."""
+    if text is None or not text.strip():
+        out.unreadable = NO_TEXT
+        return None
+    try:
+        data = json.loads(strip_fence(text))
+    except (ValueError, RecursionError):
+        out.unreadable = NOT_JSON
+        return None
+    raw = data.get(key) if isinstance(data, dict) else None
+    if not isinstance(raw, list):
+        out.unreadable = NO_ITEMS
+        return None
+    return raw
+
+
+def check_leads(text: str | None, ctx: CallContext, checklist: Checklist) -> Checked:
+    """First pass of the two-pass review. Each lead must name a file shown, a function the parser
+    finds in that file among the lines shown, and an entry of the checklist; a bad one is dropped
+    and counted. Nothing here is a finding."""
+    out = Checked()
+    raw_leads = _list_of(text, "leads", out)
+    if raw_leads is None:
+        return out
+    seen: set[tuple[str, str, str]] = set()
+    for raw in raw_leads:
+        if len(out.leads) >= MAX_LEADS:
+            out.dropped["too_many"] += 1
+            continue
+        try:
+            lead = LeadItem.model_validate(
+                {**raw, "reason": clean_note(raw.get("reason", ""))}
+                if isinstance(raw, dict)
+                else raw
+            )
+        except (ValidationError, AttributeError):
+            out.dropped["bad_item"] += 1
+            continue
+        shown = ctx.shown.get(lead.file_id)
+        if shown is None:
+            out.dropped["unknown_file"] += 1
+        elif not any(
+            m.name == lead.function and m.start_line in shown
+            for m in ctx.members.get(lead.file_id, ())
+        ):
+            out.dropped["unknown_function"] += 1
+        elif checklist.entry(lead.entry) is None:
+            out.dropped["unknown_entry"] += 1
+        elif (key := (lead.file_id, lead.function, lead.entry)) in seen:
+            out.dropped["duplicate"] += 1
+        else:
+            seen.add(key)
+            out.leads.append(Lead(**lead.model_dump()))
+    return out
+
+
+def check_verdicts(text: str | None, ctx: CallContext, checklist: Checklist) -> Checked:
+    """Second pass. Only a verdict of `applies` is flagged, and then it is checked exactly like a
+    single-pass item (file shown, every line shown, the quote in the code, the entry in the
+    checklist); `not_applicable` and `unsure` are counted as decisions and flag nothing. The
+    model's account of how the problem happens becomes the note."""
+    out = Checked()
+    raw_verdicts = _list_of(text, "verdicts", out)
+    if raw_verdicts is None:
+        return out
+    seen: set[tuple[str, int, int, str]] = set()
+    for raw in raw_verdicts:
+        if len(out.accepted) >= MAX_REVIEWER_ITEMS:
+            out.dropped["too_many"] += 1
+            continue
+        try:
+            verdict = VerdictItem.model_validate(
+                {**raw, "path": clean_note_to(raw.get("path", ""), MAX_PATH_NOTE_CHARS)}
+                if isinstance(raw, dict)
+                else raw
+            )
+        except (ValidationError, AttributeError):
+            out.dropped["bad_item"] += 1
+            continue
+        if verdict.verdict != "applies":
+            out.dropped[verdict.verdict] += 1
+            continue
+        assert verdict.start_line is not None and verdict.end_line is not None
+        item = ReviewerItem(
+            file_id=verdict.file_id,
+            start_line=verdict.start_line,
+            end_line=verdict.end_line,
+            quote=verdict.quote,
+            function=verdict.function,
+            entry=verdict.entry,
+            clause=None,
+            severity=verdict.severity,
+            confidence=verdict.confidence,
+            note=clean_note(verdict.path),
+        )
         accepted = _check_item(item, ctx, checklist, out)
         if accepted is None:
             continue

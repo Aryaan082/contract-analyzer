@@ -141,9 +141,15 @@ def with_credit_limit(budget: cmp.Budget, out: Callable[[str], None]) -> None:
 
 
 def estimate_stage(
-    ctx: Context, stage: str, reports: list[ti.Report], spec: ModelSpec = cmp.OPUS
+    ctx: Context,
+    stage: str,
+    reports: list[ti.Report],
+    spec: ModelSpec = cmp.OPUS,
+    pipeline: str = "single",
 ) -> float:
-    return sum(tr.stage_estimate_usd(ctx.sources[r.slug], stage, r.slug, spec) for r in reports)
+    return sum(
+        tr.stage_estimate_usd(ctx.sources[r.slug], stage, r.slug, spec, pipeline) for r in reports
+    )
 
 
 def run_stages(
@@ -154,12 +160,25 @@ def run_stages(
     out: Callable[[str], None],
 ) -> int:
     spec = model_of(args)
-    central = sum(estimate_stage(ctx, s, reports, spec) for s in stages)
+    pipeline = getattr(args, "pipeline", "single")
+    central = sum(estimate_stage(ctx, s, reports, spec, pipeline) for s in stages)
     out(
         f"{args.side}: {len(reports)} reports, stages {', '.join(stages)}, model {spec.name}, "
-        f"central estimate ${central:.2f}"
+        f"pipeline {pipeline}, central estimate ${central:.2f}"
+        + (" (two-pass: arm A scaled by 2.2, an assumption)" if pipeline == "two_pass" else "")
     )
     problems = money_problems(args, args.side)
+    for stage in stages:
+        if tr.ARM_OF[stage] == "A":
+            made = {
+                r.get("pipeline_mode", "single")
+                for r in tr.read_stage(ctx.cache, args.side, stage, ctx.runs).values()
+            }
+            if made - {pipeline}:
+                problems.append(
+                    f"the {stage} records in --runs {ctx.runs} were made with pipeline "
+                    f"{', '.join(sorted(made))}; use another --runs folder for {pipeline}"
+                )
     if problems:
         out("The run did not start, and no model was called:")
         out("\n".join(f"  - {p}" for p in problems))
@@ -179,7 +198,7 @@ def run_stages(
             max_spend=budget.max_usd, done=done[stage],
             checkpoint=tr.checkpoint_path(ctx.cache, args.side, stage, ctx.runs),
             max_tokens=args.plain_max_tokens if tr.ARM_OF[stage] == "P" else None, out=out,
-            begin=raw.begin, spec=spec,
+            begin=raw.begin, spec=spec, pipeline=pipeline,
         )  # fmt: skip
     for message in sorted(set(budget.errors)):
         out(f"request failed: {message}")
@@ -493,6 +512,10 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
             p.add_argument(
                 "--stages", nargs="+", choices=SCORE_STAGES, default=SCORE_STAGES,
                 help="which stages to run (default both)",
+            )  # fmt: skip
+            p.add_argument(
+                "--pipeline", choices=tr.PIPELINES, default="single",
+                help="how arm A reads: single (pre-registered) or two_pass (leads, then checks)",
             )  # fmt: skip
     p = sub.add_parser("judge")
     common(p)

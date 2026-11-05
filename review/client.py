@@ -201,21 +201,26 @@ def retry_prompt(prompt: Prompt) -> Prompt:
     return replace(prompt, user=f"{prompt.user}\n\n{RETRY_REMINDER}")
 
 
+Checker = Callable[[str | None, CallContext, Checklist], Checked]
+
+
 def _ask(
     client: ReviewerClient,
     prompt: Prompt,
     ctx: CallContext,
     checklist: Checklist,
     max_tokens: int,
+    schema: dict[str, Any],
+    check: Checker,
 ) -> tuple[Checked, ReviewerCall | None]:
     """One request and the check of its reply; the reply is None when the model was unavailable."""
     try:
-        reply = client.review(prompt, REVIEWER_SCHEMA, max_tokens=max_tokens)
+        reply = client.review(prompt, schema, max_tokens=max_tokens)
     except ModelUnavailable:
         return Checked(unreadable=UNAVAILABLE), None
     if reply.finish_reason == "length":
         return Checked(unreadable=CUT_OFF), reply
-    return check_reply(reply.text, ctx, checklist), reply
+    return check(reply.text, ctx, checklist), reply
 
 
 def call_once(
@@ -226,6 +231,8 @@ def call_once(
     *,
     purpose: str,
     max_tokens: int,
+    schema: dict[str, Any] = REVIEWER_SCHEMA,
+    check: Checker = check_reply,
 ) -> tuple[Checked, CallRecord]:
     """One request and the check of its reply, and ONE more request if the model answered but not
     in the shape asked for (no text, not JSON, no list of items; `RETRYABLE`). The second request
@@ -233,12 +240,14 @@ def call_once(
     unreadable is final. A reply that was cut off, or a model that cannot answer, is not asked
     again. A model that cannot answer is not an error here: the record says so and the caller counts
     the call as not done. The record adds up the tokens and cost of both requests."""
-    checked, reply = _ask(client, prompt, ctx, checklist, max_tokens)
+    checked, reply = _ask(client, prompt, ctx, checklist, max_tokens, schema, check)
     replies = [reply] if reply is not None else []
     retries = 0
     if reply is not None and checked.unreadable in RETRYABLE:
         retries = 1
-        again, second = _ask(client, retry_prompt(prompt), ctx, checklist, max_tokens)
+        again, second = _ask(
+            client, retry_prompt(prompt), ctx, checklist, max_tokens, schema, check
+        )
         if second is not None:  # if the second request got no answer, the first one's reason stands
             checked = again
             replies.append(second)
@@ -251,7 +260,7 @@ def call_once(
         completion_tokens=sum(r.completion_tokens for r in replies),
         cost_usd=sum(r.cost_usd for r in replies),
         finish_reason=last.finish_reason if last else None,
-        accepted=len(checked.accepted),
+        accepted=len(checked.accepted) + len(checked.leads),
         dropped=dict(checked.dropped),
         adjusted=dict(checked.adjusted),
         unreadable=checked.unreadable,

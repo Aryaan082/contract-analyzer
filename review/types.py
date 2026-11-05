@@ -61,6 +61,9 @@ MAX_EXCERPT_CHARS = 280  # one verbatim sentence of an audit finding (decision 2
 MAX_PRECEDENTS = 3  # per span (decision 21)
 MAX_SPAN_LINES = 200  # a flagged place is a few lines, not a file
 MAX_REVIEWER_ITEMS = 50  # per reply; a proposal, the span validator drops the rest and counts them
+MAX_LEADS = 80  # per reply of the first pass of the two-pass review (a lead is a question to check)
+MAX_PATH_NOTE_CHARS = 300  # the second pass's account of how the problem happens, or why not
+Verdict = Literal["applies", "not_applicable", "unsure"]
 
 
 class _Model(BaseModel):
@@ -467,6 +470,50 @@ class ReviewerReply(_Model):
     items: Annotated[list[ReviewerItem], Field(max_length=MAX_REVIEWER_ITEMS)]
 
 
+class LeadItem(_Model):
+    """First pass of the two-pass review: a function and a checklist entry that may apply to it.
+    A lead is a question to check, not a finding; nothing is flagged from this reply alone."""
+
+    file_id: FileId
+    function: Annotated[str, Field(min_length=1, max_length=100)]
+    entry: EntryId
+    reason: Annotated[str, Field(max_length=MAX_NOTE_CHARS)]
+
+
+class LeadReply(_Model):
+    leads: Annotated[list[LeadItem], Field(max_length=MAX_LEADS)]
+
+
+class VerdictItem(_Model):
+    """Second pass: one lead decided. Only `applies` becomes a flagged place, and then the lines and
+    the quote are required and checked exactly like a single-pass item."""
+
+    file_id: FileId
+    entry: EntryId
+    verdict: Verdict
+    function: Annotated[str, Field(max_length=100)] | None = None
+    start_line: Annotated[int, Field(ge=1)] | None = None
+    end_line: Annotated[int, Field(ge=1)] | None = None
+    quote: Annotated[str, Field(max_length=2000)] = ""
+    severity: Severity = "low"
+    confidence: Confidence = "low"
+    path: Annotated[str, Field(max_length=MAX_PATH_NOTE_CHARS)]
+
+    @model_validator(mode="after")
+    def _a_place_when_it_applies(self) -> "VerdictItem":
+        if self.verdict != "applies":
+            return self
+        if self.start_line is None or self.end_line is None or not self.quote.strip():
+            raise ValueError("a verdict of `applies` names its lines and quotes one")
+        if not 0 <= self.end_line - self.start_line < MAX_SPAN_LINES:
+            raise ValueError(f"a place is 1 to {MAX_SPAN_LINES} lines, in order")
+        return self
+
+
+class VerdictReply(_Model):
+    verdicts: Annotated[list[VerdictItem], Field(max_length=MAX_LEADS)]
+
+
 def _inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
     """The JSON Schema with each `$ref` replaced by its definition (for providers without it)."""
     defs = schema.get("$defs", {})
@@ -498,6 +545,8 @@ def _without_docs(node: Any) -> Any:
 
 
 REVIEWER_SCHEMA: dict[str, Any] = _without_docs(_inline_refs(ReviewerReply.model_json_schema()))
+LEAD_SCHEMA: dict[str, Any] = _without_docs(_inline_refs(LeadReply.model_json_schema()))
+VERDICT_SCHEMA: dict[str, Any] = _without_docs(_inline_refs(VerdictReply.model_json_schema()))
 
 # What the golden JSON Schema files cover: the records that leave the system, and the reply.
 PUBLIC_MODELS: dict[str, type[BaseModel]] = {

@@ -268,3 +268,13 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   still the findings Opus-plain missed in screening; a DeepSeek run compares DeepSeek-pipeline with
   DeepSeek-plain on it, and any run on a new directory or prompt is exploratory (these findings
   are no longer unseen) until it is confirmed on reports nobody has looked at.
+- **An experimental two-pass pipeline (Aryaan, 2026-11-04; the pre-registered runs used the single
+  pass and are untouched).** `--pipeline two_pass` on `score` runs arm A as leads then checks
+  (`review/twopass.py`): per chunk, one request names the functions where a checklist entry might
+  apply, a second reads the chunk again with only those entries and the definitions the lead
+  functions call (one hop, by name) and decides each lead as applies, not applicable or unsure; only
+  `applies` is flagged, and then through the same checks as a single-pass item (file and lines
+  shown, quote in the code, entry in the checklist). The prompts for it say nothing about these
+  findings. It is for development on DeepSeek and exploratory until it is confirmed on reports nobody
+  has looked at. A runs folder holds one mode only (a mix is refused), the record names its mode, and
+  the estimate for it is the single-pass estimate times 2.2, an assumption.

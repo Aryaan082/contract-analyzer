@@ -35,6 +35,10 @@ STAGES = ("screen", "fresh", "pipeline")
 ARM_OF = {"screen": "P", "fresh": "P", "pipeline": "A"}
 MAX_SILENT = cmp.MAX_SILENT
 OUTPUT_LIMIT = {"P": 8192, "A": 8192}  # output tokens a request may write, per arm
+PIPELINES = ("single", "two_pass")  # how arm A reads: the pre-registered pass, or leads then checks
+# Two requests per chunk, the second as large as the first: the estimate of arm A is scaled by this
+# (an assumption, not a measurement; the real cost is whatever OpenRouter reports).
+PASS_FACTOR = {"single": 1.0, "two_pass": 2.2}
 RUNS = "runs"  # the folder of the pre-registered runs; another name keeps a re-run apart from them
 RUNS_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,30}$")
 
@@ -135,7 +139,11 @@ class Recording:
 
 
 def stage_estimate_usd(
-    source: Source, stage: str, slug: str = "x", spec: ModelSpec = cmp.OPUS
+    source: Source,
+    stage: str,
+    slug: str = "x",
+    spec: ModelSpec = cmp.OPUS,
+    pipeline: str = "single",
 ) -> float:
     """The central cost of one report in one stage, from the real prompts (no model)."""
     item = type("Item", (), {"id": slug, "group": "tob"})()
@@ -144,7 +152,7 @@ def stage_estimate_usd(
         return 0.0
     if ARM_OF[stage] == "P":
         return cmp.call_usd(est.p_tokens, est.p_calls * cmp.OUT_CENTRAL, spec)
-    return cmp.call_usd(est.a_tokens, est.a_calls * cmp.OUT_CENTRAL, spec)
+    return PASS_FACTOR[pipeline] * cmp.call_usd(est.a_tokens, est.a_calls * cmp.OUT_CENTRAL, spec)
 
 
 def run_stage(
@@ -161,6 +169,7 @@ def run_stage(
     out: Callable[[str], None] = print,
     begin: Callable[[str], None] | None = None,
     spec: ModelSpec = cmp.OPUS,
+    pipeline: str = "single",
 ) -> list[dict]:
     """One arm over the reports, in order. Stops when the next report's central estimate would pass
     `max_spend`, or after MAX_SILENT reports in a row where no request was answered. Every request
@@ -181,18 +190,22 @@ def run_stage(
             records.append({"item": r.slug, "stage": stage, "complete": False, "skipped": stopped})
             out(f"  {r.slug}: NOT RUN ({stopped})")
             continue
-        if spent() + stage_estimate_usd(source, stage, r.slug, spec) > max_spend:
+        if spent() + stage_estimate_usd(source, stage, r.slug, spec, pipeline) > max_spend:
             stopped = "spend cap"
             records.append({"item": r.slug, "stage": stage, "complete": False, "skipped": stopped})
             out(f"  {r.slug}: NOT RUN ({stopped})")
             continue
-        run = cmp.run_arm_p if ARM_OF[stage] == "P" else cmp.run_arm_a
         if begin is not None:
             begin(r.slug)
-        rec = run(source, client, limit)
+        if ARM_OF[stage] == "P":
+            rec = cmp.run_arm_p(source, client, limit)
+            mode: dict[str, str] = {}
+        else:
+            rec = cmp.run_arm_a(source, client, limit, pipeline)
+            mode = {"pipeline_mode": pipeline}
         record = {
             "item": r.slug, "stage": stage, "max_tokens": limit, "model": client.name,
-            **asdict(rec),
+            **mode, **asdict(rec),
         }  # fmt: skip
         records.append(record)
         with checkpoint.open("a") as f:

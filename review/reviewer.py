@@ -19,8 +19,10 @@ records are the only thing that leaves.
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from typing import Literal
 
 from knowledge.findings import FindingsFile
+from review import twopass
 from review.client import UNAVAILABLE, CallRecord, ReviewerClient, call_once
 from review.confirm import Confirmation, candidates_of, confirm
 from review.credit import default_files
@@ -87,10 +89,13 @@ def run_review(
     second: ReviewerClient | None = None,
     precedent_map: PrecedentMap | None = None,
     findings: Sequence[FindingsFile] | None = None,
+    mode: Literal["single", "two_pass"] = "single",
 ) -> ReviewResult:
     """Review `bundle` with `client`. `entry` is the deployed contract's name as the caller knows it
     (it only orders the calls and is never printed). `second` turns on the blind confirmation pass;
-    the caller passes it only when the high-risk switch is on, since it costs extra calls."""
+    the caller passes it only when the high-risk switch is on, since it costs extra calls. `mode`
+    "two_pass" is the experimental leads-then-applicability review (`review.twopass`): two requests
+    per chunk, the same checks on what it flags."""
     checklist = checklist or build_checklist()
     known = known if known is not None else load_known()
     files = findings if findings is not None else default_files()
@@ -134,6 +139,18 @@ def run_review(
             continue
         if stopped == UNAVAILABLE:
             done.append(False)
+            continue
+        if mode == "two_pass":
+            outcome = twopass.run_chunk(
+                client, checklist, chunk, lexed, outline=outline, hints=hints,
+                total_parts=len(chunks), max_tokens=max_tokens,
+            )  # fmt: skip
+            calls.extend(outcome.records)
+            dropped.update(outcome.dropped)
+            done.append(outcome.done)
+            if outcome.unavailable:
+                stopped = UNAVAILABLE
+            items.extend(outcome.accepted)
             continue
         prompt = build_prompt(
             checklist, chunk, outline=outline, hints=hints, total_parts=len(chunks)

@@ -454,11 +454,11 @@ def stage_models(records: dict[str, dict[str, dict]]) -> dict[str, str]:
     model was kept were all Opus 5.5."""
     out = {}
     for stage in tr.STAGES:
-        names = {
-            r.get("model", "anthropic/claude-opus-5.5") for r in records.get(stage, {}).values()
-        }
+        rows = list(records.get(stage, {}).values())
+        names = {r.get("model", "anthropic/claude-opus-5.5") for r in rows}
+        modes = {r["pipeline_mode"] for r in rows if r.get("pipeline_mode", "single") != "single"}
         if names:
-            out[stage] = ", ".join(sorted(names))
+            out[stage] = ", ".join(sorted(names)) + "".join(f" [{m}]" for m in sorted(modes))
     return out
 
 

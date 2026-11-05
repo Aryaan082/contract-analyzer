@@ -387,11 +387,13 @@ def run_arm_p(source: Source, client: ReviewerClient, max_tokens: int) -> ArmRec
     )
 
 
-def run_arm_a(source: Source, client: ReviewerClient, max_tokens: int) -> ArmRecord:
+def run_arm_a(
+    source: Source, client: ReviewerClient, max_tokens: int, mode: str = "single"
+) -> ArmRecord:
     start = time.monotonic()
     assert source.bundle is not None
     result = run_review(
-        source.bundle, client, known=source.known, second=None, max_tokens=max_tokens
+        source.bundle, client, known=source.known, second=None, max_tokens=max_tokens, mode=mode
     )
     return record_of_review(result, time.monotonic() - start)
 
