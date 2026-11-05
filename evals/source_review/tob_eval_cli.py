@@ -4,12 +4,15 @@ screen      plain Opus once per report of a side (stage 1). REFUSES without --co
             --max-spend; held-out also needs --declare and a clean tree.
 judge       the pairwise judge over the flags of a stage. Without --confirm-spend it only prints the
             estimate. REFUSES a judge from the model's own company, and an unapproved rubric unless
-            --draft (a draft result says so and is not for quoting).
+            --draft (a draft result says so and is not for quoting). Exits 3, not 0, while any pair
+            still has no verdict (stopped at the cap, left over or unreadable): ask again.
 score       the fresh plain run and the pipeline run on the reports that have a hard finding, as
             judged in screening (stage 2). Same refusals as `screen`.
 agreement   free: do the judges differ; which one is the odd one out, and which way it leans.
 handcheck   free: writes a sample of judged pairs for a person to label, judges and arm hidden.
 report      free: the results file, the run records without any reviewer text, a results row.
+            REFUSES while any pair lacks a verdict from a judge (the counts would be too low),
+            unless --allow-partial, which prints a PARTIAL JUDGING banner on top.
 rubric      the rubric's hash and whether it is the one Aryaan approved.
 
 Every command takes --cache (the folder `fetch` filled; it also holds the runs and the judgements:
@@ -36,6 +39,8 @@ from evals.source_review import tob_report as tp
 from evals.source_review import tob_run as tr
 from evals.source_review.cards import REPO_ROOT
 from evals.source_review.compare import Source
+
+EXIT_INCOMPLETE = 3  # `judge` ended with pairs that have no usable verdict
 
 CREDIT_MARGIN = 0.05
 SCORE_STAGES = ["fresh", "pipeline"]  # what `score` runs, in this order, unless --stages says less
@@ -306,6 +311,7 @@ def cmd_judge(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         out("\n".join(f"  - {p}" for p in problems))
         return 2
     cap = SpendCap(args.max_spend)
+    incomplete = False
     for judge in judges:
         client = OpenRouterJudge(specs[judge])
         run = tj.run_pairs(
@@ -316,7 +322,15 @@ def cmd_judge(args: argparse.Namespace, out: Callable[[str], None]) -> int:
             f"  {judge}: called {run.called}, cached {run.cached}, unreadable {run.unparsed}, "
             f"left {run.left}{', stopped: ' + run.stopped if run.stopped else ''}"
         )
+        incomplete = incomplete or bool(run.stopped or run.left or run.unparsed)
     out(f"judge spend ${cap.spent:.3f} of ${args.max_spend:.2f}")
+    if incomplete:
+        out(
+            "NOT COMPLETE: some pairs still have no verdict (stopped at the cap, left over, or "
+            "unreadable). Run `judge` again; `score` and `report` refuse until every judge has "
+            "answered every pair."
+        )
+        return EXIT_INCOMPLETE
     return 0
 
 
@@ -407,6 +421,16 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         s: tr.verdicts(rubric, judges, ctx.refs, ctx.labels_of, records[s], ctx.sources, cache)
         for s in tr.STAGES
     }
+    partial = {s: sum(v.unjudged for v in verd[s].values()) for s in tr.STAGES}
+    partial = {s: n for s, n in partial.items() if n}
+    if partial and not getattr(args, "allow_partial", False):
+        out(
+            "refused: pairs have no verdict from every judge ("
+            + ", ".join(f"{s} {n}" for s, n in partial.items())
+            + "), so the counts would be too low. Run `judge` until it ends with exit 0, or pass "
+            "--allow-partial for a report that says so on top."
+        )
+        return 2
     flags = {
         s: {
             slug: tr.unmatched_flags(
@@ -433,6 +457,7 @@ def cmd_report(args: argparse.Namespace, out: Callable[[str], None]) -> int:
         "code_commit": git("rev-parse", "--short", "HEAD"),
         "dirty": bool(git("status", "--porcelain", "--untracked-files=no")),
         "judge_usd": round(judge_usd, 4), "runs": runs, "note": note,
+        "partial_judging": partial,
     }  # fmt: skip
     report = tp.build_report(
         tp.Inputs(
@@ -554,6 +579,11 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     common(p)
     judges(p)
     p.add_argument("--note", help="needed with --runs: why this is not the pre-registered run")
+    p.add_argument(
+        "--allow-partial", action="store_true",
+        help="write the report although some pairs have no verdict from every judge "
+        "(it says PARTIAL JUDGING on top and its counts are too low)",
+    )  # fmt: skip
     p = sub.add_parser("agreement")
     common(p)
     judges(p)

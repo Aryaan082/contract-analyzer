@@ -301,6 +301,17 @@ def render(report: dict) -> list[str]:
         "",
         f"**{report['banner']}**",
         "",
+        *(
+            [
+                "**PARTIAL JUDGING: "
+                + ", ".join(f"{s} {n}" for s, n in m["partial_judging"].items())
+                + " pairs have no verdict from every judge, so the found counts below are too "
+                "low and the comparison means nothing until judging is complete.**",
+                "",
+            ]
+            if m.get("partial_judging")
+            else []
+        ),
         *([f"**POST-HOC: {m['note']}**", ""] if m.get("note") else []),
         *(
             [f"**JUDGE WAIVER (dev only, not quotable): {m['judge_waiver']}**", ""]
@@ -473,6 +484,13 @@ def write_report(report: dict, side: str, directory: Path = RESULTS_DIR) -> tupl
     return js, md
 
 
+def model_label(name: str | None) -> str:
+    """The model as a person says it: 'Opus 5.5' for the pre-registered runs, else its slug."""
+    if not name or "opus-5.5" in name:
+        return "Opus 5.5"
+    return name
+
+
 def results_row(report: dict) -> str:
     """The one row for evals/results.md (the convention: change, metrics, date)."""
     m, h = report["meta"], report["headline"]
@@ -480,10 +498,11 @@ def results_row(report: dict) -> str:
         return f"| {m.get('date')} | ToB hard findings, {m.get('side')} | no hard finding scored |"
     rel = fmt(h["relative"]) if h.get("relative") else "undefined"
     verdict = "improvement shown" if h["improvement_shown"] else "no improvement shown"
-    after = " (after the reply-reading fix, post-hoc)" if m.get("note") else ""
+    after = f" (post-hoc: {m['note']})" if m.get("note") else ""
+    partial = " (**PARTIAL JUDGING, counts too low**)" if m.get("partial_judging") else ""
     return (
-        f"| {m.get('date')} | plain Opus 5.5 vs our source review on ToB findings plain missed"
-        f"{after} | "
+        f"| {m.get('date')} | plain {model_label(m.get('model'))} vs our source review on ToB "
+        f"findings plain missed{after}{partial} | "
         f"{m.get('side')} | {h['findings']} hard findings in {h['reports']} reports | "
         f"{h['plain_found']}/{h['findings']} (fresh plain) | "
         f"{h['pipeline_found']}/{h['findings']} | "

@@ -287,3 +287,12 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   is now 3.0. One report is a smoke test, not a result. The product's own reviewer setting
   (`reviewer_model = "eval"`, 8,192 tokens) was not tested in its own request form and may have the
   same problem.
+- **Judging and reports that stop short now say so (2026-11-05, found in the DeepSeek dev
+  comparison, no judge or model rule changed).** The 24-worker judging stopped at its spend cap
+  (the cap counts each request in flight at its worst case, so many workers hold back much of it)
+  and still exited with 0, and `report` then wrote files from partial judging: pairs without a
+  verdict from every judge were silently left out, so the pipeline looked like 0 of 29. `judge` now
+  exits 3 while any pair is unjudged (stopped, left over or unreadable), `report` refuses while any
+  pair lacks a verdict unless `--allow-partial`, which puts PARTIAL JUDGING on top of the file and in
+  the results row. The results row also named "plain Opus 5.5" whatever the model; it now names the
+  model under test.

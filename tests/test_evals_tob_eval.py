@@ -719,7 +719,30 @@ def test_a_re_run_report_says_so_on_top_and_never_overwrites_the_original(rubric
     assert js1.name == "tob-dev-2026-11-04-fixed.json" and md1.name.endswith("-fixed.md")
     assert js0.exists() and "POST-HOC: reader fixed" in md1.read_text()
     assert md1.read_text().index("POST-HOC") < md1.read_text().index("## Headline")
-    assert "(after the reply-reading fix, post-hoc)" in tp.results_row(rerun)
+    assert "(post-hoc: reader fixed)" in tp.results_row(rerun)
+
+
+def test_the_results_row_names_the_model_under_test(rubric):
+    report = build(rubric)
+    assert "plain m vs our source review" in tp.results_row(report)
+    for name, label in (
+        ("anthropic/claude-opus-5.5", "Opus 5.5"),
+        ("deepseek/deepseek-v4.1-flash-1017", "deepseek/deepseek-v4.1-flash-1017"),
+        (None, "Opus 5.5"),
+    ):
+        named = {**report, "meta": {**report["meta"], "model": name}}
+        assert f"plain {label} vs our source review" in tp.results_row(named)
+
+
+def test_partial_judging_is_loud_on_top_of_the_file_and_in_the_row(rubric, tmp_path):
+    report = build(rubric)
+    assert "PARTIAL" not in tp.results_row(report)
+    partial = {**report, "meta": {**report["meta"], "partial_judging": {"fresh": 3, "pipeline": 5}}}
+    _, md = tp.write_report(partial, "dev", tmp_path)
+    text = md.read_text()
+    assert "PARTIAL JUDGING: fresh 3, pipeline 5 pairs" in text
+    assert text.index("PARTIAL JUDGING") < text.index("## Headline")
+    assert "PARTIAL JUDGING" in tp.results_row(partial)
 
 
 def test_the_report_counts_requests_sent_again(rubric, tmp_path):
@@ -995,6 +1018,57 @@ def test_judge_estimates_for_free_and_wants_an_approved_rubric_or_draft(monkeypa
     assert code == 2 and "to call" in text and "not approved" in text
     assert "--confirm-spend and --max-spend are both needed" in text
     assert not (tmp_path / "judge" / "judgements.jsonl").exists()
+
+
+def screened_cache(tmp_path):
+    ctx = fake_context(tmp_path)
+    tr.run_stage(
+        ctx.reports, ctx.sources, "screen", ScriptedReviewer([PLAIN_REPLY], name=cmp.OPUS.name),
+        spent=lambda: 0.0, max_spend=100.0, done={},
+        checkpoint=tr.checkpoint_path(tmp_path, "dev", "screen"), out=lambda _: None,
+    )  # fmt: skip
+
+
+JUDGE_ARGS = ["judge", "--side", "dev", "--mode", "quick", "--stage", "screen", "--draft",
+              "--confirm-spend", "--workers", "1"]  # fmt: skip
+
+
+@pytest.mark.parametrize(
+    ("answers", "cap", "code", "complete"),
+    [
+        (["unrelated"], "5", 0, True),  # every pair answered
+        (["unrelated"], "0.000001", 3, False),  # stopped at the cap with pairs left
+        (["nonsense"], "5", 3, False),  # replies that cannot be read
+    ],
+)
+def test_judge_exits_nonzero_while_any_pair_has_no_verdict(
+    monkeypatch, tmp_path, answers, cap, code, complete
+):
+    screened_cache(tmp_path)
+    monkeypatch.setattr(
+        cli, "OpenRouterJudge", lambda spec: ScriptedJudge(spec.slug, answers, cost=0.0001)
+    )
+    got, text = run_cli(
+        monkeypatch, tmp_path, [*JUDGE_ARGS, "--cache", str(tmp_path), "--max-spend", cap]
+    )
+    assert got == code
+    assert ("NOT COMPLETE" not in text) is complete
+
+
+def test_report_refuses_while_pairs_are_unjudged_unless_told_to_say_so(monkeypatch, tmp_path):
+    screened_cache(tmp_path)
+    out_dir = tmp_path / "out"
+    real = tp.write_report
+    monkeypatch.setattr(tp, "write_report", lambda report, side: real(report, side, out_dir))
+    monkeypatch.setattr(cmp, "RESULTS_DIR", out_dir)
+    argv = ["report", "--cache", str(tmp_path), "--side", "dev", "--mode", "quick"]
+    code, text = run_cli(monkeypatch, tmp_path, argv)
+    assert code == 2 and "no verdict from every judge" in text and "screen " in text
+    assert not out_dir.exists()
+    code, text = run_cli(monkeypatch, tmp_path, [*argv, "--allow-partial"])
+    assert code == 0 and "PARTIAL JUDGING" in text
+    written = [f.read_text() for f in out_dir.glob("*.md")]
+    assert written and all("PARTIAL JUDGING" in text for text in written)
 
 
 def test_score_refuses_until_screening_is_judged(monkeypatch, tmp_path):
