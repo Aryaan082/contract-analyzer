@@ -296,10 +296,16 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   pair lacks a verdict unless `--allow-partial`, which puts PARTIAL JUDGING on top of the file and in
   the results row. The results row also named "plain Opus 5.5" whatever the model; it now names the
   model under test.
-- **Two-pass first pass is told the outline is context (2026-11-05, prompt text changed, not yet
-  re-measured).** In the DeepSeek dev run leads named files or functions that this call did not
-  show (Ajna 73, Fraxgov 21, Cap 18, Arcade 5, Radius 0); the bundle outline lists every file of
-  the bundle, which fits Radius (one call, so nothing is outside it) having none. Those drops now count as `other_part` when the
-  code exists in a part another call reads, and as `unknown_file` or `unknown_function` only when it
-  does not exist, and the first-pass rule says a function that is only in the outline is not to be
-  named. Whether this changes the flags is open until it is run again.
+- **Two-pass first pass is told the outline is context (2026-11-05, prompt text changed; one
+  re-run on two reports, not judged).** In the DeepSeek dev run leads named files or functions that
+  this call did not show (Ajna 73, Fraxgov 21, Cap 18, Arcade 5, Radius 0); the bundle outline
+  lists every file of the bundle, which fits Radius (one call, so nothing is outside it) having
+  none. Those drops now count as `other_part` when the code exists in a part another call reads,
+  and as `unknown_file` or `unknown_function` only when it does not exist, and the first-pass rule
+  says a function that is only in the outline is not to be named. Re-run on Ajna and Fraxgov (one
+  run each, $0.11): leads naming an unknown file went from 41 to 0 (Ajna) and 20 to 0 (Fraxgov),
+  none counted as `other_part`, and `unknown_function` stayed at 27 (Ajna) and 1 (Fraxgov), so
+  those are names the parser does not find in the file at all. Flags: Ajna 21 (was 15), Fraxgov 0
+  (was 0, with 98 leads decided `not_applicable`), so Fraxgov's empty result is the second pass
+  finding nothing, not lost leads. One run each is not enough to say the extra Ajna flags are the
+  rule's doing, and none of the flags was judged.
