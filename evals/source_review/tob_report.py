@@ -457,6 +457,7 @@ def stage_models(records: dict[str, dict[str, dict]]) -> dict[str, str]:
         rows = list(records.get(stage, {}).values())
         names = {r.get("model", "anthropic/claude-opus-5.5") for r in rows}
         modes = {r["pipeline_mode"] for r in rows if r.get("pipeline_mode", "single") != "single"}
+        modes |= {"reasoning off" for r in rows if r.get("reasoning") == "off"}
         if names:
             out[stage] = ", ".join(sorted(names)) + "".join(f" [{m}]" for m in sorted(modes))
     return out

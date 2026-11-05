@@ -278,3 +278,12 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   findings. It is for development on DeepSeek and exploratory until it is confirmed on reports nobody
   has looked at. A runs folder holds one mode only (a mix is refused), the record names its mode, and
   the estimate for it is the single-pass estimate times 2.2, an assumption.
+- **DeepSeek runs with its hidden thinking off (smoke test on the smallest dev report, 2026-11-04,
+  $0.03).** At 8,192 output tokens DeepSeek's thinking alone used the whole budget and both modes
+  returned an empty reply cut off at the limit. `--reasoning auto` (the default) now turns thinking
+  off for `--model deepseek` and leaves Opus as it was; each record says which. With it off, the
+  single pass gave 15 flags for $0.004 and the two-pass 26 flags for $0.011 (2.9 times, one reply of
+  the second pass cut by a provider error and rescued by the retry), so the two-pass estimate factor
+  is now 3.0. One report is a smoke test, not a result. The product's own reviewer setting
+  (`reviewer_model = "eval"`, 8,192 tokens) was not tested in its own request form and may have the
+  same problem.

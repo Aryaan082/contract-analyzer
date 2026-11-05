@@ -65,6 +65,16 @@ def model_of(args: argparse.Namespace) -> ModelSpec:
     return cmp.MODELS[getattr(args, "model", "opus")]
 
 
+def reasoning_of(args: argparse.Namespace) -> str:
+    """'off' (the model's hidden thinking is turned off) or '' (its own default). `auto` turns it
+    off for DeepSeek: at 8,192 output tokens its thinking alone used the whole budget and the reply
+    was empty (smoke test, 2026-11-04); Opus keeps its default, as in every pre-registered run."""
+    choice = getattr(args, "reasoning", "auto")
+    if choice == "auto":
+        return "off" if getattr(args, "model", "opus") == "deepseek" else ""
+    return "off" if choice == "off" else ""
+
+
 def waiver_of(args: argparse.Namespace) -> str:
     """Why a judge from the model's own company is allowed (`--allow-same-company`), or ''."""
     return (getattr(args, "allow_same_company", None) or "").strip()
@@ -165,7 +175,11 @@ def run_stages(
     out(
         f"{args.side}: {len(reports)} reports, stages {', '.join(stages)}, model {spec.name}, "
         f"pipeline {pipeline}, central estimate ${central:.2f}"
-        + (" (two-pass: arm A scaled by 2.2, an assumption)" if pipeline == "two_pass" else "")
+        + (
+            f" (two-pass: arm A scaled by {tr.PASS_FACTOR['two_pass']}, from one measurement)"
+            if pipeline == "two_pass"
+            else ""
+        )
     )
     problems = money_problems(args, args.side)
     for stage in stages:
@@ -186,7 +200,9 @@ def run_stages(
     if args.max_spend < central:
         out(f"NOTE: the cap ${args.max_spend:.2f} is below the estimate; the run will stop early.")
     done = {s: tr.read_stage(ctx.cache, args.side, s, ctx.runs) for s in stages}
-    budget = cmp.real_budget(args.max_spend, spec)  # --max-spend caps what THIS command spends
+    reasoning = reasoning_of(args)
+    out(f"reasoning: {reasoning or 'the model default'}")
+    budget = cmp.real_budget(args.max_spend, spec, reasoning)  # --max-spend caps THIS command
     with_credit_limit(budget, out)
     # replies that are not bare JSON are kept, raw, outside the repo (see tr.Recording)
     raw = tr.Recording(budget, ctx.cache / ctx.runs / f"{args.side}-raw-replies.jsonl")
@@ -198,7 +214,7 @@ def run_stages(
             max_spend=budget.max_usd, done=done[stage],
             checkpoint=tr.checkpoint_path(ctx.cache, args.side, stage, ctx.runs),
             max_tokens=args.plain_max_tokens if tr.ARM_OF[stage] == "P" else None, out=out,
-            begin=raw.begin, spec=spec, pipeline=pipeline,
+            begin=raw.begin, spec=spec, pipeline=pipeline, reasoning=reasoning,
         )  # fmt: skip
     for message in sorted(set(budget.errors)):
         out(f"request failed: {message}")
@@ -474,6 +490,10 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
         p.add_argument(
             "--model", choices=sorted(cmp.MODELS), default="opus",
             help="the model under test (both arms); opus is what the pre-registered runs used",
+        )  # fmt: skip
+        p.add_argument(
+            "--reasoning", choices=("auto", "default", "off"), default="auto",
+            help="the model's hidden thinking: auto = off for deepseek, default for opus",
         )  # fmt: skip
         p.add_argument(
             "--runs", type=runs_name, default=tr.RUNS,

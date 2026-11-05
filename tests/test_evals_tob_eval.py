@@ -442,7 +442,9 @@ def test_run_stages_writes_records_and_raw_replies_into_the_runs_folder(monkeypa
         ["Here you go: " + PIPELINE_REPLY, PIPELINE_REPLY], name=cmp.OPUS.name, cost_usd=0.01
     )
     monkeypatch.setattr(
-        cmp, "real_budget", lambda max_usd, spec=cmp.OPUS: cmp.Budget(inner, max_usd, spec)
+        cmp,
+        "real_budget",
+        lambda max_usd, spec=cmp.OPUS, reasoning="": cmp.Budget(inner, max_usd, spec),
     )
     monkeypatch.setattr(cmp, "have_key", lambda: True)
     monkeypatch.setattr(cmp, "credits_remaining", lambda: None)
@@ -467,8 +469,8 @@ def test_the_model_is_a_setting_and_every_record_says_which_one_made_it(monkeypa
     asked: list = []
     inner = ScriptedReviewer([PIPELINE_REPLY], name=cmp.DEEPSEEK.name, cost_usd=0.001)
 
-    def fake_budget(max_usd, spec=cmp.OPUS):
-        asked.append(spec)
+    def fake_budget(max_usd, spec=cmp.OPUS, reasoning=""):
+        asked.append((spec, reasoning))
         return cmp.Budget(inner, max_usd, spec)
 
     monkeypatch.setattr(cmp, "real_budget", fake_budget)
@@ -480,7 +482,9 @@ def test_the_model_is_a_setting_and_every_record_says_which_one_made_it(monkeypa
     args = argparse.Namespace(side="dev", confirm_spend=True, max_spend=5.0, declare=None,
                               plain_max_tokens=32768, runs="cheap", model="deepseek")  # fmt: skip
     assert cli.run_stages(args, ctx, ["pipeline"], ctx.reports, lines.append) == 0
-    assert asked == [cmp.DEEPSEEK] and f"model {cmp.DEEPSEEK.name}" in "\n".join(lines)
+    assert asked == [(cmp.DEEPSEEK, "off")] and f"model {cmp.DEEPSEEK.name}" in "\n".join(lines)
+    assert "reasoning: off" in "\n".join(lines)
+    assert tr.read_stage(tmp_path, "dev", "pipeline", "cheap")["r"]["reasoning"] == "off"
     assert tr.read_stage(tmp_path, "dev", "pipeline", "cheap")["r"]["model"] == cmp.DEEPSEEK.name
     # the same report costs less on the cheap model, by the price list
     src = source()
@@ -488,6 +492,33 @@ def test_the_model_is_a_setting_and_every_record_says_which_one_made_it(monkeypa
         tr.stage_estimate_usd(src, "pipeline", "r", cmp.DEEPSEEK)
         < tr.stage_estimate_usd(src, "pipeline", "r", cmp.OPUS) / 10
     )
+
+
+def test_reasoning_is_off_for_deepseek_and_the_default_for_opus_unless_told():
+    import argparse
+
+    def args(model, reasoning="auto"):
+        return argparse.Namespace(model=model, reasoning=reasoning)
+
+    assert cli.reasoning_of(args("deepseek")) == "off" and cli.reasoning_of(args("opus")) == ""
+    assert cli.reasoning_of(args("deepseek", "default")) == ""
+    assert cli.reasoning_of(args("opus", "off")) == "off"
+    assert cli.reasoning_of(argparse.Namespace()) == ""  # an old-style call: the pre-registered way
+
+
+def test_the_reasoning_option_and_the_report_label():
+    from evals.source_review import tob_cli
+
+    parser = tob_cli.build_parser()
+    base = ["score", "--cache", "/x", "--side", "dev"]
+    assert parser.parse_args(base).reasoning == "auto"
+    assert parser.parse_args([*base, "--reasoning", "off"]).reasoning == "off"
+    with pytest.raises(SystemExit):
+        parser.parse_args([*base, "--reasoning", "high"])
+    rows = {"a": {"item": "a", "model": cmp.DEEPSEEK.name, "reasoning": "off"}}
+    assert tp.stage_models({"pipeline": rows}) == {
+        "pipeline": f"{cmp.DEEPSEEK.name} [reasoning off]"
+    }
 
 
 def test_the_model_option_takes_only_known_models():

@@ -256,13 +256,13 @@ def credits_remaining(opener: Callable = urllib.request.urlopen) -> float | None
         return None
 
 
-def real_budget(max_usd: float, spec: ModelSpec = OPUS) -> Budget:
+def real_budget(max_usd: float, spec: ModelSpec = OPUS, reasoning: str = "") -> Budget:
     """The only way the paid run reaches the model: the real client behind the cap. Measured
     2026-10-29: OpenRouter has no endpoint for anthropic/claude-opus-5.5 that accepts
     `response_format` (a 404 for json_schema and for json_object), so both arms ask for JSON in
     the prompt (`structured="none"`) with the schema written into the system message; each arm
     checks the reply strictly all the same."""
-    client = OpenRouterReviewer(spec, structured="none", retries=RETRIES)
+    client = OpenRouterReviewer(spec, structured="none", reasoning=reasoning, retries=RETRIES)
     return Budget(client, max_usd, spec, schema_in_prompt=True)
 
 

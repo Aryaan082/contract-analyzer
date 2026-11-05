@@ -339,9 +339,12 @@ def test_the_real_client_asks_for_json_in_the_prompt_because_opus_has_no_schema_
     cmp.real_budget(1.0)
     assert seen == {
         "structured": "none",
+        "reasoning": "",  # Opus keeps its own thinking setting, as in every pre-registered run
         "retries": cmp.RETRIES,
         "name": "anthropic/claude-opus-5.5",
     }
+    cmp.real_budget(1.0, cmp.DEEPSEEK, "off")
+    assert seen["reasoning"] == "off" and seen["name"] == cmp.DEEPSEEK.name
 
 
 def test_with_no_response_format_the_schema_reaches_the_model_inside_the_prompt_for_both_arms():

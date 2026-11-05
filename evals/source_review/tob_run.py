@@ -36,9 +36,10 @@ ARM_OF = {"screen": "P", "fresh": "P", "pipeline": "A"}
 MAX_SILENT = cmp.MAX_SILENT
 OUTPUT_LIMIT = {"P": 8192, "A": 8192}  # output tokens a request may write, per arm
 PIPELINES = ("single", "two_pass")  # how arm A reads: the pre-registered pass, or leads then checks
-# Two requests per chunk, the second as large as the first: the estimate of arm A is scaled by this
-# (an assumption, not a measurement; the real cost is whatever OpenRouter reports).
-PASS_FACTOR = {"single": 1.0, "two_pass": 2.2}
+# Two requests per chunk: the estimate of arm A is scaled by this. One measurement (DeepSeek, the
+# smallest report, one retry included): 2.9 times the single pass. The real cost is whatever
+# OpenRouter reports.
+PASS_FACTOR = {"single": 1.0, "two_pass": 3.0}
 RUNS = "runs"  # the folder of the pre-registered runs; another name keeps a re-run apart from them
 RUNS_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,30}$")
 
@@ -170,6 +171,7 @@ def run_stage(
     begin: Callable[[str], None] | None = None,
     spec: ModelSpec = cmp.OPUS,
     pipeline: str = "single",
+    reasoning: str = "",
 ) -> list[dict]:
     """One arm over the reports, in order. Stops when the next report's central estimate would pass
     `max_spend`, or after MAX_SILENT reports in a row where no request was answered. Every request
@@ -205,7 +207,7 @@ def run_stage(
             mode = {"pipeline_mode": pipeline}
         record = {
             "item": r.slug, "stage": stage, "max_tokens": limit, "model": client.name,
-            **mode, **asdict(rec),
+            "reasoning": reasoning or "default", **mode, **asdict(rec),
         }  # fmt: skip
         records.append(record)
         with checkpoint.open("a") as f:
