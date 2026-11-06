@@ -405,3 +405,19 @@ to the directory, so no paid call here waits for a yes. The rule, fixed now:
   place (re-run noise is not measured), DeepSeek pro verifies flags DeepSeek flash raised (same
   company; GLM is the independent check), the judge panel includes DeepSeek under the waiver and the
   rubric is not approved.
+
+Result (2026-11-06, dev, DeepSeek is also a judge under the waiver, **not quotable**): by the rule above
+the verdict is NO improvement shown. DeepSeek flash as the verifier, all 350 distinct places: showing
+only the places it calls valid gives 17 places a run (plain alone 142) with a credited share of 23.5%
+against 8.9% (+14.6% [+3.7%, +35.7%] on the wide key), but it finds 5.2 of the 62 findings against
+plain's 13.2 (-8.0 [-16.0, -2.0]), so the "no loss against plain" guard fails. It rejects 59% of the
+places that matched an auditor finding and 81% of the others. A stronger verifier did not fix it: DeepSeek
+pro on a 74-place sample (37 matched, 37 not) called 7 of 37 matched places valid against 4 of 37
+others and rejected 28 of the 37 matched. Reasons seen in the rejections: a privileged-role or
+documented-design reading (the prompt's standard is harm to an outsider, and many auditor findings
+are about a misconfigurable role), and some real mistakes by the verifier. Exploratory and chosen
+after seeing this: the same verdicts used as an order (nothing hidden) find 11.0 against plain's 7.2
+in the first 20 places per report (+3.8 [+1.0, +6.6]); that needs a repeat, with new verdicts, before
+anyone relies on it. No prompt change was made after looking at the rejections: the places that
+matched a finding are the answer key.
+

@@ -101,10 +101,16 @@ sandbox stays as an optional last step for logic bugs, off by default.
   for (`reason_only_logic=True` restricts it to what triage calls logic). `stage.review_list` splits
   the places into shown (credited or valid), uncertain, rejected and unchecked: **nothing is
   deleted**, the user is just not shown the rejected ones by default.
-* The user's approval is the only gate to the directory. Not built yet: the review queue and the
-  approve step.
+* The user's approval is the only gate to the directory (`queue.py`): the places the verifier calls
+  valid become pending entries; `decide` marks one approved or rejected; only an approved entry of a
+  report that may feed the directory (`directory_ok`, false for a held-out report) becomes a
+  `directory_record`, tagged `source: model_verified_user_approved` so an evaluation can leave it out.
+  Nothing writes the directory yet and there is no command for it.
 
-A second reading is not a proof; two models can agree and both be wrong. How well it separates the
+First measurement (dev, 2026-11-06, not quotable): as a filter it raised the credited share about
+2.6 times but dropped about 60% of what plain finds (no improvement shown by the pre-registered
+rule); used as an order it looked better (exploratory). A stronger model (DeepSeek pro) was stricter
+and no better matched to the answer key. A second reading is not a proof; two models can agree and both be wrong. How well it separates the
 flags an auditor also found from the rest is measured, not assumed: see
 `evals/datasets/tob_items/README.md` ("Reasoning verification").
 
