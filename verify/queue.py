@@ -46,6 +46,10 @@ class QueueEntry:
     harm: str
     fix: str
     confidence: str
+    category: str  # Trail of Bits' type, from the verifier (`verify.definitions`)
+    tob_severity: str  # the verifier's severity in their scale, not the flagging reader's guess
+    difficulty: str
+    root_cause: str  # where the cause is when it is not the flagged function
     verifier: str  # the model that said valid
     layers: tuple[str, ...]
     directory_ok: bool  # false for a held-out report
@@ -65,8 +69,9 @@ def entry_of(a: Annotated, *, verifier: str, directory_ok: bool) -> QueueEntry:
         id=c.id, report=c.report, file=c.file, contract=c.contract, function=c.function,
         start_line=c.start_line, end_line=c.end_line, severity=c.severity,
         claim=clean(c.note, 400), counter=r.counter, scenario=r.scenario, harm=r.harm, fix=r.fix,
-        confidence=r.confidence, verifier=verifier, layers=tuple(sorted(c.layers)),
-        directory_ok=directory_ok,
+        confidence=r.confidence, category=r.category, tob_severity=r.severity,
+        difficulty=r.difficulty, root_cause=r.root_cause, verifier=verifier,
+        layers=tuple(sorted(c.layers)), directory_ok=directory_ok,
     )  # fmt: skip
 
 
@@ -129,7 +134,10 @@ def directory_record(entry: QueueEntry) -> dict:
         "title": entry.claim[:160],
         "description": f"{entry.scenario} {entry.harm}".strip(),
         "recommendation": entry.fix,
-        "severity": entry.severity,
+        "type": entry.category,
+        "severity": entry.tob_severity or entry.severity,
+        "difficulty": entry.difficulty,
+        "root_cause": entry.root_cause,
         "verifier": entry.verifier,
         "approved_on": entry.decided_on,
     }

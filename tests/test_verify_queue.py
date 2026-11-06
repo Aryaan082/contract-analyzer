@@ -15,7 +15,8 @@ from verify.types import Credit
 def annotated(function, verdict="valid", *, report="rep", credit=None, note="claim <b>one</b>"):
     c = candidate(report=report, function=function, note=note)
     reasoned = None if verdict is None else Reasoned(
-        verdict, "high", "c", "who calls what", "someone loses funds", "check the balance"
+        verdict, "high", "c", "who calls what", "someone loses funds", "check the balance",
+        category="Configuration", severity="low", difficulty="high", root_cause="_update line 3",
     )  # fmt: skip
     return Annotated(Planned(c, "unverified", "r", credit), None, reasoned=reasoned)
 
@@ -69,6 +70,8 @@ def test_only_an_approved_entry_becomes_a_directory_record_tagged_with_its_sourc
     assert rec["id"] == f"rep:MODEL-{got[0].id}" and rec["approved_on"] == "2026-11-06"
     assert rec["description"] == "who calls what someone loses funds"
     assert rec["recommendation"] == "check the balance" and rec["lines"] == [6, 10]
+    assert (rec["type"], rec["severity"], rec["difficulty"]) == ("Configuration", "low", "high")
+    assert rec["root_cause"] == "_update line 3"
     assert "<" not in done[0].note
     assert q.approved_records(got) == []  # nothing is approved by being queued
 

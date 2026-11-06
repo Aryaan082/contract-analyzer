@@ -165,8 +165,9 @@ def reasoner_by_function(**by_function):
         for name, verdict in by_function.items():
             if f"Vault.{name} in" in prompt.user:
                 return json.dumps({
-                    "counter": "c SECRET COUNTER", "scenario": "s", "harm": "h",
-                    "verdict": verdict, "confidence": "high", "fix": "f",
+                    "trace": "t", "counter": "c SECRET COUNTER", "evidence_lines": [7],
+                    "scenario": "s", "harm": "h", "type": "Timing", "severity": "medium",
+                    "difficulty": "low", "verdict": verdict, "confidence": "high", "fix": "f",
                 })  # fmt: skip
         return "words"
 

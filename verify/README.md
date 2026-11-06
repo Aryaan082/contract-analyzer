@@ -101,6 +101,11 @@ sandbox stays as an optional last step for logic bugs, off by default.
   for (`reason_only_logic=True` restricts it to what triage calls logic). `stage.review_list` splits
   the places into shown (credited or valid), uncertain, rejected and unchecked: **nothing is
   deleted**, the user is just not shown the rejected ones by default.
+* v2 (`definitions.py`): the instructions carry Trail of Bits' 14 types, severity levels and difficulty
+  levels (their difficulty scale has a level for a flaw only a privileged role can trigger, so that
+  is a finding, not a non-finding). The model reads the lines first (`trace`), an `invalid` must cite
+  lines that exist in the code shown or it counts as `uncertain`, and a real flaw whose cause is in
+  another function is `valid` with a `root_cause`.
 * The user's approval is the only gate to the directory (`queue.py`): the places the verifier calls
   valid become pending entries; `decide` marks one approved or rejected; only an approved entry of a
   report that may feed the directory (`directory_ok`, false for a held-out report) becomes a

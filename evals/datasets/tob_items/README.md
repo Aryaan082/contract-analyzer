@@ -428,3 +428,20 @@ result repeats (10.4 against plain's 7.2, +3.2 [+0.8, +5.6]) but its gain over t
 +1.2 [0.0, +3.2]: most of the lift is the union itself. GLM 5.3 could not be scored (83 of 350
 answered: it thinks too long for the token limit; the spend cap refused the rest).
 
+Verifier v2 (2026-11-06, written before v2 ran; dev, not quotable). v2 changes the prompt and the
+reply checks only (`verify/definitions.py`, `verify/reason.py`): it gives the verifier Trail of Bits'
+types, severity levels and difficulty levels; says that needing a privileged role or having a small
+impact does not stop a flaw being a finding (difficulty high, severity low or informational); has it
+read the lines first (`trace`); makes an `invalid` cite lines that exist in the code shown, else it
+counts as `uncertain`; and calls a real flaw caused in another function `valid` with a `root_cause`.
+It is run on the same 350 distinct places, the same first-seen claims, DeepSeek flash with thinking
+off, and scored by the same rule as above (filter arm = places called valid; "improvement shown" only
+if the credited-share interval excludes 0 on the high side and both guards hold: found at least as
+many findings as plain alone, and fewer places shown). Declared before the run: v2 was written after
+the rejections of the 16 dev places whose verified claim matched a finding had been read, so its dev
+numbers are tuned to them and are no evidence that it generalises; Ajna is the one dev report where
+no rejection was read, so it is reported on its own. Reported beside it: valid at severity medium or
+high only, valid + uncertain, the order arm, per report, and how many replies were downgraded. The
+v1 filter failed the guard twice (found 5.2 and 6.8 against plain's 13.2); a v2 filter that again
+finds fewer than plain is reported as that, whatever its credited share.
+

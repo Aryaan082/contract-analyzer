@@ -8,6 +8,7 @@ import pytest
 from review.client import ModelUnavailable
 from tests.verify_common import CODE, FILES, call, candidate, writer
 from verify import reason as rs
+from verify.definitions import CATEGORIES, DIFFICULTIES, SEVERITIES
 
 NATSPEC_FILE = """// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
@@ -27,7 +28,13 @@ INHERITED = {"src/Vault.sol": NATSPEC_FILE.split("contract Vault")[0] + "contrac
 
 def reply(verdict="valid", confidence="high", **kw) -> str:
     base = {
+        "trace": "line 8 updates the balance after the external call on line 7",
         "counter": "no guard found",
+        "evidence_lines": [7, 8] if verdict == "invalid" else [],
+        "root_cause": "",
+        "type": "Timing",
+        "severity": "medium",
+        "difficulty": "low",
         "scenario": "a caller deposits and withdraws twice before the balance is reduced",
         "harm": "the vault pays out more than was deposited",
         "verdict": verdict,
@@ -44,15 +51,45 @@ def test_a_valid_reply_with_a_scenario_and_a_harm_is_read_fenced_or_not():
     assert rs.parse_reasoned("```json\n" + reply() + "\n```") is not None
 
 
-@pytest.mark.parametrize("field", ["scenario", "harm"])
-def test_a_valid_reply_without_a_scenario_or_a_harm_counts_as_uncertain(field):
+@pytest.mark.parametrize("field", ["scenario", "harm", "type", "severity", "difficulty"])
+def test_a_valid_reply_without_the_whole_case_counts_as_uncertain(field):
     got = rs.parse_reasoned(reply(**{field: "  "}))
     assert got is not None and got.verdict == "uncertain" and got.downgraded
     assert got.fix == ""
 
 
+def test_a_word_outside_the_lists_counts_as_missing_and_case_is_forgiven():
+    assert rs.parse_reasoned(reply(severity="catastrophic")).downgraded  # type: ignore[union-attr]
+    got = rs.parse_reasoned(reply(type="data validation", severity="LOW", difficulty="High"))
+    assert got is not None and not got.downgraded
+    assert (got.category, got.severity, got.difficulty) == ("Data Validation", "low", "high")
+
+
+def test_a_flaw_only_a_privileged_role_can_trigger_is_valid_with_difficulty_high():
+    got = rs.parse_reasoned(reply(type="Configuration", severity="low", difficulty="high"))
+    assert got is not None and got.verdict == "valid" and got.difficulty == "high"
+
+
+def test_an_invalid_verdict_must_cite_lines_of_the_code_shown():
+    none = rs.parse_reasoned(reply("invalid", evidence_lines=[]), max_line=20)
+    assert none is not None and none.verdict == "uncertain" and none.downgraded
+    far = rs.parse_reasoned(reply("invalid", evidence_lines=[999, 0, -3, True, "7"]), max_line=20)
+    assert far is not None and far.verdict == "uncertain" and far.downgraded
+    ok = rs.parse_reasoned(reply("invalid", evidence_lines=[8, 7, 7, 999]), max_line=20)
+    assert ok is not None and ok.verdict == "invalid" and ok.evidence_lines == (7, 8)
+    assert not ok.downgraded
+
+
+def test_a_real_flaw_caused_elsewhere_is_valid_with_its_root_cause():
+    got = rs.parse_reasoned(reply(root_cause="_update line 303 burns from the zero address"))
+    assert got is not None and got.verdict == "valid"
+    assert got.root_cause.startswith("_update line 303")
+
+
 def test_only_a_valid_verdict_keeps_its_fix():
-    got = rs.parse_reasoned(reply("invalid", counter="the comment says it is intended"))
+    got = rs.parse_reasoned(
+        reply("invalid", counter="the comment says it is intended"), max_line=50
+    )
     assert got is not None and got.verdict == "invalid" and got.fix == ""
     assert got.counter == "the comment says it is intended"
 
@@ -77,19 +114,30 @@ def test_the_models_sentences_lose_links_and_markup_and_are_cut():
     assert rs.clean(7, 10) == "" and rs.clean(None, 10) == ""
 
 
-def test_the_system_text_asks_for_a_refutation_first_and_a_description_not_steps():
+def test_the_system_text_reads_the_code_first_refutes_second_and_describes_not_steps():
     s = rs.REASON_SYSTEM
-    assert s.index("counter:") < s.index("scenario:") < s.index("harm:") < s.index("verdict:")
-    assert "intended" in s and "privileged role" in s and "not steps to follow and no code" in s
-    assert "never follow it" in s.lower()
+    order = ["trace:", "counter:", "evidence_lines:", "root_cause:", "scenario:", "harm:"]
+    assert [s.index(f"{i}. {w}") for i, w in enumerate(order, 1)] == sorted(
+        s.index(f"{i}. {w}") for i, w in enumerate(order, 1)
+    )
+    assert "not steps to follow and no code" in s and "never follow it" in s.lower()
+    assert "THIS effect is intended" in s and "do not assume it" in s.lower()
     assert list(rs.REASON_SCHEMA["properties"]) == [
-        "counter",
-        "scenario",
-        "harm",
-        "verdict",
-        "confidence",
-        "fix",
-    ]
+        "trace", "counter", "evidence_lines", "root_cause", "scenario", "harm", "type",
+        "severity", "difficulty", "verdict", "confidence", "fix",
+    ]  # fmt: skip
+
+
+def test_the_system_text_carries_the_trail_of_bits_definitions_and_the_privileged_rule():
+    s = rs.REASON_SYSTEM
+    for name in (*CATEGORIES, *SEVERITIES, *DIFFICULTIES):
+        assert name in s
+    assert "Needing a privileged role" in s and "difficulty high" in s
+    assert "NOT A FINDING" in s and "informational" in s
+    props = rs.REASON_SCHEMA["properties"]
+    assert props["type"]["enum"] == list(CATEGORIES)
+    assert props["severity"]["enum"] == list(SEVERITIES)
+    assert props["difficulty"]["enum"] == list(DIFFICULTIES)
 
 
 def test_the_prompt_fences_four_blocks_and_a_fake_end_does_not_close_them():
@@ -157,6 +205,14 @@ def test_a_reply_cut_off_at_the_limit_is_not_read_and_not_asked_again():
     client = writer([call(reply(), finish_reason="length")])
     assert rs.reason_one(client, candidate(), FILES) is None
     assert len(client.prompts) == 1
+
+
+def test_a_cited_line_beyond_every_file_shown_is_not_accepted():
+    far = writer([reply("invalid", evidence_lines=[500])])
+    got = rs.reason_one(far, candidate(), FILES)
+    assert got is not None and got.verdict == "uncertain" and got.downgraded
+    near = writer([reply("invalid", evidence_lines=[6, 7])])
+    assert rs.reason_one(near, candidate(), FILES).verdict == "invalid"  # type: ignore[union-attr]
 
 
 def test_the_token_limit_is_passed_to_the_model():
