@@ -245,3 +245,29 @@ def test_the_record_has_the_verdict_words_and_none_of_the_models_sentences():
     assert rec["reasoned"] == {"verdict": "valid", "confidence": "high", "downgraded": False}
     assert rec["status"] == "valid" and rec["tier"] == 2
     assert "SECRET COUNTER" not in json.dumps(rec)
+
+
+def test_a_valid_place_below_severity_low_goes_to_minor_and_nothing_is_deleted():
+    from verify.reason import Reasoned
+
+    def with_severity(function, severity):
+        a = annotated_valid(function)
+        a.reasoned = Reasoned("valid", "high", "c", "s", "h", "f", category="Timing",
+                              severity=severity, difficulty="low")  # fmt: skip
+        return a
+
+    levels = (("a", "high"), ("b", "low"), ("c", "informational"), ("d", "undetermined"))
+    items = [with_severity(f, s) for f, s in levels]
+    got = stage.review_list(items)
+    assert sorted(a.candidate.function for a in got.shown) == ["a", "b"]
+    assert sorted(a.candidate.function for a in got.minor) == ["c", "d"]
+    assert len(got.shown + got.minor) == 4 and not got.uncertain and not got.rejected
+
+
+def annotated_valid(function):
+    from verify.funnel import Planned
+    from verify.reason import Reasoned
+    from verify.types import Candidate
+
+    c = Candidate("rep", "src/Vault.sol", "Vault", function, 1, 2, function, "high", frozenset())
+    return stage.Annotated(Planned(c, "unverified", "r"), None, reasoned=Reasoned("valid", "high"))

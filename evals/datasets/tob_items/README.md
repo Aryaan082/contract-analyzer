@@ -477,3 +477,18 @@ high side AND fewer places shown, and the check reports must not contradict it. 
 required. At most three rounds and $3 in all; each round is one named change, committed before it runs.
 Whatever comes out is tuned on dev and is not evidence the verifier works on new reports.
 
+Result of the v3 iteration (2026-11-06, dev, flash, tuned on the key, not quotable). Round 1 (v3 prompt,
+every flag verified on its own): the verifier calls 72% of flags valid, so showing its valid places
+shows 140 places against plain's 142 (union 196) with a credited share of 13.0% and 17.6 findings
+found against plain's 13.2. The rule as written is met on the wide key only by one place, fails on the
+original key, and the check reports (Arcade, Radius) show 15 more places than plain at no better
+share, so it is not counted. Round 2 (a severity cutoff on that output, no model call): valid at
+severity low or up shows 116 places with a credited share of 14.8% (+5.9% [+1.5%, +7.3%] over plain)
+and 16.6 findings found against 13.2 (+3.4 [+0.6, +7.2]); the original key gives +2.3% [+0.2%,
++5.3%] and +0.4 [-0.6, +1.8], places shown -25. The rule is met on both keys, by the letter and weakly.
+Against the plain union it shows 41% fewer places for 9% fewer findings. On the check reports the
+share (+1.3%) and findings (+1.2) are above plain's but the list is 9 places longer, and on the
+original key the tune reports find 0.2 fewer than plain. The cutoff was one of seven tried on dev; v3
+mostly rates severity, since `claim_true` is yes for most flags; and none of this was tested on a
+report nobody has read. Round 3 was not run (balance $1.93).
+

@@ -106,6 +106,11 @@ sandbox stays as an optional last step for logic bugs, off by default.
   is a finding, not a non-finding). The model reads the lines first (`trace`), an `invalid` must cite
   lines that exist in the code shown or it counts as `uncertain`, and a real flaw whose cause is in
   another function is `valid` with a `root_cause`.
+* v3 (`parse_reasoned`): the verdict is worked out by the harness from `claim_true` (does the code do
+  what the claim says) and `severity`, not from the model's word. `stage.review_list` shows a valid
+  place only at severity low or up (`SHOWN_SEVERITIES`); informational and undetermined go to `minor`.
+  On dev this cut kept 94% of the findings the union finds in a list 41% shorter; it was chosen on
+  dev, so it needs a repeat on reports nobody has read.
 * The user's approval is the only gate to the directory (`queue.py`): the places the verifier calls
   valid become pending entries; `decide` marks one approved or rejected; only an approved entry of a
   report that may feed the directory (`directory_ok`, false for a held-out report) becomes a

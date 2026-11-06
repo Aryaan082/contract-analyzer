@@ -178,22 +178,37 @@ def record(a: Annotated) -> dict:
     return out
 
 
+SHOWN_SEVERITIES = (
+    "low",
+    "medium",
+    "high",
+)  # the verifier's severity a valid flag needs to be shown
+
+
 @dataclass(frozen=True)
 class ReviewList:
     """What the user is shown and what is only counted. Every place is in exactly one list, in the
     system's output order; none is deleted."""
 
-    shown: list[Annotated]  # credited by a report, a check or a test, or valid
+    shown: list[
+        Annotated
+    ]  # credited by a report, a check or a test, or valid at severity low or up
+    minor: list[Annotated]  # valid, but informational or of undetermined size
     uncertain: list[Annotated]
     rejected: list[Annotated]  # the verifier found a reason the claim is wrong
     unchecked: list[Annotated]  # the verifier did not answer (or was not run on it)
 
 
 def review_list(annotated: Sequence[Annotated]) -> ReviewList:
+    """Split the places for a person. A valid place whose severity is informational or undetermined
+    goes to `minor`: on the dev runs, showing every valid place left the list as long as plain's,
+    and the cut at severity low kept 94% of the findings the union finds in a list 41% shorter."""
     groups: dict[str, list[Annotated]] = {
-        "shown": [], "uncertain": [], "rejected": [], "unchecked": []
+        "shown": [], "minor": [], "uncertain": [], "rejected": [], "unchecked": []
     }  # fmt: skip
     for a in output_order(annotated):
         key = {"credited": "shown", "valid": "shown"}.get(a.status, a.status)
+        if key == "shown" and a.status == "valid" and a.reasoned.severity not in SHOWN_SEVERITIES:  # type: ignore[union-attr]
+            key = "minor"
         groups[key].append(a)
     return ReviewList(**groups)
