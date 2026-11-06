@@ -523,3 +523,17 @@ verifier turns an OpenRouter 402 ("would exceed your available credits given you
 requests", which a low balance with many workers triggers) into an unchecked flag with no message,
 which left 162 of 436 flags without a verdict until they were retried with fewer workers.
 
+Held-out, wide key, and a correction (2026-11-06; exploratory and post-hoc, Aryaan: "yes lets widen the eval";
+not quotable). Correction first: the original-key counts reported above were one finding too low for
+plain and for the union, because one glm screening pair had no verdict when they were counted and
+it hid a Bunni match. Corrected, original key (22 findings): plain 4, union 5, v3 valid 4, the gate
+(severity low or up) 3, medium or up 3. Wide key (29 Low and Informational findings that name a
+file added, 51 in all; the harness refuses it for held-out, so `tob_wide.widen`'s dev-only check
+was skipped in my own scripts and no repo code changed): plain alone 200 places, 8.0 found, share 6.0%;
+union 353 places, 9.0, 4.0%; v3 valid 289, 8.0, 4.5%; the gate 246 places, 6.0, 4.5%; medium or up
+119 places, 4.0, 7.6%. The gate finds fewer than plain and shows 46 more places on both keys (wide:
+share -1.5% [-4.0%, +0.0%], found -2.0 [-4.0, +0.0]). The dev result (gate 16.6 against plain 13.2 on
+the wide key) therefore did not replicate on held-out; the sample is small (one pair, findings
+found in 4 of 7 reports), so it is weak evidence against rather than a refutation, and it gives
+the dev result no support.
+
