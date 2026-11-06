@@ -1,17 +1,18 @@
-"""Verifying a flag by running code (Aryaan, 2026-11-05).
+"""A second reading of every flag the source reviewers raise (Aryaan, 2026-11-06).
 
-A flag the reviewer raised is only a sentence about a place. Here a flag is checked by running
-code: a model writes a Foundry test that asserts the bad outcome, and `forge test` runs it on a
-local EVM, offline, in a throwaway folder. Which flags get that treatment is decided by a funnel
-(`verify.funnel`), because simulating every flag is too much:
+A flag is only a sentence about a place. `verify.reason` re-reads it with a different model, using
+Trail of Bits' definitions of a finding (`verify.definitions`): the model says whether the code
+does what the claim says and how severe it is, and the harness works the verdict out from those
+two answers. `verify.stage` runs a report's places through the funnel and splits the output for a
+person (`review_list`); `verify.queue` holds what a person approves before anything reaches the
+directory.
 
-    1. a flag that matches an auditor's finding is credited by that report, no simulation;
-    2. a flag a deterministic check can confirm is credited by that check (`verify.mechanical`);
-    3. a cheap model call says whether the rest are testable logic bugs (`verify.triage`);
-    4. the testable ones are ranked and capped per report, and simulated (`verify.poc`,
-       `verify.runner`).
+The funnel (`verify.funnel`) credits a flag that matches a known audit finding, then one a
+deterministic rule confirms (`verify.mechanical`), then asks a cheap model whether the rest are
+logic bugs (`verify.triage`). An optional last step writes a Foundry test and runs it offline
+(`verify.poc`, `verify.runner`, `verify.sandbox`); it is off by default.
 
-Everything not simulated stays in the output, marked unverified. Verification only promotes a flag;
-a failed attempt never calls it false. The test code is untrusted model output and stays OUTSIDE
-the repo: what is kept is a verdict, the flag's id and the test's hash (`verify.types`).
+Nothing is dropped: a place that is not shown stays in the output with its verdict. A model's
+sentences are untrusted text and are never stored in a record of ours; test code stays OUTSIDE the
+repo, and only a verdict and the test's hash are kept (`verify.types`).
 """
