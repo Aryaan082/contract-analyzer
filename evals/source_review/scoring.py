@@ -53,8 +53,8 @@ from review.credit import (
     rendered_strings,
 )
 from review.pack import build_checklist
-from review.reviewer import ReviewResult
-from review.types import SEVERITY_RANK, Bundle, ReviewSummary, SourceSpan
+from review.reviewer import ReviewResult, contract_at, flags_of  # noqa: F401  (re-exports)
+from review.types import SEVERITY_RANK, Bundle, Flag, ReviewSummary, SourceSpan  # noqa: F401
 
 Runs = Mapping[str, Sequence[ReviewResult]]
 NAN = float("nan")
@@ -62,72 +62,6 @@ NO_INTERVAL = Interval(NAN, NAN, NAN)
 
 
 # ---- flags ---------------------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class Flag:
-    """One reviewer item that passed the span checks, placed in a contract and a function."""
-
-    contract: str | None  # the definition that holds the lines, by the parser
-    function: str | None  # None when the lines are not inside one function
-    entry: str
-    severity: str
-    confidence: str
-    confirmed: bool
-    file_id: str
-    start_line: int
-    end_line: int
-    # The reviewer's own one line (untrusted text). Only the Trail of Bits eval reads it, to show a
-    # judge; it is not part of a flag's identity, and results files made for the repo strip it.
-    note: str = field(default="", compare=False)
-
-    @property
-    def key(self) -> tuple[str | None, str | None]:
-        return (self.contract, self.function)
-
-
-def contract_at(result: ReviewResult, file_id: str, start: int, end: int) -> str | None:
-    """The name of the contract, library or interface whose lines hold `start`..`end`."""
-    lexed = result.lexed.get(file_id)
-    if lexed is None:
-        return None
-    best = None
-    for d in lexed.definitions:
-        if d.kind not in ("contract", "library", "interface"):
-            continue
-        if not d.start_line <= start <= end <= d.end_line:
-            continue
-        if best is None or (d.end_line - d.start_line) < (best.end_line - best.start_line):
-            best = d
-    return best.name if best else None
-
-
-def flags_of(result: ReviewResult, *, min_severity: str = "low") -> tuple[Flag, ...]:
-    """The reviewer's flags in one result, at `min_severity` or above."""
-    floor = SEVERITY_RANK[min_severity]
-    out = []
-    for span in result.spans:
-        if span.kind != "span" or span.match is None:
-            continue
-        if SEVERITY_RANK[span.match.severity] < floor:
-            continue
-        out.append(
-            Flag(
-                contract=contract_at(
-                    result, span.file.file_id, span.range.start_line, span.range.end_line
-                ),
-                function=span.range.function,
-                entry=span.match.entry,
-                severity=span.match.severity,
-                confidence=span.match.confidence,
-                confirmed=span.match.confirmed_by is not None,
-                file_id=span.file.file_id,
-                start_line=span.range.start_line,
-                end_line=span.range.end_line,
-                note=span.explanation.text if span.explanation else "",
-            )
-        )
-    return tuple(out)
 
 
 def finding_set(result: ReviewResult) -> frozenset[tuple[str | None, str | None, str]]:

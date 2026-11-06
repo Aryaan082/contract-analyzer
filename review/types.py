@@ -21,6 +21,7 @@ import hashlib
 import json
 import sys
 from collections.abc import Sequence
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
@@ -547,6 +548,31 @@ def _without_docs(node: Any) -> Any:
 REVIEWER_SCHEMA: dict[str, Any] = _without_docs(_inline_refs(ReviewerReply.model_json_schema()))
 LEAD_SCHEMA: dict[str, Any] = _without_docs(_inline_refs(LeadReply.model_json_schema()))
 VERDICT_SCHEMA: dict[str, Any] = _without_docs(_inline_refs(VerdictReply.model_json_schema()))
+
+
+@dataclass(frozen=True)
+class Flag:
+    """One reviewer item that passed the span checks, placed in a contract and a function. Moved
+    here from `evals/source_review/scoring.py` (which re-exports it) because both readers and the
+    layered run produce it."""
+
+    contract: str | None  # the definition that holds the lines, by the parser
+    function: str | None  # None when the lines are not inside one function
+    entry: str
+    severity: str
+    confidence: str
+    confirmed: bool
+    file_id: str
+    start_line: int
+    end_line: int
+    # The reviewer's own one line (untrusted text). Only the Trail of Bits eval reads it, to show a
+    # judge; it is not part of a flag's identity, and results files made for the repo strip it.
+    note: str = field(default="", compare=False)
+
+    @property
+    def key(self) -> tuple[str | None, str | None]:
+        return (self.contract, self.function)
+
 
 # What the golden JSON Schema files cover: the records that leave the system, and the reply.
 PUBLIC_MODELS: dict[str, type[BaseModel]] = {

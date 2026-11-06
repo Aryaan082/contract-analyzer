@@ -51,7 +51,9 @@ from review.precedents import (
 from review.scan import scan_bundle
 from review.spans import Accepted, CallContext, capped, to_span
 from review.types import (
+    SEVERITY_RANK,
     Bundle,
+    Flag,
     ReviewerInfo,
     ReviewSummary,
     ScanCount,
@@ -72,6 +74,50 @@ class ReviewResult:
     adjusted: Counter = field(default_factory=Counter)  # items kept but corrected, by reason
     lexed: Mapping[str, Lexed] = field(default_factory=dict)  # for the viewer's file payloads
     split: Split | None = None
+
+
+def contract_at(result: ReviewResult, file_id: str, start: int, end: int) -> str | None:
+    """The name of the contract, library or interface whose lines hold `start`..`end`."""
+    lexed = result.lexed.get(file_id)
+    if lexed is None:
+        return None
+    best = None
+    for d in lexed.definitions:
+        if d.kind not in ("contract", "library", "interface"):
+            continue
+        if not d.start_line <= start <= end <= d.end_line:
+            continue
+        if best is None or (d.end_line - d.start_line) < (best.end_line - best.start_line):
+            best = d
+    return best.name if best else None
+
+
+def flags_of(result: ReviewResult, *, min_severity: str = "low") -> tuple[Flag, ...]:
+    """The reviewer's flags in one result, at `min_severity` or above."""
+    floor = SEVERITY_RANK[min_severity]
+    out = []
+    for span in result.spans:
+        if span.kind != "span" or span.match is None:
+            continue
+        if SEVERITY_RANK[span.match.severity] < floor:
+            continue
+        out.append(
+            Flag(
+                contract=contract_at(
+                    result, span.file.file_id, span.range.start_line, span.range.end_line
+                ),
+                function=span.range.function,
+                entry=span.match.entry,
+                severity=span.match.severity,
+                confidence=span.match.confidence,
+                confirmed=span.match.confirmed_by is not None,
+                file_id=span.file.file_id,
+                start_line=span.range.start_line,
+                end_line=span.range.end_line,
+                note=span.explanation.text if span.explanation else "",
+            )
+        )
+    return tuple(out)
 
 
 def run_review(
