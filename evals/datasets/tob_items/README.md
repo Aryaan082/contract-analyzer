@@ -322,7 +322,7 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   improvement shown for the best of them (+0.15 [-0.06, 0.27], sign test p 0.04, three comparisons
   and a key chosen after seeing results).
 - **A plain-plus-checklist variant of arm P, for an ablation only (2026-11-05, Aryaan asked why the
-  pipeline trails plain; no model has run it yet).** Five runs of each arm on the dev side (DeepSeek,
+  pipeline trails plain; run 3 times the same day, result at the end of this entry).** Five runs of each arm on the dev side (DeepSeek,
   not quotable) found plain 8.6 of 29 findings (range 7-10) and the two-pass pipeline 5.8 (range
   4-10); the single run of the outline rule that looked best for the pipeline was the best of its
   five. `--plain-variant checklist` on `screen` and `score` sends the same plain request with the
@@ -334,3 +334,47 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   (its records have no `plain_variant` and its prompt is byte for byte the same). The question it
   answers: does adding the checklist to plain lower its count, or is the loss elsewhere (the second
   step, the 12k-token chunks, the stripped comments)?
+  Result (DeepSeek, dev, 3 runs, 3-judge majority, not quotable: rubric unapproved, DeepSeek judges
+  itself): plain + checklist found 5, 6 and 6 of the 29 findings (plain 8.6, range 7-10; two-pass
+  5.8) and 7, 9 and 9 of the 62 on the wide key (plain 13.2; two-pass 10.2). The drop against plain
+  is -2.9 and -4.9 findings per run (exact permutation p 0.036 and 0.018 over the 56 ways to split
+  the 8 runs; the two groups do not overlap), and it lands at the pipeline's level, so the
+  checklist alone is enough to cost the gap. It does not say why:
+  anchoring on the list and 8,200 tokens of instructions ahead of the code are both consistent with
+  it. One run had one reply-format failure (Arcade, counted as no findings by the fixed rule).
+  Cost $0.33 for the runs and about $1.59 for judging.
+- **A layered run, scored on its output (2026-11-06, written before any layered run; Aryaan: plain
+  first, verify its flags, the pipeline second, the union, additive only; "we shouldn't just be able
+  to spew information to perform well on evals").** `review/layered.py` runs the plain reader and the
+  checklist pipeline as separate runs and joins them by place (file, contract, function); every plain
+  place stays in the result with its flags unchanged, whatever the pipeline does or whether it ran
+  (`additive_problems` checks it on every run). `verify/stage.py` annotates the places (triage, funnel,
+  sandbox) and puts them in the system's own order, which never sees the answer key. The plain
+  reader moved to `review/plain.py`; its request is byte for byte what it was (a test pins the hashes).
+  Why the scoring changes: on the dev runs plain emits 146 flags a run, 9% are judged the same bug as
+  an auditor's finding, 23% sit in the right place with a different bug and 69% are neither, and its
+  first 20 flags per report find 7.4 findings while all of them find 13.2, so recall over everything
+  rewards writing more. The rule for the layered evaluation, fixed now: unit is the report; arms are
+  A plain alone in its own severity order, C the layered union in plain-first order (the control for
+  the union) and B the layered union in the verification-aware order. Primary metric: findings found
+  in the first K = 20 places of each report (`evals/source_review/precision.py`; K is taken from
+  plain's own curve, before any layered run). Guard: the share of those places with any evidence (an
+  answer-key match, a sandbox confirmation, a deterministic check) must not be lower than A's.
+  Improvement is shown only if the report-level bootstrap interval of B minus A at K = 20 excludes 0
+  and the guard holds; otherwise the report says no improvement shown. Reported beside it, never as
+  the headline: findings found over everything, places emitted, the unverified share (an UPPER bound
+  on false positives, never called false: the auditors' list is incomplete and the sandbox confirmed 0
+  of the 4 High Radius findings), places with evidence the key does not know (`verified_beyond_key`),
+  findings per 100 places, K = 5, 10, 40, both keys, cost. The first layered evaluation is offline on
+  the ten judged dev runs (plain run i with two-pass run i), with real triage and no sandbox, so it
+  tests the ordering and the union, not verification.
+  Result of the first layered evaluation (2026-11-06, offline, DeepSeek, not quotable): by the rule
+  above the verdict is NO improvement shown: B minus A at K = 20 is +2.0 findings per report-set
+  [-0.4, +4.8] on the wide key and +1.8 [0.0, +3.8] on the original key (the guard holds). The union
+  alone (C) minus A is +1.4 [+0.2, +3.2] on both keys, because in the small reports plain's list is
+  shorter than 20 and the union fills the slots, and the triage ordering adds +0.6 [-1.2, +3.4] and
+  +0.4 [-0.8, +2.2] on top of it, not distinguishable from 0. The unverified share stays 90% to 94%
+  and findings per 100 places are 9.3 against 9.6, so precision did not improve: the layered output is
+  38% longer for 38% more finds. Correction: the first run of this evaluation printed its decision
+  block with B and C swapped (a driver bug) and was reported as "improvement shown"; the corrected
+  second run above replaces it. Triage cost $0.10 a run.
