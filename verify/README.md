@@ -58,10 +58,26 @@ So the verifier can promote, but not yet gate anything: it misses real logic bug
 behaviour. Auto-adding verified findings to the directory stays off until the reviewer sees the function's own
 comments and a test has to show harm, and a stronger writer has been measured.
 
+## The three verifier fixes (2026-11-06, built, tested offline and measured once on Radius)
+
+Made after the Radius calibration showed the verifier confirming documented design and missing multi-step
+bugs: (1) the reviewer now sees the flagged function with the comments directly above it (where "this is
+intended" lives) and must reject documented design; (2) the writer must state in one sentence who loses what
+(`harm`, required) and the reviewer rejects a test that only shows what the code does; (3) the writer sees the
+code of the contracts the flagged one inherits from (`source.inheritance_files`, nearest first, up to 60,000
+characters), not only an outline of signatures. On Radius that is about 20 KB for the flagged file's three
+bases and a writer prompt of about 16k tokens.
+
+Measured on Radius (one run each, DeepSeek flash writer, $0.05): with titles as claims 2 of 7 findings were
+confirmed (0 before), with the auditors' descriptions 1 of 7 (1 before, a different one); 3 of the 4 High
+findings were confirmed in at least one run (0 of 4 before), but no run got more than 2 and the two runs disagree
+on every claim, so the writer is noisy. A patch control (the same test on hand-fixed code) fails for all three
+new confirmations: 0 wrong confirms of 3. The reviewer now rejects the earlier documented-design test, with and
+without a stated harm.
+
 ## Not done yet
 
-1. A command line (`python -m verify ...`); 2. the stronger-writer measurement on the 4 High Radius findings;
-3. the impact rule (reviewer sees the function and its comments; the test must show a loss, a lock or an
-unauthorised change); 4. the first layered evaluation on the judged dev runs (needs a yes with numbers) and the staging area for
-the directory (never for held-out reports). Design:
-`sandbox-verification-design.md` in the side-session notes folder.
+1. A command line (`python -m verify ...`); 2. the Radius calibration again with the three fixes, then a
+stronger writer on the 4 High claims; 3. the first layered evaluation WITH the sandbox (needs more than one
+report's toolchain: Radius only so far); 4. the staging area for the directory (never for held-out reports).
+Design: `sandbox-verification-design.md` in the side-session notes folder.
