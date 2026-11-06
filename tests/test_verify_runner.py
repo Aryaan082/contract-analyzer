@@ -32,6 +32,11 @@ def test_the_config_turns_off_everything_a_test_could_use_to_leave_the_evm():
     assert "rpc_endpoints" not in text and "etherscan" not in text
 
 
+def test_the_projects_evm_version_goes_into_the_config_when_it_has_one():
+    assert 'evm_version = "london"' in rn.foundry_toml("0.8.20", "london").splitlines()
+    assert "evm_version" not in rn.foundry_toml("0.8.20")
+
+
 @pytest.mark.parametrize("bad", ["../x.sol", "/etc/passwd", "a/../../b", "", "a\0b"])
 def test_a_path_that_could_leave_the_folder_is_refused(bad):
     with pytest.raises(ValueError, match="unsafe path"):
@@ -48,6 +53,8 @@ def test_the_folder_is_laid_out_with_files_test_config_and_copied_libraries(tmp_
     assert (work / "src/Vault.sol").read_text() == FILES["src/Vault.sol"]
     assert (work / rn.TEST_PATH).read_text() == GOOD_TEST
     assert (work / "foundry.toml").read_text() == rn.foundry_toml("0.8.20")
+    rn.write_project(tmp_path / "w2", project(evm_version="london"))
+    assert 'evm_version = "london"' in (tmp_path / "w2" / "foundry.toml").read_text()
     assert (work / "remappings.txt").read_text() == "forge-std/=lib/forge-std/src/\n"
     assert (work / "lib/forge-std/src/Test.sol").read_text() == "// t"
     assert not (work / "lib/forge-std/.git").exists() and (work / "tmp").is_dir()

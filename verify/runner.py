@@ -48,6 +48,9 @@ class Project:
     solc: str
     remappings: tuple[str, ...] = ()
     deps: Path | None = None
+    evm_version: str = (
+        ""  # the project's own setting (Radius pins london); '' is the compiler default
+    )
 
 
 @dataclass(frozen=True)
@@ -71,11 +74,12 @@ class Completed:
 CommandRunner = Callable[[list[str], Path, Mapping[str, str], float], Completed]
 
 
-def foundry_toml(solc: str) -> str:
+def foundry_toml(solc: str, evm_version: str = "") -> str:
     return "\n".join([
         "[profile.default]",
         'src = "src"', 'test = "test"', 'out = "out"', 'libs = ["lib"]', 'cache_path = "cache"',
         f'solc = "{solc}"', "auto_detect_solc = false", "offline = true",
+        *([f'evm_version = "{evm_version}"'] if evm_version else []),
         "ffi = false", "fs_permissions = []", "no_storage_caching = true",
         "optimizer = false", 'bytecode_hash = "none"',
         "[fuzz]", "runs = 64",
@@ -100,7 +104,7 @@ def write_project(work: Path, project: Project) -> None:
         target.write_text(text)
     (work / TEST_PATH).parent.mkdir(parents=True, exist_ok=True)
     (work / TEST_PATH).write_text(project.test_file)
-    (work / "foundry.toml").write_text(foundry_toml(project.solc))
+    (work / "foundry.toml").write_text(foundry_toml(project.solc, project.evm_version))
     (work / "remappings.txt").write_text("\n".join(project.remappings) + "\n")
     if project.deps is not None:
         for child in sorted(project.deps.iterdir()):

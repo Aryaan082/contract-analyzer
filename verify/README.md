@@ -32,10 +32,36 @@ false: `not_confirmed` means no working test in the attempts allowed.
   place, disposition, credit, and the test's hash.
 * The compiler must already be installed (`~/.svm`); nothing here downloads one.
 
+## The layered run (2026-11-06)
+
+`review/layered.py` runs the plain reader, then the pipeline as a separate run, and joins their flags by
+place; `verify/stage.py` triages and (when given a writer, a reviewer and a runner) simulates the places
+and orders the output without the answer key; `evals/source_review/precision.py` scores that output
+(recall at K, credited and unverified shares, so that writing more flags does not score more). Nothing in
+the chain removes a place: it is additive over the plain reader. The rule for the first layered evaluation
+is in `evals/datasets/tob_items/README.md`.
+
+## Status after the Radius calibration (2026-11-06, DeepSeek flash writer, glm reviewer, $0.05 in all)
+
+* Toolchain: the real sandboxed runner compiles, deploys and runs the audited Radius EVMAuth code with its
+  pinned libraries (solc 0.8.20, london). Libraries are downloaded by hand into a cache folder, not by the runner.
+* Recall on the 7 known findings of the report: 0 of 7 with the finding's title as the claim; 1 of 7 with the
+  auditors' description and 5 attempts (the Low one: the batch blacklist functions skip checks). None of the 4
+  High findings: the writer's tests ran the real contract and failed on their own setup, or the writer said a unit
+  test cannot show it. The cheap writer does not build the multi-step state (expiring token groups) they need.
+* The funnel on the 12 plain flags that match no auditor finding: 9 skipped by triage, 2 confirmed by a mechanical
+  rule, 1 simulated and confirmed. That one is documented design (the function's own NatSpec says it), so a
+  confirmed test shows the behaviour exists, not that it is a flaw.
+* Patch control: both confirmed tests pass on the original code and fail on hand-fixed code.
+
+So the verifier can promote, but not yet gate anything: it misses real logic bugs and it can confirm intended
+behaviour. Auto-adding verified findings to the directory stays off until the reviewer sees the function's own
+comments and a test has to show harm, and a stronger writer has been measured.
+
 ## Not done yet
 
-1. A command line (`python -m verify ...`); 2. the toolchain probe on Radius EVMAuth (needs
-`solc` >= 0.8.20 and OpenZeppelin, both downloads to be approved); 3. the calibration (recall on
-known findings and the wrong-confirm rate on false claims, about $0.3); 4. wiring it behind the
-pipeline and the staging area for the directory (never for held-out reports). Design:
+1. A command line (`python -m verify ...`); 2. the stronger-writer measurement on the 4 High Radius findings;
+3. the impact rule (reviewer sees the function and its comments; the test must show a loss, a lock or an
+unauthorised change); 4. the first layered evaluation on the judged dev runs (needs a yes with numbers) and the staging area for
+the directory (never for held-out reports). Design:
 `sandbox-verification-design.md` in the side-session notes folder.

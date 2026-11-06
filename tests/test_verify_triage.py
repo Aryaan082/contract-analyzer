@@ -79,3 +79,16 @@ def test_triage_all_keeps_only_the_flags_the_model_answered_about():
     client = writer([triage_reply("logic"), "words", "words"])
     got = tg.triage_all(client, [a, b], FILES)
     assert list(got) == [a.id] and got[a.id].testable
+
+
+def test_triage_runs_in_parallel_and_gives_the_same_answers_as_one_at_a_time():
+    cands = [candidate(function=f"f{i}", note=f"n{i}") for i in range(8)]
+    kinds = ["logic", "best_practice"]
+
+    def answer(prompt):
+        return triage_reply(kinds[int(prompt.user.split(".f")[1][0]) % 2])
+
+    one = tg.triage_all(writer([answer]), cands, FILES, workers=1)
+    many = tg.triage_all(writer([answer]), cands, FILES, workers=4)
+    assert one == many and len(many) == 8
+    assert [many[c.id].kind for c in cands] == [kinds[i % 2] for i in range(8)]

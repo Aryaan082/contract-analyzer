@@ -34,7 +34,7 @@ from verify.types import Candidate, Verdict
 
 DEFAULT_ATTEMPTS = 3
 WRITER_TOKENS = 6_000
-REVIEW_TOKENS = 400
+REVIEW_TOKENS = 2_000  # room for a model that thinks before it answers
 
 
 @dataclass
@@ -75,6 +75,9 @@ def verify_candidate(
     remappings: tuple[str, ...] = (),
     deps: Path | None = None,
     max_attempts: int = DEFAULT_ATTEMPTS,
+    evm_version: str = "",
+    writer_tokens: int = WRITER_TOKENS,
+    review_tokens: int = REVIEW_TOKENS,
 ) -> Outcome:
     """The verdict on one flag. Refuses to run with a reviewer from the writer's company: two
     models of one company share mistakes, which is what the second reading is there to catch."""
@@ -89,7 +92,7 @@ def verify_candidate(
     for attempt in range(1, max_attempts + 1):
         prompt = poc_prompt(candidate, files[candidate.file], others, remappings=remappings,
                             previous=previous)  # fmt: skip
-        poc = _ask(writer, prompt, POC_SCHEMA, WRITER_TOKENS, parse_poc, out)
+        poc = _ask(writer, prompt, POC_SCHEMA, writer_tokens, parse_poc, out)
         if poc is None:
             out.verdict = Verdict("unverifiable", "the writer gave no usable reply", attempt)
             return out
@@ -106,7 +109,7 @@ def verify_candidate(
             )
             out.verdict = Verdict("not_confirmed", "the test broke a rule", attempt, sha)
             continue
-        result = runner.run(Project(files, poc.test_file, solc, remappings, deps))
+        result = runner.run(Project(files, poc.test_file, solc, remappings, deps, evm_version))
         if result.status == "tool_missing":
             out.verdict = Verdict("unverifiable", "a tool is missing on this machine", attempt, sha)
             return out
@@ -116,7 +119,7 @@ def verify_candidate(
                                   attempt, sha)  # fmt: skip
             continue
         accepted = _ask(reviewer, review_prompt(candidate, poc.test_file), REVIEW_SCHEMA,
-                        REVIEW_TOKENS, parse_review, out)  # fmt: skip
+                        review_tokens, parse_review, out)  # fmt: skip
         if accepted:
             out.verdict = Verdict("confirmed", "a test passed and a second model accepted it",
                                   attempt, sha)  # fmt: skip

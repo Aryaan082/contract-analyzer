@@ -18,6 +18,7 @@ of them (`review.pack`), and the reply is read as data.
 import json
 import re
 from collections.abc import Mapping
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any
 
@@ -140,12 +141,17 @@ def triage_one(client: ReviewerClient, candidate: Candidate, code: str) -> Triag
 
 
 def triage_all(
-    client: ReviewerClient, candidates: list[Candidate], files: Mapping[str, str]
+    client: ReviewerClient,
+    candidates: list[Candidate],
+    files: Mapping[str, str],
+    workers: int = 1,
 ) -> dict[str, Triage]:
-    """Candidate id -> its triage, for the candidates the model answered about."""
-    out: dict[str, Triage] = {}
-    for candidate in candidates:
-        got = triage_one(client, candidate, function_source(files, candidate))
-        if got is not None:
-            out[candidate.id] = got
-    return out
+    """Candidate id -> its triage, for the candidates the model answered about. With `workers` > 1
+    the calls run in parallel, so the client must be safe to call from several threads."""
+
+    def one(candidate: Candidate) -> tuple[str, Triage | None]:
+        return candidate.id, triage_one(client, candidate, function_source(files, candidate))
+
+    with ThreadPoolExecutor(max(workers, 1)) as pool:
+        answers = list(pool.map(one, candidates))
+    return {cid: got for cid, got in answers if got is not None}
