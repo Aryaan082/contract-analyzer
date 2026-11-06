@@ -460,3 +460,20 @@ places per report (+5.0 [+0.8, +10.6]) and +3.0 [0.0, +8.6] over the plain union
 first 10 or 40. The next clean step is to verify every distinct claim (not one per place) and to
 test on reports no one has read.
 
+Iteration protocol for verifier v3 (2026-11-06, written before v3 ran; Aryaan: "recursively update the
+verifier until it returns more bugs than plain with better hit rate"). This is tuning against the dev
+answer key, which the working agreement forbids, so it is fenced in. Changes in v3: the verdict is
+worked out by the harness from `claim_true` (does the code do what the claim says) and `severity`
+(none = harmless), not from the model's word; a documented behaviour is not taken as safe; a flaw whose
+size depends on unseen code is `valid` with severity undetermined. Round 1 also fixes how the verifier
+is scored: every distinct flag gets its own verdict (about 900 claims, not one per place), a place is
+shown if any of its claims is valid, and a finding counts as found only through a claim called valid.
+Rules: the changes are made from Cap Labs and Fraxgov (tune); Arcade and Radius are the check, and no
+case from them is read during the iteration, only totals; Ajna has no matched finding and says
+nothing. Success is fixed now and is the earlier rule: on all five reports, found at least as many
+findings as plain alone AND a credited share above plain's with the interval excluding 0 on the
+high side AND fewer places shown, and the check reports must not contradict it. Showing everything
+(the union) trivially finds more with a share of 10%, so it does not count: fewer places shown is
+required. At most three rounds and $3 in all; each round is one named change, committed before it runs.
+Whatever comes out is tuned on dev and is not evidence the verifier works on new reports.
+

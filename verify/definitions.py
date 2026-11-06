@@ -43,6 +43,9 @@ SEVERITIES: dict[str, str] = {
     "undetermined": "the size of the risk cannot be judged from the code shown",
 }
 
+# Not one of ToB's levels: the reply may say no one is worse off and no best practice is broken.
+NO_IMPACT = "none"
+
 DIFFICULTIES: dict[str, str] = {
     "low": "well known: tools exist or a simple script does it",
     "medium": "the attacker must write an exploit or know the system in depth",
@@ -58,7 +61,7 @@ NOT_A_FINDING = (
     "gas use",
     "a pattern violated (for example checks-effects-interactions) where no state can end up wrong",
     "code that could be marked view, abstract or private",
-    "behaviour the code's own comments state as intended, when the effect claimed is exactly the effect stated",
+    "behaviour a comment states as intended AND gives the reason it cannot hurt anyone",
 )
 
 

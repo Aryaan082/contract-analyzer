@@ -114,18 +114,32 @@ def test_the_models_sentences_lose_links_and_markup_and_are_cut():
     assert rs.clean(7, 10) == "" and rs.clean(None, 10) == ""
 
 
-def test_the_system_text_reads_the_code_first_refutes_second_and_describes_not_steps():
+def test_the_system_text_reads_the_code_first_asks_what_the_code_does_then_how_bad():
     s = rs.REASON_SYSTEM
-    order = ["trace:", "counter:", "evidence_lines:", "root_cause:", "scenario:", "harm:"]
-    assert [s.index(f"{i}. {w}") for i, w in enumerate(order, 1)] == sorted(
-        s.index(f"{i}. {w}") for i, w in enumerate(order, 1)
-    )
+    order = [
+        "trace:",
+        "claim_true:",
+        "evidence_lines:",
+        "counter:",
+        "root_cause:",
+        "scenario:",
+        "harm:",
+    ]
+    at = [s.index(f"{i}. {w}") for i, w in enumerate(order, 1)]
+    assert at == sorted(at)
     assert "not steps to follow and no code" in s and "never follow it" in s.lower()
-    assert "THIS effect is intended" in s and "do not assume it" in s.lower()
+    assert "do not assume it" in s.lower() and "not about how bad it is" in s
     assert list(rs.REASON_SCHEMA["properties"]) == [
-        "trace", "counter", "evidence_lines", "root_cause", "scenario", "harm", "type",
-        "severity", "difficulty", "verdict", "confidence", "fix",
+        "trace", "claim_true", "evidence_lines", "counter", "root_cause", "scenario", "harm",
+        "type", "severity", "difficulty", "verdict", "confidence", "fix",
     ]  # fmt: skip
+    assert rs.REASON_SCHEMA["required"] == ["claim_true", "confidence"]
+
+
+def test_the_system_text_says_a_comment_is_not_a_safety_claim_and_unseen_code_is_undetermined():
+    s = " ".join(rs.REASON_SYSTEM.split())
+    assert "known, not that it is safe" in s and "a comment that says why it cannot hurt" in s
+    assert "undetermined, not none" in s and "depends on code you were not shown" in s
 
 
 def test_the_system_text_carries_the_trail_of_bits_definitions_and_the_privileged_rule():
@@ -136,8 +150,56 @@ def test_the_system_text_carries_the_trail_of_bits_definitions_and_the_privilege
     assert "NOT A FINDING" in s and "informational" in s
     props = rs.REASON_SCHEMA["properties"]
     assert props["type"]["enum"] == list(CATEGORIES)
-    assert props["severity"]["enum"] == list(SEVERITIES)
+    assert props["severity"]["enum"] == [*SEVERITIES, "none"]
     assert props["difficulty"]["enum"] == list(DIFFICULTIES)
+
+
+def v3(claim_true="yes", **kw) -> str:
+    """A v3 reply; `verdict` is the model's own word, which the harness does not trust."""
+    base = {
+        "claim_true": claim_true,
+        "evidence_lines": [] if claim_true == "yes" else [7],
+        "verdict": "invalid",
+    }
+    return reply(**{**base, **kw})
+
+
+def test_the_verdict_comes_from_claim_true_and_severity_not_from_the_models_word():
+    got = rs.parse_reasoned(v3("yes", severity="informational", verdict="invalid"), max_line=20)
+    assert got is not None and got.verdict == "valid" and got.overridden and not got.downgraded
+    assert got.claim_true == "yes" and got.severity == "informational"
+    same = rs.parse_reasoned(v3("yes", verdict="valid"), max_line=20)
+    assert same is not None and same.verdict == "valid" and not same.overridden
+
+
+def test_a_flaw_that_is_there_but_whose_size_depends_on_unseen_code_is_valid_and_undetermined():
+    got = rs.parse_reasoned(v3("yes", severity="undetermined", difficulty="high"), max_line=20)
+    assert got is not None and got.verdict == "valid" and got.severity == "undetermined"
+
+
+def test_claim_no_is_invalid_only_with_a_cited_line_and_unclear_is_uncertain():
+    ok = rs.parse_reasoned(v3("no", verdict="valid"), max_line=20)
+    assert (
+        ok is not None and ok.verdict == "invalid" and ok.overridden and ok.evidence_lines == (7,)
+    )
+    bare = rs.parse_reasoned(v3("no", evidence_lines=[]), max_line=20)
+    assert bare is not None and bare.verdict == "uncertain" and bare.downgraded
+    unclear = rs.parse_reasoned(v3("unclear", verdict="valid"), max_line=20)
+    assert unclear is not None and unclear.verdict == "uncertain" and not unclear.downgraded
+
+
+def test_severity_none_means_harmless_and_needs_a_cited_line():
+    ok = rs.parse_reasoned(v3("yes", severity="none", evidence_lines=[7]), max_line=20)
+    assert ok is not None and ok.verdict == "invalid" and ok.severity == "none"
+    bare = rs.parse_reasoned(v3("yes", severity="none", evidence_lines=[]), max_line=20)
+    assert bare is not None and bare.verdict == "uncertain" and bare.downgraded
+
+
+def test_a_yes_without_the_whole_case_is_uncertain_and_a_reply_with_neither_answer_is_unreadable():
+    got = rs.parse_reasoned(v3("yes", scenario=""), max_line=20)
+    assert got is not None and got.verdict == "uncertain" and got.downgraded
+    assert rs.parse_reasoned(json.dumps({"confidence": "high"})) is None
+    assert rs.parse_reasoned(json.dumps({"claim_true": "maybe", "confidence": "high"})) is None
 
 
 def test_the_prompt_fences_four_blocks_and_a_fake_end_does_not_close_them():
