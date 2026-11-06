@@ -30,7 +30,6 @@ from pathlib import Path, PurePosixPath
 
 from verify.poc import TEST_CONTRACT
 
-RUN_STATUSES = ("passed", "failed", "compile_error", "timeout", "tool_missing", "no_tests")
 DEFAULT_TIMEOUT = 120.0
 TAIL_CHARS = 3_000
 SANDBOX_EXEC = "/usr/bin/sandbox-exec"

@@ -25,7 +25,6 @@ from verify.mechanical import mechanical_rule
 from verify.triage import Triage
 from verify.types import LAYERS, Candidate, Credit
 
-DISPOSITIONS = ("report", "check", "skipped", "queued", "unverified")
 DEFAULT_PER_REPORT = 10
 _LEVEL = {"high": 0, "medium": 1, "low": 2}
 
