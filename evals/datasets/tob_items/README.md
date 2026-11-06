@@ -492,3 +492,19 @@ original key the tune reports find 0.2 fewer than plain. The cutoff was one of s
 mostly rates severity, since `claim_true` is yes for most flags; and none of this was tested on a
 report nobody has read. Round 3 was not run (balance $1.93).
 
+Held-out, third use, for the verifier only (2026-11-06, written before any held-out flag from this run
+exists; Aryaan: "Yes, go"). The 7 held-out reports (22 findings) were run twice with Opus (the
+pre-registered run, then a post-hoc re-run after the reply-reading fix), so plain and the pipeline are
+not blind there; the verifier has never been designed from or run on them. This run is declared
+final for the verifier. Frozen: verifier v3 (`verify/reason.py` at `fdeb64f`), the severity gate
+(`5b7cf36`), the plain reader, the two-pass pipeline, DeepSeek flash for both arms with thinking off,
+the original key (the wide key is refused for held-out), the three-judge majority with the DeepSeek
+waiver (draft rubric). One plain run and one two-pass run (one pair), so there is one sample per
+arm. The files were downloaded again (7 PDFs 8.62 MB, 248 source files 1.55 MB, every file checked
+against its pinned hash). Nothing about the verifier, the gate or the rule is changed after the
+results are seen, and whatever comes out is reported. The rule is the dev one: on all 7 reports,
+findings found at least as many as plain alone, a credited share above plain's, and fewer places
+shown; with one pair and at most 22 findings the intervals will be wide and the per-report counts are
+reported beside it. Not quotable: draft rubric, DeepSeek judges its own company, and the held-out
+reports are not sealed for plain or the pipeline.
+
