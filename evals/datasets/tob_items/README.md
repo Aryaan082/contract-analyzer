@@ -508,3 +508,18 @@ shown; with one pair and at most 22 findings the intervals will be wide and the 
 reported beside it. Not quotable: draft rubric, DeepSeek judges its own company, and the held-out
 reports are not sealed for plain or the pipeline.
 
+Result of the held-out third use (2026-11-06, DeepSeek flash, one pair, draft rubric, not quotable): NO
+improvement shown, on every cutoff. Plain alone: 200 places, 3 of the 22 findings, credited share
+1.5%. Plain plus pipeline with every flag shown: 353 places, 4 findings. Verifier v3 valid: 289
+places, 4 findings; the severity gate (low or up): 246 places, 3 findings, share 1.2%, which is 46
+more places than plain and no more findings (the pre-registered rule needs fewer places and a
+higher share). Medium or up: 119 places, 3 findings, share 2.5%. Findings were found in only 2 of the 7
+reports by any arm, so the comparison rests on 3 to 4 findings and says nothing about the verifier
+either way; the dev cutoff did not transfer (it shortened the union by 41% on dev, 30% here). The
+verifier called 78% of the held-out flags valid. Two harness problems found: `score --stages pipeline`
+refuses to start while one screening pair has no usable verdict (one glm pair stays unreadable after
+retries), so the pipeline was run on all 7 reports through `run_stages` directly; and the reasoning
+verifier turns an OpenRouter 402 ("would exceed your available credits given your current in-flight
+requests", which a low balance with many workers triggers) into an unchecked flag with no message,
+which left 162 of 436 flags without a verdict until they were retried with fewer workers.
+
