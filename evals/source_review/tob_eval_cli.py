@@ -95,9 +95,15 @@ def key_of(args: argparse.Namespace) -> str:
 
 def wide_problem(args: argparse.Namespace) -> str:
     """Why `--key wide` cannot be used here, or ''."""
-    if key_of(args) == tw.KEY_NAME and args.side != "dev":
+    if key_of(args) == tw.KEY_NAME and args.side != "dev" and not exploratory_of(args):
         return "the wide key is for the dev side only: the held-out rules are frozen"
     return ""
+
+
+def exploratory_of(args: argparse.Namespace) -> bool:
+    """`judge --exploratory-held-out`: the one opt-in that lets the wide key judge held-out pairs.
+    `report` has no such option, so a wide held-out report is still refused."""
+    return bool(getattr(args, "exploratory_held_out", False))
 
 
 def context_for(args: argparse.Namespace) -> Context:
@@ -105,7 +111,11 @@ def context_for(args: argparse.Namespace) -> Context:
     `--key wide` (dev only) the Low and Informational findings are added to the labels."""
     ctx = load_context(args.cache, args.side)
     ctx.runs = getattr(args, "runs", tr.RUNS)
-    return tw.widen(ctx) if key_of(args) == tw.KEY_NAME else ctx
+    if key_of(args) != tw.KEY_NAME:
+        return ctx
+    if exploratory_of(args):
+        return tw.widen(ctx, exploratory_held_out=True)
+    return tw.widen(ctx)
 
 
 def load_context(cache: Path, side: str, gh: ti.GitHub | None = None) -> Context:
@@ -637,6 +647,11 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     p.add_argument("--stage", choices=(*tr.STAGES, "all"), default="all")
     p.add_argument("--draft", action="store_true", help="allow a rubric Aryaan has not approved")
     p.add_argument("--workers", type=int, default=4)
+    p.add_argument(
+        "--exploratory-held-out", action="store_true",
+        help="judge the wide key on the held-out side: post-hoc and exploratory, never part of a "
+        "pre-registered result (the held-out rules are frozen; `report` still refuses it)",
+    )  # fmt: skip
     key(p)
     p = sub.add_parser("handcheck")
     common(p)

@@ -64,9 +64,11 @@ def extra_labels(
     return labels, skipped
 
 
-def widen(ctx):  # ctx: tob_eval_cli.Context (not imported: that module imports this one)
-    """The context with the extra findings added to its labels and references. Dev only."""
-    if ctx.side != "dev":
+def widen(ctx, *, exploratory_held_out: bool = False):  # ctx: tob_eval_cli.Context
+    """The context with the extra findings added to its labels and references. Dev only, unless
+    `exploratory_held_out` is given: the held-out rules are frozen, so that opt-in is for a judging
+    run that is post-hoc and exploratory and never part of a pre-registered result."""
+    if ctx.side != "dev" and not exploratory_held_out:
         raise ValueError("the wide key is for the dev side only; the held-out rules are frozen")
     paths = {slug: [f.path for f in src.bundle.files] for slug, src in ctx.sources.items()}
     extras, skipped = extra_labels(ctx.cache, ctx.reports, paths)

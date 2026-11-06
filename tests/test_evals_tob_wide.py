@@ -1,6 +1,7 @@
 """The wide key: the Low and Informational findings as a secondary, post-hoc view of the dev side.
 No judge and no model is called anywhere here; the pairs and verdicts are put in a cache by hand."""
 
+import argparse
 import dataclasses
 from types import SimpleNamespace
 
@@ -181,6 +182,31 @@ def test_the_held_out_side_has_no_wide_key(monkeypatch, tmp_path):
              "--mode", "quick"],
         )  # fmt: skip
         assert code == 2 and "dev side only" in text
+
+
+def test_the_held_out_wide_key_is_judged_only_with_the_explicit_exploratory_option(
+    monkeypatch, tmp_path
+):
+    fake_pdf(monkeypatch, [raw("TOB-R-2", "Low", "src/Vault.sol", 2)])
+    monkeypatch.setattr(tr, "descriptions", lambda cache, rs: {"r:TOB-R-2": "text"})
+    ctx = cli.Context(tmp_path, "held_out", reports("r"), {"r": [label("T-1")]},
+                      {"r": two_file_source()}, {"r:T-1": REF})  # fmt: skip
+    wide = tw.widen(ctx, exploratory_held_out=True)
+    assert [lab.id for lab in wide.labels_of["r"]] == ["r:T-1", "r:TOB-R-2"]
+    with pytest.raises(ValueError, match="dev side only"):
+        tw.widen(ctx)
+    args = argparse.Namespace(side="held_out", key="wide")
+    assert "dev side only" in cli.wide_problem(args)
+    assert cli.wide_problem(argparse.Namespace(side="held_out", key="wide",
+                                               exploratory_held_out=True)) == ""  # fmt: skip
+    assert cli.wide_problem(argparse.Namespace(side="held_out", key="orig")) == ""
+    # `report` has no such option (argparse exits), and without it the held-out wide key is refused
+    with pytest.raises(SystemExit):
+        run_cli(
+            monkeypatch, tmp_path,
+            ["report", "--cache", str(tmp_path), "--side", "held_out", "--key", "wide",
+             "--mode", "quick", "--exploratory-held-out"],
+        )  # fmt: skip
 
 
 def test_a_wide_report_says_so_names_its_file_so_and_files_no_run_records(monkeypatch, tmp_path):
