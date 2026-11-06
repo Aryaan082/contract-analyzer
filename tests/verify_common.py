@@ -54,7 +54,12 @@ def candidate(**kw) -> Candidate:
 
 
 def poc_reply(test: str = GOOD_TEST, **kw) -> str:
-    return json.dumps({"feasible": True, "test_file": test, **kw})
+    base = {
+        "feasible": True,
+        "test_file": test,
+        "harm": "an attacker withdraws a depositor's funds",
+    }
+    return json.dumps({**base, **kw})
 
 
 def verdict_reply(verdict: str = "accept") -> str:

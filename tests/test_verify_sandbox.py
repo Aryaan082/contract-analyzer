@@ -1,5 +1,7 @@
 """Verifying one flag end to end with scripted models and a stub runner: no model, no forge."""
 
+import json
+
 import pytest
 
 from review.client import ModelUnavailable
@@ -145,3 +147,34 @@ def test_remappings_become_allowed_import_roots():
         refused.verdict.status == "not_confirmed"
         and refused.verdict.reason == "the test broke a rule"
     )
+
+
+def test_the_writer_gets_the_bases_and_the_reviewer_gets_the_function_comments_and_the_harm():
+    files = {
+        "src/Vault.sol": FILES["src/Vault.sol"]
+        .replace("contract Vault {", "contract Vault is Base {")
+        .replace(
+            "    function withdraw",
+            "    /// @dev withdraws on behalf of the caller\n    function withdraw",
+        ),
+        "src/Base.sol": "abstract contract Base { uint256 internal fee; }",
+    }
+    w, r = writer([poc_reply(harm="a depositor loses their balance")]), reader([verdict_reply()])
+    out = sb.verify_candidate(candidate(start_line=6, end_line=11), files, writer=w, reviewer=r,
+                              runner=StubRunner(PASSED), solc="0.8.20")  # fmt: skip
+    assert out.verdict.status == "confirmed"
+    assert (
+        "=== src/Base.sol ===" in w.prompts[0].user and "uint256 internal fee" in w.prompts[0].user
+    )
+    asked = r.prompts[0].user
+    assert (
+        "withdraws on behalf of the caller" in asked and "a depositor loses their balance" in asked
+    )
+
+
+def test_a_writer_reply_without_a_harm_is_asked_for_again_once():
+    no_harm = json.dumps({"feasible": True, "test_file": GOOD_TEST})
+    w = writer([no_harm, poc_reply()])
+    out = run(w, reader([verdict_reply()]), StubRunner(PASSED))
+    assert out.verdict.status == "confirmed" and len(w.prompts) == 2
+    assert "JSON object only" in w.prompts[1].user

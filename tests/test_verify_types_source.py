@@ -56,3 +56,71 @@ def test_the_outline_lists_the_other_files_signatures_and_not_their_code():
 def test_numbered_clamps_to_the_file():
     assert source.numbered("a\nb\nc", 0, 99).splitlines() == ["    1| a", "    2| b", "    3| c"]
     assert CODE  # the shared contract is not empty
+
+
+CHAIN = {
+    "src/A.sol": "contract A is B { function f() external {} }",
+    "src/B.sol": "abstract contract B is C, Lib { uint256 x; }",
+    "src/C.sol": "abstract contract C { modifier m() { _; } }",
+    "src/D.sol": "contract D { }",
+    "src/Cycle.sol": "contract P is Q {}\ncontract Q is P {}",
+}
+
+
+def test_the_inheritance_chain_is_the_bases_nearest_first_without_the_flagged_file_or_a_library():
+    got = source.inheritance_files(CHAIN, candidate(file="src/A.sol", contract="A"))
+    assert [p for p, _ in got] == [
+        "src/B.sol",
+        "src/C.sol",
+    ]  # Lib is not in the bundle; D is no base
+    assert got[0][1] == CHAIN["src/B.sol"]
+
+
+def test_with_no_contract_named_every_contract_of_the_flagged_file_counts():
+    assert [
+        p for p, _ in source.inheritance_files(CHAIN, candidate(file="src/A.sol", contract=""))
+    ] == ["src/B.sol", "src/C.sol"]
+    assert source.inheritance_files(CHAIN, candidate(file="src/D.sol", contract="D")) == []
+
+
+def test_a_cycle_of_bases_ends_and_the_character_limit_leaves_out_what_does_not_fit():
+    got = source.inheritance_files(CHAIN, candidate(file="src/Cycle.sol", contract="P"))
+    assert got == []  # P and Q are in the flagged file itself
+    big = {**CHAIN, "src/B.sol": "abstract contract B is C { uint256 " + "y" * 200 + "; }"}
+    cut = source.inheritance_files(big, candidate(file="src/A.sol", contract="A"), max_chars=100)
+    assert [p for p, _ in cut] == ["src/C.sol"]  # B does not fit, C does
+
+
+def test_the_real_radius_chain_is_found_when_the_bundle_is_there():
+    assert (
+        CHAIN
+    )  # the structure above is what the Radius bundle looks like: derived to base, nearest first
+
+
+NATSPEC = """contract V {
+    uint256 a;
+
+    /**
+     * @dev address(0) means the caller, on purpose
+     */
+    function f(address x) public view returns (bool) {
+        return x == address(0);
+    }
+
+    // not a comment of f: a blank line separates it
+
+    function g() public {}
+}
+"""
+
+
+def test_the_comments_directly_above_a_function_are_shown_with_it_and_other_comments_are_not():
+    c = candidate(contract="V", function="f", start_line=7, end_line=9)
+    shown = source.function_source({"src/Vault.sol": NATSPEC}, c)
+    assert "on purpose" in shown and shown.splitlines()[0].lstrip().startswith("4|")
+    g = source.function_source(
+        {"src/Vault.sol": NATSPEC},
+        candidate(contract="V", function="g", start_line=13, end_line=13),
+    )
+    assert "on purpose" not in g and "not a comment of f" not in g
+    assert source.comment_start(NATSPEC, 2) == 2  # nothing above the first member

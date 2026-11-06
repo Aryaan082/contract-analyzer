@@ -29,7 +29,7 @@ from verify.poc import (
     review_prompt,
 )
 from verify.runner import ForgeRunner, Project
-from verify.source import outline
+from verify.source import function_source, inheritance_files, outline
 from verify.types import Candidate, Verdict
 
 DEFAULT_ATTEMPTS = 3
@@ -88,10 +88,12 @@ def verify_candidate(
     out = Outcome(Verdict("not_confirmed", "no working test in the attempts allowed"))
     roots = ("forge-std/", *(m.split("=", 1)[0] for m in remappings))
     others = outline(files, skip=candidate.file)
+    bases = inheritance_files(files, candidate)
+    function_code = function_source(files, candidate)
     previous: tuple[str, str] | None = None
     for attempt in range(1, max_attempts + 1):
         prompt = poc_prompt(candidate, files[candidate.file], others, remappings=remappings,
-                            previous=previous)  # fmt: skip
+                            previous=previous, bases=bases)  # fmt: skip
         poc = _ask(writer, prompt, POC_SCHEMA, writer_tokens, parse_poc, out)
         if poc is None:
             out.verdict = Verdict("unverifiable", "the writer gave no usable reply", attempt)
@@ -118,8 +120,8 @@ def verify_candidate(
             out.verdict = Verdict("not_confirmed", f"the test {result.status.replace('_', ' ')}",
                                   attempt, sha)  # fmt: skip
             continue
-        accepted = _ask(reviewer, review_prompt(candidate, poc.test_file), REVIEW_SCHEMA,
-                        review_tokens, parse_review, out)  # fmt: skip
+        asked = review_prompt(candidate, poc.test_file, function_code, poc.harm)
+        accepted = _ask(reviewer, asked, REVIEW_SCHEMA, review_tokens, parse_review, out)
         if accepted:
             out.verdict = Verdict("confirmed", "a test passed and a second model accepted it",
                                   attempt, sha)  # fmt: skip

@@ -15,7 +15,7 @@ untrusted text and go inside fences whose code is a hash of all of them (`review
 import hashlib
 import json
 import re
-from collections.abc import Collection
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -29,6 +29,8 @@ MAX_TEST_CHARS = 40_000
 MAX_FILE_CHARS = 60_000
 MAX_OUTPUT_CHARS = 3_000
 MAX_REASON_CHARS = 200
+MAX_HARM_CHARS = 300
+MAX_BASE_CHARS = 60_000
 
 POC_SYSTEM = f"""\
 You write one Foundry test that checks a claim about a smart contract. The test runs offline on a
@@ -42,11 +44,15 @@ Rules:
 1. Write one Solidity file. It starts with an SPDX line and a pragma, imports
    `{{Test}} from "forge-std/Test.sol"` and the project's files by the paths in the outline (for
    example "src/Vault.sol"), and declares `contract {TEST_CONTRACT} is Test` with a `setUp` and
-   one or more functions named `test_...`. At most 150 lines.
+   one or more functions named `test_...`. At most 150 lines. BASE CONTRACTS holds the code of the
+   contracts the flagged one inherits from, with the state and modifiers you may need.
 2. The test must assert the BAD OUTCOME the claim describes, so that it passes when the flaw is
    real: an attacker ends with funds that are not theirs, a core function reverts for everyone, a
    limit is exceeded, a sum no longer adds up. Use assertEq, assertGt, assertLt and the like, or
    vm.expectRevert for a call that should have worked. Never assert something that is always true.
+   The outcome must be a HARM: someone loses funds or access, a limit or a permission is bypassed
+   by someone who should not bypass it, or a promise the code's own comments make is broken. A test
+   that only shows what the code does, with nobody worse off, does not count.
 3. The actor is `address attacker = makeAddr("attacker")`, who holds no role in the contract. If the
    claim only says what a privileged role (owner, admin, governance) can do, set feasible to false.
 4. Mock the contract's outside dependencies (tokens, oracles, other protocols) with small contracts
@@ -56,6 +62,10 @@ Rules:
    by calling the contract.
 6. If a unit test cannot show the claim (it needs a real chain, a vote, off-chain behaviour or a
    gas measurement), set feasible to false and say why in one sentence in why_not.
+7. In `harm` say in one sentence who loses what, or which promise breaks. It is required whenever
+   feasible is true.
+8. Read the comments of the function and of the contracts it inherits. If they say the behaviour is
+   intended, set feasible to false and say so in why_not.
 
 Reply with JSON that matches the schema you were given and nothing else."""
 
@@ -64,6 +74,7 @@ POC_SCHEMA: dict[str, Any] = {
     "properties": {
         "feasible": {"type": "boolean"},
         "why_not": {"type": "string"},
+        "harm": {"type": "string"},
         "test_file": {"type": "string"},
     },
     "required": ["feasible"],
@@ -80,7 +91,12 @@ Accept only if all of these hold:
 - the steps are open to an address with no role (no pranking as the owner or admin unless the claim
   is about that role), and nothing is set by a cheatcode that the contract's own code should have
   produced;
-- the test would fail if the contract behaved correctly.
+- the test would fail if the contract behaved correctly;
+- the outcome is a HARM (the stated harm: who loses what, or which promise breaks) and not merely
+  what the code does: a test that shows a surprising or unusual behaviour with nobody worse off is
+  rejected;
+- the function's own comments (in FUNCTION) do not say the behaviour is intended: a documented
+  design choice is rejected.
 
 verdict is accept or reject. reason: one plain sentence (at most 200 characters).
 Reply with JSON that matches the schema you were given and nothing else."""
@@ -166,11 +182,12 @@ class PocReply:
     feasible: bool
     test_file: str = ""
     why_not: str = ""  # the model's sentence: untrusted, never stored
+    harm: str = ""  # who loses what, in the writer's words: untrusted, shown fenced to the reviewer
 
 
 def parse_poc(text: str | None) -> PocReply | None:
     """The reply as a PocReply, or None if it is not the shape asked for. A feasible reply without
-    a test file is unreadable."""
+    a test file, or without the one-sentence harm, is unreadable."""
     if text is None or not text.strip():
         return None
     try:
@@ -183,10 +200,12 @@ def parse_poc(text: str | None) -> PocReply | None:
     why = why.strip()[:MAX_REASON_CHARS] if isinstance(why, str) else ""
     if not data["feasible"]:
         return PocReply(False, "", why)
-    test = data.get("test_file")
+    test, harm = data.get("test_file"), data.get("harm")
     if not isinstance(test, str) or not test.strip():
         return None
-    return PocReply(True, test.strip("\n") + "\n", why)
+    if not isinstance(harm, str) or not harm.strip():
+        return None
+    return PocReply(True, test.strip("\n") + "\n", why, harm.strip()[:MAX_HARM_CHARS])
 
 
 def poc_prompt(
@@ -196,12 +215,17 @@ def poc_prompt(
     *,
     remappings: tuple[str, ...] = (),
     previous: tuple[str, str] | None = None,
+    bases: Sequence[tuple[str, str]] = (),
 ) -> Prompt:
     """The request to write the test. `previous` is (the earlier test, what forge said) when an
-    attempt did not compile or did not pass; both are shown fenced."""
+    attempt did not compile or did not pass; both are shown fenced. `bases` are the (path, text) of
+    the files of the contracts the flagged one inherits from."""
     code = numbered(file_text, 1, file_text.count("\n") + 1)[:MAX_FILE_CHARS]
     note = candidate.note.strip() or "(no sentence)"
-    parts = [code, outline, note, *(previous or ())]
+    base_text = "\n\n".join(
+        f"=== {path} ===\n{numbered(text, 1, text.count(chr(10)) + 1)}" for path, text in bases
+    )[:MAX_BASE_CHARS]
+    parts = [code, outline, note, base_text, *(previous or ())]
     code_id = boundary_code(parts)
     where = f"{candidate.contract or '?'}.{candidate.function or '?'}"
     user = [
@@ -211,6 +235,8 @@ def poc_prompt(
         fence("CLAIM", code_id, note),
         "",
         fence("FILE", code_id, code),
+        "",
+        fence("BASE CONTRACTS", code_id, base_text or "(none in the bundle)"),
         "",
         fence("OTHER FILES", code_id, outline or "(none)"),
     ]
@@ -228,17 +254,30 @@ def poc_prompt(
     return Prompt(system=POC_SYSTEM, user="\n".join(user))
 
 
-def review_prompt(candidate: Candidate, test_text: str) -> Prompt:
-    """The request to a second model: does this passing test show the claim?"""
+def review_prompt(
+    candidate: Candidate, test_text: str, function_code: str = "", harm: str = ""
+) -> Prompt:
+    """The request to a second model: does this passing test show the claim, as a harm, and is the
+    behaviour not documented as intended? `function_code` is the flagged function as published,
+    comments included; `harm` is the writer's one sentence. All of it is untrusted and fenced."""
     note = candidate.note.strip() or "(no sentence)"
-    code_id = boundary_code([note, test_text])
-    user = "\n".join([
-        "Read the test and the claim.", "",
-        fence("CLAIM", code_id, note), "",
-        fence("TEST", code_id, test_text[:MAX_TEST_CHARS]), "",
+    code = function_code[:MAX_FILE_CHARS]
+    stated = harm.strip()[:MAX_HARM_CHARS]
+    code_id = boundary_code([note, test_text, code, stated])
+    user = [
+        "Read the test, the claim, the harm the writer states and the function with its comments.",
+        "",
+        fence("CLAIM", code_id, note),
+        "",
+        fence("STATED HARM", code_id, stated or "(none stated)"),
+        "",
+        fence("FUNCTION", code_id, code or "(the function could not be found)"),
+        "",
+        fence("TEST", code_id, test_text[:MAX_TEST_CHARS]),
+        "",
         "Reply with the JSON object only.",
-    ])  # fmt: skip
-    return Prompt(system=REVIEW_SYSTEM, user=user)
+    ]
+    return Prompt(system=REVIEW_SYSTEM, user="\n".join(user))
 
 
 def parse_review(text: str | None) -> bool | None:
