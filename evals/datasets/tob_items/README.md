@@ -445,3 +445,18 @@ high only, valid + uncertain, the order arm, per report, and how many replies we
 v1 filter failed the guard twice (found 5.2 and 6.8 against plain's 13.2); a v2 filter that again
 finds fewer than plain is reported as that, whatever its credited share.
 
+Result of verifier v2 (2026-11-06, dev, flash, not quotable): by the rule above NO improvement shown. As
+a filter (valid only) v2 shows 41 places a run against plain's 142 with a credited share of 21.6%
+against 8.9% (+12.7% [+5.1%, +18.3%], so the interval now excludes 0), but it finds 9.4 of 62 findings
+against plain's 13.2 (-3.8 [-8.2, -0.6]); the original key gives 6.0 against 8.6. Against v1 it keeps
+more (45% of the places that matched a finding, against 20% to 28%) and drops fewer of the rest (82%,
+against 89% to 93%): the same trade-off point v1 reached by also showing its uncertain places (44%
+and 81%), so the place-level separation did not clearly improve. Where it did change: on the 25
+places whose verified claim itself matched a finding, v2 says valid on 13 (v1: 3), and 7 of the 9
+High findings survive a valid-only filter (v1: 3 to 4). Those 25 places contain the 16 rejections read
+to write v2, so this is tuning on dev. Ajna cannot serve as the clean report: plain finds none of its
+findings in any run. As an order, nothing hidden, v2 finds 12.2 against plain's 7.2 in the first 20
+places per report (+5.0 [+0.8, +10.6]) and +3.0 [0.0, +8.6] over the plain union, with no gain at the
+first 10 or 40. The next clean step is to verify every distinct claim (not one per place) and to
+test on reports no one has read.
+
