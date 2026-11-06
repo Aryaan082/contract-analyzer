@@ -285,13 +285,14 @@ class ItemEstimate:
         return call_usd((self.p_tokens + self.a_tokens) * per, calls * out)
 
 
-def estimate_item(item: Item, source: Source) -> ItemEstimate | None:
+def estimate_item(item: Item, source: Source, checklist_text: str = "") -> ItemEstimate | None:
     """What the two arms would send for this item, from the real prompts of both (a scripted
     reviewer records arm A's; no model is called). None if the source cannot be read."""
     if source.bundle is None:
         return None
     plain_chars = [
-        with_schema(p, plain.PLAIN_SCHEMA).chars for p in plain.plain_prompts(source.files)
+        with_schema(p, plain.PLAIN_SCHEMA).chars
+        for p in plain.plain_prompts(source.files, checklist_text=checklist_text)
     ]
     probe = ScriptedReviewer(replies=['{"items": []}'])
     run_review(source.bundle, probe, known=source.known, second=None)
@@ -369,9 +370,13 @@ class ArmRecord:
         return tuple(Flag(**d) for d in self.flags)
 
 
-def run_arm_p(source: Source, client: ReviewerClient, max_tokens: int) -> ArmRecord:
+def run_arm_p(
+    source: Source, client: ReviewerClient, max_tokens: int, checklist_text: str = ""
+) -> ArmRecord:
     start = time.monotonic()
-    run = plain.run_plain(source.files, client, max_tokens=max_tokens)
+    run = plain.run_plain(
+        source.files, client, max_tokens=max_tokens, checklist_text=checklist_text
+    )
     return ArmRecord(
         "P",
         not run.unavailable,

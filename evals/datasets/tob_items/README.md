@@ -321,3 +321,16 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   pass 3, two-pass 5 and 8 (earlier prompt, outline rule); the report's own rule still says no
   improvement shown for the best of them (+0.15 [-0.06, 0.27], sign test p 0.04, three comparisons
   and a key chosen after seeing results).
+- **A plain-plus-checklist variant of arm P, for an ablation only (2026-11-05, Aryaan asked why the
+  pipeline trails plain; no model has run it yet).** Five runs of each arm on the dev side (DeepSeek,
+  not quotable) found plain 8.6 of 29 findings (range 7-10) and the two-pass pipeline 5.8 (range
+  4-10); the single run of the outline rule that looked best for the pipeline was the best of its
+  five. `--plain-variant checklist` on `screen` and `score` sends the same plain request with the
+  pipeline's own 32-entry checklist (about 8,200 tokens, `review.pack.Checklist.text`) added between
+  the reply shape and "the source files follow", framed as a reminder and not a limit, and nothing
+  else changed: same raw source, same reply shape, same output limit. Its records carry
+  `plain_variant`, a runs folder never mixes variants, the variant cannot run with the pipeline stage,
+  and the report shows `[plain + checklist]` next to the model. The pre-registered arm is unchanged
+  (its records have no `plain_variant` and its prompt is byte for byte the same). The question it
+  answers: does adding the checklist to plain lower its count, or is the loss elsewhere (the second
+  step, the 12k-token chunks, the stripped comments)?

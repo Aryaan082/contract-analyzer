@@ -177,9 +177,11 @@ def estimate_stage(
     reports: list[ti.Report],
     spec: ModelSpec = cmp.OPUS,
     pipeline: str = "single",
+    plain_variant: str = "plain",
 ) -> float:
     return sum(
-        tr.stage_estimate_usd(ctx.sources[r.slug], stage, r.slug, spec, pipeline) for r in reports
+        tr.stage_estimate_usd(ctx.sources[r.slug], stage, r.slug, spec, pipeline, plain_variant)
+        for r in reports
     )
 
 
@@ -192,10 +194,11 @@ def run_stages(
 ) -> int:
     spec = model_of(args)
     pipeline = getattr(args, "pipeline", "single")
-    central = sum(estimate_stage(ctx, s, reports, spec, pipeline) for s in stages)
+    variant = getattr(args, "plain_variant", "plain")
+    central = sum(estimate_stage(ctx, s, reports, spec, pipeline, variant) for s in stages)
     out(
         f"{args.side}: {len(reports)} reports, stages {', '.join(stages)}, model {spec.name}, "
-        f"pipeline {pipeline}, central estimate ${central:.2f}"
+        f"pipeline {pipeline}, plain variant {variant}, central estimate ${central:.2f}"
         + (
             f" (two-pass: arm A scaled by {tr.PASS_FACTOR['two_pass']}, from one measurement)"
             if pipeline == "two_pass"
@@ -214,6 +217,33 @@ def run_stages(
                     f"the {stage} records in --runs {ctx.runs} were made with pipeline "
                     f"{', '.join(sorted(made))}; use another --runs folder for {pipeline}"
                 )
+    if variant != "plain":
+        if any(tr.ARM_OF[stage] == "A" for stage in stages):
+            problems.append(
+                f"--plain-variant {variant} changes only the plain stages (screen, fresh): "
+                "run the pipeline stage in another command"
+            )
+        for stage in stages:
+            if tr.ARM_OF[stage] == "P":
+                for r in tr.read_stage(ctx.cache, args.side, stage, ctx.runs).values():
+                    if r.get("plain_variant", "plain") != variant:
+                        problems.append(
+                            f"the {stage} records in --runs {ctx.runs} were made with plain "
+                            f"variant {r.get('plain_variant', 'plain')}; use another --runs folder"
+                        )
+                        break
+    else:
+        for stage in stages:
+            if tr.ARM_OF[stage] == "P":
+                made = {
+                    r.get("plain_variant", "plain")
+                    for r in tr.read_stage(ctx.cache, args.side, stage, ctx.runs).values()
+                }
+                if made - {"plain"}:
+                    problems.append(
+                        f"the {stage} records in --runs {ctx.runs} were made with plain variant "
+                        f"{', '.join(sorted(made - {'plain'}))}; use another --runs folder"
+                    )
     if problems:
         out("The run did not start, and no model was called:")
         out("\n".join(f"  - {p}" for p in problems))
@@ -236,6 +266,7 @@ def run_stages(
             checkpoint=tr.checkpoint_path(ctx.cache, args.side, stage, ctx.runs),
             max_tokens=args.plain_max_tokens if tr.ARM_OF[stage] == "P" else None, out=out,
             begin=raw.begin, spec=spec, pipeline=pipeline, reasoning=reasoning,
+            plain_variant=variant,
         )  # fmt: skip
     for message in sorted(set(budget.errors)):
         out(f"request failed: {message}")
@@ -583,6 +614,11 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
         p.add_argument(
             "--plain-max-tokens", type=int, default=tr.OUTPUT_LIMIT["P"],
             help="output limit of a plain request; a record cut off at a lower limit is run again",
+        )  # fmt: skip
+        p.add_argument(
+            "--plain-variant", choices=tr.PLAIN_VARIANTS, default="plain",
+            help="plain (pre-registered) or checklist: the same request with the pipeline's "
+            "checklist added as a reminder, an ablation that needs its own --runs folder",
         )  # fmt: skip
         if name == "score":
             judges(p)

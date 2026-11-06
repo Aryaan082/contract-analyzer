@@ -645,6 +645,115 @@ def test_one_runs_folder_never_mixes_pipeline_modes(monkeypatch, tmp_path):
     assert "were made with pipeline single" in text and "use another --runs folder" in text
 
 
+def plain_screen(tmp_path, variant="plain"):
+    client = ScriptedReviewer([PLAIN_REPLY], name="p")
+    rec = tr.run_stage(
+        reports("a"), {"a": source()}, "screen", client, spent=lambda: 0.0, max_spend=100.0,
+        done={}, checkpoint=tmp_path / "s.jsonl", out=lambda _: None, plain_variant=variant,
+    )[0]  # fmt: skip
+    return rec, client
+
+
+def test_the_checklist_variant_adds_the_checklist_to_the_plain_request_and_nothing_else(tmp_path):
+    from evals.source_review import plain
+    from review.pack import build_checklist
+
+    text = build_checklist().text
+    plain_rec, plain_client = plain_screen(tmp_path)
+    check_rec, check_client = plain_screen(tmp_path, "checklist")
+    a, b = plain_client.prompts[0], check_client.prompts[0]
+    assert a.system == b.system and "plain_variant" not in plain_rec  # as it was before
+    assert check_rec["plain_variant"] == "checklist" and len(check_rec["flags"]) == 1
+    assert text in b.user and text not in a.user and plain.CHECKLIST_REMINDER in b.user
+    # the instruction, then the reply shape, then the checklist, then "the source files follow"
+    assert (
+        b.user.index('{"findings"') < b.user.index(text) < b.user.index("The source files follow")
+    )
+    assert b.user.endswith(a.user.split("The source files follow, with line numbers.")[-1])
+    assert b.user.replace(f"{plain.CHECKLIST_REMINDER}{text}\n\n", "") == a.user
+    assert plain.instruction_with("") == plain.PLAIN_INSTRUCTION
+
+
+def test_an_unknown_plain_variant_is_refused():
+    with pytest.raises(ValueError, match="unknown plain variant"):
+        tr.checklist_text_of("everything")
+
+
+def test_the_checklist_variant_costs_more_to_estimate_and_the_pipeline_estimate_is_unchanged():
+    src = source()
+    base = tr.stage_estimate_usd(src, "screen", "r", cmp.DEEPSEEK, "single", "plain")
+    more = tr.stage_estimate_usd(src, "screen", "r", cmp.DEEPSEEK, "single", "checklist")
+    assert more > base
+    assert tr.stage_estimate_usd(src, "pipeline", "r", cmp.DEEPSEEK, "single", "checklist") == (
+        tr.stage_estimate_usd(src, "pipeline", "r", cmp.DEEPSEEK, "single", "plain")
+    )
+
+
+def variant_args(**kw):
+    import argparse
+
+    base = {
+        "side": "dev", "confirm_spend": True, "max_spend": 5.0, "declare": None,
+        "plain_max_tokens": 32768, "runs": "abl", "model": "deepseek", "pipeline": "single",
+        "plain_variant": "checklist",
+    }  # fmt: skip
+    return argparse.Namespace(**{**base, **kw})
+
+
+def stub_money(monkeypatch):
+    monkeypatch.setattr(cmp, "have_key", lambda: True)
+    monkeypatch.setattr(cmp, "real_budget", lambda *a, **k: pytest.fail("a model was reached"))
+
+
+def test_one_runs_folder_never_mixes_plain_variants(monkeypatch, tmp_path):
+    stub_money(monkeypatch)
+    ctx = fake_context(tmp_path)
+    ctx.runs = "abl"
+    (tmp_path / "abl").mkdir()
+    old = {"item": "r", "stage": "screen", "complete": True, "flags": [], "failures": []}
+    (tmp_path / "abl" / "dev-screen.jsonl").write_text(json.dumps(old) + "\n")  # no variant: plain
+    lines: list[str] = []
+    assert cli.run_stages(variant_args(), ctx, ["screen"], ctx.reports, lines.append) == 2
+    assert "were made with plain variant plain" in "\n".join(lines)
+    done = {**old, "plain_variant": "checklist"}
+    (tmp_path / "abl" / "dev-screen.jsonl").write_text(json.dumps(done) + "\n")
+    lines.clear()
+    args = variant_args(plain_variant="plain")  # a default run in a folder of checklist records
+    assert cli.run_stages(args, ctx, ["screen"], ctx.reports, lines.append) == 2
+    assert "were made with plain variant checklist" in "\n".join(lines)
+    assert "use another --runs folder" in "\n".join(lines)
+
+
+def test_the_plain_variant_cannot_run_with_the_pipeline_stage(monkeypatch, tmp_path):
+    stub_money(monkeypatch)
+    ctx = fake_context(tmp_path)
+    ctx.runs = "abl"
+    lines: list[str] = []
+    stages = ["fresh", "pipeline"]
+    assert cli.run_stages(variant_args(), ctx, stages, ctx.reports, lines.append) == 2
+    assert "changes only the plain stages" in "\n".join(lines)
+
+
+def test_the_plain_variant_option_takes_only_known_variants():
+    from evals.source_review import tob_cli
+
+    parser = tob_cli.build_parser()
+    base = ["screen", "--cache", "/x", "--side", "dev"]
+    assert parser.parse_args(base).plain_variant == "plain"
+    assert parser.parse_args([*base, "--plain-variant", "checklist"]).plain_variant == "checklist"
+    with pytest.raises(SystemExit):
+        parser.parse_args([*base, "--plain-variant", "everything"])
+
+
+def test_a_report_shows_the_plain_variant_next_to_the_model():
+    rows = {"a": {"item": "a", "model": cmp.DEEPSEEK.name, "plain_variant": "checklist"}}
+    assert tp.stage_models({"screen": rows}) == {
+        "screen": f"{cmp.DEEPSEEK.name} [plain + checklist]"
+    }
+    rows = {"a": {"item": "a", "model": cmp.DEEPSEEK.name}}
+    assert tp.stage_models({"screen": rows}) == {"screen": cmp.DEEPSEEK.name}
+
+
 def test_the_pipeline_option_takes_only_known_modes():
     from evals.source_review import tob_cli
 

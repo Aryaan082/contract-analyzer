@@ -28,7 +28,7 @@ from evals.source_review import tob_judge as tj
 from evals.source_review.compare import Source
 from evals.source_review.scoring import Flag
 from review.client import RETRY_REMINDER, ReviewerCall, ReviewerClient
-from review.pack import Prompt
+from review.pack import Prompt, build_checklist
 from review.spans import strip_fence
 
 STAGES = ("screen", "fresh", "pipeline")
@@ -36,6 +36,9 @@ ARM_OF = {"screen": "P", "fresh": "P", "pipeline": "A"}
 MAX_SILENT = cmp.MAX_SILENT
 OUTPUT_LIMIT = {"P": 8192, "A": 8192}  # output tokens a request may write, per arm
 PIPELINES = ("single", "two_pass")  # how arm A reads: the pre-registered pass, or leads then checks
+# What arm P is told: the pre-registered instruction alone, or with the pipeline's checklist added
+# as a reminder (an ablation, never the pre-registered arm: `plain.instruction_with`).
+PLAIN_VARIANTS = ("plain", "checklist")
 # Two requests per chunk: the estimate of arm A is scaled by this. One measurement (DeepSeek, the
 # smallest report, one retry included): 2.9 times the single pass. The real cost is whatever
 # OpenRouter reports.
@@ -139,16 +142,24 @@ class Recording:
 # ---- running a stage ---------------------------------------------------------------------------
 
 
+def checklist_text_of(plain_variant: str) -> str:
+    """The text a plain variant adds to the instruction: the pipeline's checklist, or nothing."""
+    if plain_variant not in PLAIN_VARIANTS:
+        raise ValueError(f"unknown plain variant {plain_variant!r}; use one of {PLAIN_VARIANTS}")
+    return build_checklist().text if plain_variant == "checklist" else ""
+
+
 def stage_estimate_usd(
     source: Source,
     stage: str,
     slug: str = "x",
     spec: ModelSpec = cmp.OPUS,
     pipeline: str = "single",
+    plain_variant: str = "plain",
 ) -> float:
     """The central cost of one report in one stage, from the real prompts (no model)."""
     item = type("Item", (), {"id": slug, "group": "tob"})()
-    est = cmp.estimate_item(item, source)  # type: ignore[arg-type]
+    est = cmp.estimate_item(item, source, checklist_text_of(plain_variant))  # type: ignore[arg-type]
     if est is None:
         return 0.0
     if ARM_OF[stage] == "P":
@@ -172,6 +183,7 @@ def run_stage(
     spec: ModelSpec = cmp.OPUS,
     pipeline: str = "single",
     reasoning: str = "",
+    plain_variant: str = "plain",
 ) -> list[dict]:
     """One arm over the reports, in order. Stops when the next report's central estimate would pass
     `max_spend`, or after MAX_SILENT reports in a row where no request was answered. Every request
@@ -192,7 +204,8 @@ def run_stage(
             records.append({"item": r.slug, "stage": stage, "complete": False, "skipped": stopped})
             out(f"  {r.slug}: NOT RUN ({stopped})")
             continue
-        if spent() + stage_estimate_usd(source, stage, r.slug, spec, pipeline) > max_spend:
+        estimate = stage_estimate_usd(source, stage, r.slug, spec, pipeline, plain_variant)
+        if spent() + estimate > max_spend:
             stopped = "spend cap"
             records.append({"item": r.slug, "stage": stage, "complete": False, "skipped": stopped})
             out(f"  {r.slug}: NOT RUN ({stopped})")
@@ -200,8 +213,10 @@ def run_stage(
         if begin is not None:
             begin(r.slug)
         if ARM_OF[stage] == "P":
-            rec = cmp.run_arm_p(source, client, limit)
+            rec = cmp.run_arm_p(source, client, limit, checklist_text_of(plain_variant))
             mode: dict[str, str] = {}
+            if plain_variant != "plain":
+                mode["plain_variant"] = plain_variant
         else:
             rec = cmp.run_arm_a(source, client, limit, pipeline)
             mode = {"pipeline_mode": pipeline}

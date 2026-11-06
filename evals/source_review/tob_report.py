@@ -480,6 +480,8 @@ def stage_models(records: dict[str, dict[str, dict]]) -> dict[str, str]:
         names = {r.get("model", "anthropic/claude-opus-5.5") for r in rows}
         modes = {r["pipeline_mode"] for r in rows if r.get("pipeline_mode", "single") != "single"}
         modes |= {"reasoning off" for r in rows if r.get("reasoning") == "off"}
+        variants = {r.get("plain_variant", "plain") for r in rows} - {"plain"}
+        modes |= {f"plain + {v}" for v in variants}
         if names:
             out[stage] = ", ".join(sorted(names)) + "".join(f" [{m}]" for m in sorted(modes))
     return out

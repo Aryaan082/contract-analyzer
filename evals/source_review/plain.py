@@ -9,6 +9,9 @@ no scan, no span check and no second pass. The prompt is below, in full, so it c
     system  PLAIN_SYSTEM
     user    PLAIN_INSTRUCTION, then every file as `=== file: <path> ===` and its lines numbered
 
+(`instruction_with` builds the plain-plus-checklist variant, an ablation that is never the
+pre-registered arm: the same request with the pipeline's checklist added as a reminder.)
+
 Choices that keep it fair rather than sandbagged:
 
 * Lines are numbered. Without numbers no model can give a line range, and the instruction asks for
@@ -56,6 +59,12 @@ PLAIN_INSTRUCTION = (
     'return an empty list.\n\nReply with JSON only, in this shape: {"findings": [{"file": "...", '
     '"contract": "...", "function": "...", "start_line": 1, "end_line": 1, "severity": "medium", '
     '"description": "..."}]}\n\nThe source files follow, with line numbers.'
+)
+CHECKLIST_REMINDER = (
+    "For reference, here is a checklist of weaknesses that have been found in contracts like "
+    "this one. Use it as a reminder of what to look for, not as a limit: report any real "
+    "vulnerability you find, on the list or not, and do not report a place only because it "
+    "resembles an entry.\n\nCHECKLIST\n\n"
 )
 PLAIN_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -130,11 +139,27 @@ def _shown(piece: Piece) -> str:
     return f"{head}\n{body}"
 
 
+def instruction_with(checklist_text: str = "") -> str:
+    """`PLAIN_INSTRUCTION`, or with the pipeline's checklist added between its last two paragraphs
+    (the reply shape and "the source files follow"). The ablation of the plain-plus-checklist
+    variant (Aryaan, 2026-11-05): the same request, the same raw source, the same reply shape, and
+    nothing else changed. The text is `review.pack.Checklist.text`, the pipeline's own."""
+    if not checklist_text:
+        return PLAIN_INSTRUCTION
+    head, _, last = PLAIN_INSTRUCTION.rpartition("\n\n")
+    return f"{head}\n\n{CHECKLIST_REMINDER}{checklist_text}\n\n{last}"
+
+
 def plain_prompts(
-    files: Sequence[tuple[str, str]], *, max_input_tokens: int = MAX_INPUT_TOKENS
+    files: Sequence[tuple[str, str]],
+    *,
+    max_input_tokens: int = MAX_INPUT_TOKENS,
+    checklist_text: str = "",
 ) -> list[Prompt]:
     """The requests for one contract: one, unless its raw source is over `max_input_tokens`, in
-    which case whole files are packed into parts (a single file over the limit is cut by lines)."""
+    which case whole files are packed into parts (a single file over the limit is cut by lines).
+    With `checklist_text` the instruction carries the checklist (see `instruction_with`)."""
+    instruction = instruction_with(checklist_text)
     max_chars = int(max_input_tokens * costs.CHARS_PER_TOKEN)
     parts: list[list[Piece]] = [[]]
     size = 0
@@ -153,7 +178,7 @@ def plain_prompts(
             else ""
         )
         shown = "\n\n".join(_shown(p) for p in part)
-        out.append(Prompt(system=PLAIN_SYSTEM, user=f"{PLAIN_INSTRUCTION}{note}\n\n{shown}"))
+        out.append(Prompt(system=PLAIN_SYSTEM, user=f"{instruction}{note}\n\n{shown}"))
     return out
 
 
@@ -309,11 +334,13 @@ def run_plain(
     max_tokens: int = DEFAULT_MAX_TOKENS,
     max_input_tokens: int = MAX_INPUT_TOKENS,
     on_call: Callable[[ReviewerCall], None] | None = None,
+    checklist_text: str = "",
 ) -> PlainRun:
     """Arm P on one contract. A request the service refuses ends the run with `unavailable` set; a
-    reply that is unusable adds a failure and no findings."""
+    reply that is unusable adds a failure and no findings. `checklist_text` makes it the
+    plain-plus-checklist variant (never the pre-registered arm)."""
     lexed = {path: lex(f"F{i}", text) for i, (path, text) in enumerate(files, 1)}
-    prompts = plain_prompts(files, max_input_tokens=max_input_tokens)
+    prompts = plain_prompts(files, max_input_tokens=max_input_tokens, checklist_text=checklist_text)
     run = PlainRun(parts=len(prompts))
     flags: list[Flag] = []
     for prompt in prompts:
