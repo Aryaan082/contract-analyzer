@@ -421,3 +421,10 @@ in the first 20 places per report (+3.8 [+1.0, +6.6]); that needs a repeat, with
 anyone relies on it. No prompt change was made after looking at the rejections: the places that
 matched a finding are the answer key.
 
+Repeat (2026-11-06, same prompt, dev, not quotable): asking flash again gave the same verdict on 83% of
+the places but only 14 of the 45 places either run called valid were valid in both, so one verdict is
+noisy. The filter again fails the "no loss against plain" guard (6.8 found against 13.2). The order
+result repeats (10.4 against plain's 7.2, +3.2 [+0.8, +5.6]) but its gain over the plain union (9.2) is
++1.2 [0.0, +3.2]: most of the lift is the union itself. GLM 5.3 could not be scored (83 of 350
+answered: it thinks too long for the token limit; the spend cap refused the rest).
+
