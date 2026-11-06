@@ -75,6 +75,13 @@ on every claim, so the writer is noisy. A patch control (the same test on hand-f
 new confirmations: 0 wrong confirms of 3. The reviewer now rejects the earlier documented-design test, with and
 without a stated harm.
 
+Three repeats (n = 4 per claim and mode, $0.17 for 42 verifications): the confirm rate per High claim is
+RADIUS-1 1/4 from the title and 4/4 from the auditors' description, RADIUS-2 2/4 and 2/4, RADIUS-3 3/4 and
+1/4, RADIUS-4 0/8; about 1.6 of the 4 High findings per run, 3 of 4 over all runs. The Low, Medium and
+Informational findings were never confirmed. All 10 new confirmations of RADIUS-1/2/3 fail on code with the bugs
+fixed (0 wrong confirms). So the verifier is a reliable promoter and an unreliable finder: what it confirms
+is real, it confirms roughly 40% of a High finding set per attempt, and which ones depends on the wording.
+
 ## Not done yet
 
 1. A command line (`python -m verify ...`); 2. the Radius calibration again with the three fixes, then a
