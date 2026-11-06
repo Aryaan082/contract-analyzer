@@ -82,6 +82,32 @@ Informational findings were never confirmed. All 10 new confirmations of RADIUS-
 fixed (0 wrong confirms). So the verifier is a reliable promoter and an unreliable finder: what it confirms
 is real, it confirms roughly 40% of a High finding set per attempt, and which ones depends on the wording.
 
+## Verification by reasoning (2026-11-06, Aryaan: "just run a reverification of each flag")
+
+The sandbox is slow and only promotes (it confirmed 3 of the 4 High Radius findings on a good
+day and 0 of 4 on RADIUS-4). So the main verifier is now a model that re-reads the flag
+(`reason.py`), run on DeepSeek v4 pro or GLM 5.3 (Aryaan: no Claude model, too expensive). The
+sandbox stays as an optional last step for logic bugs, off by default.
+
+* It sees the claim, the flagged file (the function alone if the file is long), the files of the
+  contracts it inherits from and an outline of the other files, all fenced.
+* It must write the strongest reason the claim is wrong first (`counter`: a comment saying it is
+  intended, a role check, a guard elsewhere, a power the owner is meant to have, no harm). Only if
+  that fails may it say `valid`, and then it must describe the failing situation (`scenario`, a
+  description and no steps or code) and the `harm`. A `valid` without both is read as `uncertain`.
+* Its sentences are untrusted: links and markup are removed and they are cut to length. They are
+  shown to the user and never stored in a record of ours (`stage.record` keeps the verdict words).
+* `stage.annotate(..., reasoner=client)` runs it on every place no report or check already vouches
+  for (`reason_only_logic=True` restricts it to what triage calls logic). `stage.review_list` splits
+  the places into shown (credited or valid), uncertain, rejected and unchecked: **nothing is
+  deleted**, the user is just not shown the rejected ones by default.
+* The user's approval is the only gate to the directory. Not built yet: the review queue and the
+  approve step.
+
+A second reading is not a proof; two models can agree and both be wrong. How well it separates the
+flags an auditor also found from the rest is measured, not assumed: see
+`evals/datasets/tob_items/README.md` ("Reasoning verification").
+
 ## Not done yet
 
 1. A command line (`python -m verify ...`); 2. the Radius calibration again with the three fixes, then a

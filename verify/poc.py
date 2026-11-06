@@ -21,7 +21,7 @@ from typing import Any
 
 from review.pack import Prompt, boundary_code, fence
 from review.spans import strip_fence
-from verify.source import numbered
+from verify.source import numbered, numbered_files
 from verify.types import Candidate
 
 TEST_CONTRACT = "PocTest"  # the one contract the runner runs (`--match-contract`)
@@ -222,9 +222,7 @@ def poc_prompt(
     the files of the contracts the flagged one inherits from."""
     code = numbered(file_text, 1, file_text.count("\n") + 1)[:MAX_FILE_CHARS]
     note = candidate.note.strip() or "(no sentence)"
-    base_text = "\n\n".join(
-        f"=== {path} ===\n{numbered(text, 1, text.count(chr(10)) + 1)}" for path, text in bases
-    )[:MAX_BASE_CHARS]
+    base_text = numbered_files(bases, MAX_BASE_CHARS)
     parts = [code, outline, note, base_text, *(previous or ())]
     code_id = boundary_code(parts)
     where = f"{candidate.contract or '?'}.{candidate.function or '?'}"

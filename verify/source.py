@@ -2,7 +2,7 @@
 of the other files. The raw source is used, as the explorer published it; it is untrusted text and
 every caller puts it inside fences (`review.pack.fence`)."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from review.lexer import lex
 from verify.types import Candidate
@@ -60,6 +60,13 @@ def function_source(files: Mapping[str, str], candidate: Candidate) -> str:
         return ""
     first, last = function_lines(text, candidate)
     return numbered(text, first, last)[:MAX_FUNCTION_CHARS]
+
+
+def numbered_files(files: Sequence[tuple[str, str]], max_chars: int = MAX_BASE_CHARS) -> str:
+    """Each (path, text) as a header and its numbered lines, cut at `max_chars`."""
+    return "\n\n".join(
+        f"=== {path} ===\n{numbered(text, 1, text.count(chr(10)) + 1)}" for path, text in files
+    )[:max_chars]
 
 
 def outline(files: Mapping[str, str], *, skip: str = "") -> str:

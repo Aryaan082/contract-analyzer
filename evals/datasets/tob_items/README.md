@@ -378,3 +378,30 @@ the OpenRouter balance read first. Held-out additionally needs `--declare` and a
   38% longer for 38% more finds. Correction: the first run of this evaluation printed its decision
   block with B and C swapped (a driver bug) and was reported as "improvement shown"; the corrected
   second run above replaces it. Triage cost $0.10 a run.
+
+## Reasoning verification (2026-11-06, written before any model read a place; dev only, not quotable)
+
+Aryaan replaced the sandbox as the main verifier with a model that re-reads each flag
+(`verify/reason.py`: refute first; a `valid` needs a scenario and a harm; DeepSeek v4 pro and GLM
+5.3, no Claude model) and shows only what it calls valid. His approval is needed only to add a flag
+to the directory, so no paid call here waits for a yes. The rule, fixed now:
+
+* Data: the five judged dev run pairs (plain run i with two-pass run i): 350 distinct places, one
+  verdict per distinct place (the claim of its first appearance), used wherever the place appears.
+  No place is credited by a report (the reports are the answer key). Triage re-run with the current
+  prompt (the old cache no longer matches).
+* Arms: A plain alone (all its places); V the layered union with only the places the verifier calls
+  `valid` shown. Variants beside it: each verifier alone, both agreeing, either, and a cascade
+  (valid and triage says logic).
+* Primary: the share of shown places that are credited (a flag there was judged the same bug as an
+  auditor's finding, wide key), V minus A, with the report-level bootstrap interval (5 reports).
+* Guards: findings found by V at least A's in the mean (no loss against plain), and fewer places
+  shown than A.
+* Verdict: "improvement shown" only if the credited-share interval excludes 0 on the high side and
+  both guards hold; otherwise "no improvement shown", with the part that failed named.
+* Reported beside it: the share of credited places the verifier keeps, the share of the others it
+  drops, found, shown, the original key, cost, and the verifiers' agreement.
+* Limits: "unverified" is an upper bound on false positives (the key is incomplete), one verdict per
+  place (re-run noise is not measured), DeepSeek pro verifies flags DeepSeek flash raised (same
+  company; GLM is the independent check), the judge panel includes DeepSeek under the waiver and the
+  rubric is not approved.
